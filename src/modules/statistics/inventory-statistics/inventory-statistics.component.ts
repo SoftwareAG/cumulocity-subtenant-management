@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { DeviceDetailsService } from '@services/device-details.service';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 
@@ -6,7 +6,7 @@ import { FakeMicroserviceService } from '@services/fake-microservice.service';
   selector: 'ps-inventory-statistics',
   templateUrl: './inventory-statistics.component.html'
 })
-export class InventoryStatisticsComponent implements OnInit {
+export class InventoryStatisticsComponent {
   query = 'has(c8y_IsDevice)';
   isLoading = false;
 
@@ -14,9 +14,7 @@ export class InventoryStatisticsComponent implements OnInit {
 
   constructor(private credService: FakeMicroserviceService, private deviceDetailsService: DeviceDetailsService) {}
 
-  ngOnInit() {}
-
-  lookup() {
+  lookup(): void {
     this.isLoading = true;
     this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(async (credentials) => {
       const clients = this.credService.createClients(credentials);

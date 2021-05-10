@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { IManagedObject, InventoryService } from '@c8y/client';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { ProvisioningService } from '@services/provisioning.service';
@@ -7,7 +7,7 @@ import { ProvisioningService } from '@services/provisioning.service';
   selector: 'ps-firmware-provisioning',
   templateUrl: './firmware-provisioning.component.html'
 })
-export class FirmwareProvisioningComponent implements OnInit {
+export class FirmwareProvisioningComponent {
   firmwares: Promise<IManagedObject[]>;
 
   constructor(
@@ -18,8 +18,6 @@ export class FirmwareProvisioningComponent implements OnInit {
     this.firmwares = this.getFirmwares();
   }
 
-  ngOnInit() {}
-
   private async getFirmwares() {
     const filter = {
       query: `$filter=(type eq 'c8y_Firmware' and has(url))`,
@@ -29,14 +27,14 @@ export class FirmwareProvisioningComponent implements OnInit {
     return data;
   }
 
-  provisionFirmware(firmware: IManagedObject) {
+  provisionFirmware(firmware: IManagedObject): void {
     this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then((creds) => {
       const clients = this.credService.createClients(creds);
       return this.provisioning.provisionLegacyFirmwareToTenants(clients, firmware);
     });
   }
 
-  deprovisioningFirmware(firmware: IManagedObject) {
+  deprovisioningFirmware(firmware: IManagedObject): void {
     this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then((creds) => {
       const clients = this.credService.createClients(creds);
       return this.provisioning.deprovisionLegacyFirmwareFromTenants(clients, firmware);

@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { Client, ITenant, IUser, TenantService } from '@c8y/client';
+import { Component } from '@angular/core';
+import { Client, IUser } from '@c8y/client';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { UserDetailsService } from '@services/user-details.service';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
@@ -14,7 +14,7 @@ import { filter, take } from 'rxjs/operators';
   selector: 'ps-user-lookup',
   templateUrl: './user-lookup.component.html'
 })
-export class UserLookupComponent implements OnInit {
+export class UserLookupComponent {
   usernameSearchString = '';
   emailSearchString = '';
   isLoading = false;
@@ -29,9 +29,7 @@ export class UserLookupComponent implements OnInit {
     private modalService: BsModalService
   ) {}
 
-  ngOnInit() {}
-
-  lookup() {
+  lookup(): void {
     this.isLoading = true;
     this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(async (creds) => {
       this.clients = this.credService.createClients(creds);
@@ -45,7 +43,7 @@ export class UserLookupComponent implements OnInit {
     });
   }
 
-  toggleUserActivation(user: TenantSpecificDetails<IUser>) {
+  toggleUserActivation(user: TenantSpecificDetails<IUser>): void {
     this.c8yModalService
       .confirm(
         `${user.data.enabled ? 'Disable' : 'Enable'} User: ${user.data.id} (${user.data.lastName || ''}, ${
@@ -55,7 +53,7 @@ export class UserLookupComponent implements OnInit {
         user.data.enabled ? 'danger' : 'info'
       )
       .then(
-        (res) => {
+        () => {
           // modal confirmed
           const client = this.clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
           if (!client) {
@@ -71,18 +69,18 @@ export class UserLookupComponent implements OnInit {
                 user.data = result.data;
                 this.alertService.success('User Updated.');
               },
-              (error) => {
+              () => {
                 this.alertService.danger('Unable to update user.');
               }
             );
         },
-        (error) => {
+        () => {
           // model canceled
         }
       );
   }
 
-  deleteUser(user: TenantSpecificDetails<IUser>) {
+  deleteUser(user: TenantSpecificDetails<IUser>): void {
     this.c8yModalService
       .confirm(
         `Delete User: ${user.data.id} (${user.data.lastName || ''}, ${user.data.firstName || ''})`,
@@ -90,14 +88,14 @@ export class UserLookupComponent implements OnInit {
         'danger'
       )
       .then(
-        (res) => {
+        () => {
           // modal confirmed
           const client = this.clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
           if (!client) {
             this.alertService.warning('No credentials found.');
           }
           client.user.delete(user.data.id).then(
-            (result) => {
+            () => {
               const index = this.users.findIndex(
                 (tmp) => tmp.tenantId === user.tenantId && tmp.data.id === user.data.id
               );
@@ -106,18 +104,18 @@ export class UserLookupComponent implements OnInit {
               }
               this.alertService.success('User removed.');
             },
-            (error) => {
+            () => {
               this.alertService.danger('Unable to remove User.');
             }
           );
         },
-        (error) => {
+        () => {
           // model canceled
         }
       );
   }
 
-  changePassword(user: TenantSpecificDetails<IUser>) {
+  changePassword(user: TenantSpecificDetails<IUser>): void {
     const client = this.clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
     if (!client) {
       this.alertService.warning('No credentials found.');
@@ -125,7 +123,7 @@ export class UserLookupComponent implements OnInit {
     this.modalService.show(UserPasswordChangeModalComponent, { initialState: { client, user: user.data } });
   }
 
-  createNewUser() {
+  createNewUser(): void {
     const response = new Subject<TenantSpecificDetails<IUser> | null>();
     response
       .asObservable()

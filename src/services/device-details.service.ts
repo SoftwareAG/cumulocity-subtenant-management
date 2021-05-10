@@ -6,9 +6,7 @@ import { TenantSpecificDetails } from '@models/tenant-specific-details';
   providedIn: 'root'
 })
 export class DeviceDetailsService {
-  constructor() {}
-
-  public async getFirmwareStatistics(client: Client) {
+  public async getFirmwareStatistics(client: Client): Promise<Map<string, number>> {
     const firmwareCounterMap = new Map<string, number>();
     const filter = {
       q: '$filter=(has(c8y_Firmware))',
@@ -41,7 +39,7 @@ export class DeviceDetailsService {
     return firmwareCounterMap;
   }
 
-  public async getFirmwareStatisticsOfTenants(clients: Client[]) {
+  public async getFirmwareStatisticsOfTenants(clients: Client[]): Promise<Map<string, number>> {
     const firmwareCounterMap = new Map<string, number>();
     const promArray = clients.map((client) => this.getFirmwareStatistics(client));
     await Promise.all(promArray).then((resArr) => {
@@ -60,7 +58,10 @@ export class DeviceDetailsService {
     return firmwareCounterMap;
   }
 
-  public async deviceLookup(clients: Client[], query: string) {
+  public async deviceLookup(
+    clients: Client[],
+    query: string
+  ): Promise<Array<TenantSpecificDetails<Partial<IManagedObject>>>> {
     const deviceDetailsArry = new Array<TenantSpecificDetails<Partial<IManagedObject>>>();
     const promArray = clients.map((client) => {
       const filter = {
@@ -98,7 +99,7 @@ export class DeviceDetailsService {
             } as TenantSpecificDetails<Partial<IManagedObject>>;
           });
         },
-        (error) => [] as TenantSpecificDetails<Partial<IManagedObject>>[]
+        () => [] as TenantSpecificDetails<Partial<IManagedObject>>[]
       );
     });
     await Promise.all(promArray).then((resArr) => {
@@ -109,7 +110,10 @@ export class DeviceDetailsService {
     return deviceDetailsArry;
   }
 
-  public async countDevicesMatchingQuery(clients: Client[], query: string) {
+  public async countDevicesMatchingQuery(
+    clients: Client[],
+    query: string
+  ): Promise<{ tenant: string; count: number }[]> {
     const promArray = clients.map((client) => {
       const filter = {
         query,
@@ -120,7 +124,7 @@ export class DeviceDetailsService {
         (result) => {
           return { tenant: client.core.tenant, count: result.paging.totalPages };
         },
-        (error) => ({ tenant: client.core.tenant, count: 0 })
+        () => ({ tenant: client.core.tenant, count: 0 })
       );
     });
     return await Promise.all(promArray);

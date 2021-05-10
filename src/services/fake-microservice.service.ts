@@ -40,7 +40,7 @@ export class FakeMicroserviceService {
     }
   }
 
-  public createClients(credentials: ICredentials[]) {
+  public createClients(credentials: ICredentials[]): Client[] {
     return credentials.map((cred) => {
       const client = new Client(new BasicAuth(cred));
       client.core.tenant = cred.tenant;
@@ -50,14 +50,14 @@ export class FakeMicroserviceService {
     });
   }
 
-  public prepareCachedDummyMicroserviceForAllSubtenants(baseUrl?: string) {
+  public prepareCachedDummyMicroserviceForAllSubtenants(baseUrl?: string): Promise<ICredentials[]> {
     if (!this.credentialsCache) {
       this.credentialsCache = this.prepareDummyMicroserviceForAllSubtenants(baseUrl);
     }
     return this.credentialsCache;
   }
 
-  public async prepareDummyMicroserviceForAllSubtenants(baseUrl?: string) {
+  public async prepareDummyMicroserviceForAllSubtenants(baseUrl?: string): Promise<ICredentials[]> {
     const app = await this.createDummyMicroserviceIfNotExisting();
     await this.subscribeAppToAppAllTenants(app);
     const bootstrapCredentials = await this.getBootstrapUser(app);
@@ -65,7 +65,7 @@ export class FakeMicroserviceService {
     return subscriptions;
   }
 
-  public async cleanup() {
+  public async cleanup(): Promise<void> {
     const app = await this.findDummyMicroservice();
     if (!app) {
       return;

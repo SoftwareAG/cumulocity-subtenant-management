@@ -16,7 +16,7 @@ import { StoreQueryModalComponent } from '../modals/store-query-modal/store-quer
   selector: 'ps-device-lookup',
   templateUrl: './device-lookup.component.html'
 })
-export class DeviceLookupComponent implements OnInit {
+export class DeviceLookupComponent {
   private clients: Client[] = [];
   private imeiPath = 'c8y_Mobile.imei';
   private iccidPath = 'c8y_Mobile.iccid';
@@ -25,7 +25,7 @@ export class DeviceLookupComponent implements OnInit {
     this.imeiSearchStringValue = val;
     this.updateQuery();
   }
-  get imeiSearchString() {
+  get imeiSearchString(): string {
     return this.imeiSearchStringValue;
   }
   imeiSearchStringValue = '';
@@ -33,7 +33,7 @@ export class DeviceLookupComponent implements OnInit {
     this.iccidSearchStringValue = val;
     this.updateQuery();
   }
-  get iccidSearchString() {
+  get iccidSearchString(): string {
     return this.iccidSearchStringValue;
   }
   iccidSearchStringValue = '';
@@ -66,9 +66,7 @@ export class DeviceLookupComponent implements OnInit {
     private alertService: AlertService
   ) {}
 
-  ngOnInit() {}
-
-  updateQuery() {
+  updateQuery(): void {
     let tmpQuery = '';
     if (this.imeiSearchString) {
       tmpQuery += `(${this.imeiPath} eq '*${this.imeiSearchString}*')`;
@@ -85,7 +83,7 @@ export class DeviceLookupComponent implements OnInit {
     this.query = tmpQuery ? '$filter=' + tmpQuery : '';
   }
 
-  lookup() {
+  lookup(): void {
     this.isLoading = true;
     this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(
       async (credentials) => {
@@ -102,11 +100,11 @@ export class DeviceLookupComponent implements OnInit {
     );
   }
 
-  restartDevice(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>) {
+  restartDevice(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>): void {
     this.c8yModalService
       .confirm(`Restart Device: ${deviceItem.data.name}`, 'Are you sure that you want to restart this device?')
       .then(
-        (res) => {
+        () => {
           // modal confirmed
           const client = this.clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
           if (!client) {
@@ -119,21 +117,21 @@ export class DeviceLookupComponent implements OnInit {
               c8y_Restart: {}
             })
             .then(
-              (result) => {
+              () => {
                 this.alertService.success('Restart Operation created.');
               },
-              (error) => {
+              () => {
                 this.alertService.danger('Unable to create Restart Operation.');
               }
             );
         },
-        (error) => {
+        () => {
           // model canceled
         }
       );
   }
 
-  firmwareUpdate(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>) {
+  firmwareUpdate(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>): void {
     const client = this.clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
     if (!client) {
       this.alertService.warning('No credentials found.');
@@ -141,7 +139,7 @@ export class DeviceLookupComponent implements OnInit {
     this.modalService.show(FirmwareUpdateModalComponent, { initialState: { client, deviceDetails: deviceItem } });
   }
 
-  configurationUpdate(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>) {
+  configurationUpdate(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>): void {
     const client = this.clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
     if (!client) {
       this.alertService.warning('No credentials found.');
@@ -149,11 +147,11 @@ export class DeviceLookupComponent implements OnInit {
     this.modalService.show(ConfigurationUpdateModalComponent, { initialState: { client, deviceDetails: deviceItem } });
   }
 
-  storeQuery() {
+  storeQuery(): void {
     this.modalService.show(StoreQueryModalComponent, { initialState: { query: this.query } });
   }
 
-  loadQuery() {
+  loadQuery(): void {
     const response = new Subject<string>();
     response
       .asObservable()

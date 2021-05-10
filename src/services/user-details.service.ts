@@ -7,19 +7,24 @@ import { flatMap } from 'lodash-es';
   providedIn: 'root'
 })
 export class UserDetailsService {
-  constructor() {}
-
-  public async searchForUsersMatchingFilterInTennats(clients: Client[], usernameFilter: string, emailFilter: string) {
+  public async searchForUsersMatchingFilterInTennats(
+    clients: Client[],
+    usernameFilter: string,
+    emailFilter: string
+  ): Promise<TenantSpecificDetails<IUser>[]> {
     const usernameRegExp = this.createRegExp(usernameFilter);
     const emailRegExp = this.createRegExp(emailFilter);
-    console.log(clients);
     const matches = await Promise.all(
       clients.map((client) => this.searchForUsersMatchingFilterInTennat(client, usernameRegExp, emailRegExp))
     );
     return flatMap(matches);
   }
 
-  public async searchForUsersMatchingFilterInTennat(client: Client, usernameFilter: RegExp, emailFilter: RegExp) {
+  public async searchForUsersMatchingFilterInTennat(
+    client: Client,
+    usernameFilter: RegExp,
+    emailFilter: RegExp
+  ): Promise<TenantSpecificDetails<IUser>[]> {
     const usersMatchingFilter = new Array<TenantSpecificDetails<IUser>>();
     const filter = {
       withApps: false,

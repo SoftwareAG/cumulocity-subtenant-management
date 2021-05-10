@@ -1,11 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'ps-smartrest-provisioning',
   templateUrl: './smartrest-provisioning.component.html'
 })
-export class SmartrestProvisioningComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit() {}
-}
+export class SmartrestProvisioningComponent {}
