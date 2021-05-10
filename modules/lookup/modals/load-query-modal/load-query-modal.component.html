@@ -1,0 +1,57 @@
+<div class="modal-header dialog-header">
+  <i class="fa fa-upload"></i>
+  <h4 translate>Select a stored Query</h4>
+</div>
+<div class="modal-body dialog-body">
+    <div class="form-group" *ngIf="!isLoading && storedQueries.length">
+      <div class="legend form-block top-m-xxl">
+        <span translate>{{'Select Query: '}}</span>
+      </div>
+      <div class="form-group">
+        <ng-container *ngFor="let queryItem of storedQueries">
+          <label class="c8y-radio" [title]="queryItem.value">
+            <input
+              type="radio"
+              [checked]="selectedQuery === queryItem"
+              (change)="selectedQuery = queryItem"
+            />
+            <span></span><span>{{ queryItem.key }}</span>
+          </label>
+          <code>{{ queryItem.value }}</code>
+        </ng-container>
+        
+        
+      </div>
+    </div>
+    <div *ngIf="!isLoading && !storedQueries.length">
+      <p>No query available to select from.</p>
+    </div>
+    <div class="spinner p-relative" *ngIf="isLoading">
+      <div class="rect1"></div>
+      <div class="rect2"></div>
+      <div class="rect3"></div>
+      <div class="rect4"></div>
+      <div class="rect5"></div>
+    </div>
+</div>
+<div class="modal-footer">
+  <button
+    class="btn btn-default"
+    translate
+    type="button"
+    title="{{ 'Cancel' | translate }}"
+    (click)="onDismiss($event)"
+  >
+    Cancel
+  </button>
+  <button
+    class="btn btn-primary"
+    translate
+    type="submit"
+    title="{{ 'Select Query' | translate }}"
+    [disabled]="!selectedQuery"
+    (click)="onSave($event)"
+  >
+    Select Query
+  </button>
+</div>

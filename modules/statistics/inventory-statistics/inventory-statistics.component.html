@@ -1,0 +1,40 @@
+<c8y-action-bar-item [itemClass]="'navbar-form'" [placement]="'right'">
+  <div class="input-group input-group-search">
+    <input title="Query" type="search" class="form-control" placeholder="Query" [(ngModel)]="query">
+    <span class="input-group-addon">
+      <i c8y-icon="search" *ngIf="!query" class="fa fw fa-search"></i>
+      <i c8y-icon="times" class="text-muted fa fw fa-times" *ngIf="query" (click)="query = ''"></i>
+    </span>
+  </div>
+</c8y-action-bar-item>
+
+<c8y-action-bar-item [placement]="'right'">
+  <button class="btn btn-link" (click)="lookup()">
+    <i c8yIcon="arrow-circle-right"></i>
+    Count items
+  </button>
+</c8y-action-bar-item>
+
+<c8y-title>Inventory Statistics</c8y-title>
+<table class="table">
+  <caption>Count inventory items matching query</caption>
+  <colgroup>
+    <col width="20px">
+    <col width="33%">
+    <col width="33%">
+  </colgroup>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Tennat</th>
+      <th>Sum over all Tennats</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let item of response; let i=index">
+      <th scope="row">{{i + 1}}</th>
+      <td>{{ item.tenant }}</td>
+      <td>{{ item.count }}</td>
+    </tr>
+  </tbody>
+</table>

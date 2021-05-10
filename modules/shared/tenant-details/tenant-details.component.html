@@ -1,0 +1,15 @@
+<ng-template #popTemplate>
+  <div *ngIf="tenantDetailsPromise | async as tenant; else loadingSpinner">
+    <p><b>Domain:</b> {{tenant.domain}}</p>
+    <p><b>Admin Name:</b> {{tenant.adminName}}</p>
+    <p><b>Admin Email:</b> {{tenant.adminEmail}}</p>
+    <p><b>Company:</b> {{tenant.company}}</p>
+    <p><b>Contact Name:</b> {{tenant.contactName}}</p>
+    <p><b>Contact Phone:</b> {{tenant.contactPhone}}</p>
+  </div>
+</ng-template>
+<ng-template #loadingSpinner>
+  <i class="fa fa-spinner fa-spin"></i>
+</ng-template>
+
+<button class="btn btn-link" [popover]="popTemplate" [outsideClick]="true" (click)="getTenantDetails(tenantId)">{{ tenantId }}</button>

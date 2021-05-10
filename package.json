@@ -1,0 +1,58 @@
+{
+  "name": "subtenant-management",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "c8ycli server",
+    "build": "c8ycli build",
+    "deploy": "c8ycli deploy",
+    "locale-extract": "c8ycli locale-extract"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@angular/animations": "8.2.13",
+    "@angular/cdk": "8.2.3",
+    "@angular/common": "8.2.13",
+    "@angular/compiler": "8.2.13",
+    "@angular/core": "8.2.13",
+    "@angular/forms": "8.2.13",
+    "@angular/platform-browser": "8.2.13",
+    "@angular/platform-browser-dynamic": "8.2.13",
+    "@angular/router": "8.2.13",
+    "@angular/upgrade": "8.2.13",
+    "@c8y/client": "^1009.0.5",
+    "@c8y/ngx-components": "1009.0.5",
+    "@c8y/style": "1009.0.5",
+    "core-js": "^3.4.0",
+    "lodash-es": "^4.17.21",
+    "rxjs": "~6.4.0",
+    "url-search-params-polyfill": "6.0.0",
+    "zone.js": "~0.9.1"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "0.803.23",
+    "@angular/compiler-cli": "8.2.13",
+    "@angular/language-service": "8.2.13",
+    "@c8y/cli": "1009.0.5",
+    "@types/lodash-es": "^4.17.4",
+    "tslint": "^6.1.3",
+    "tslint-angular": "^3.0.3",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "3.5.3"
+  },
+  "c8y": {
+    "application": {
+      "name": "Subtenant Management",
+      "contextPath": "subtenant-management",
+      "key": "subtenant-management-application-key",
+      "dynamicOptionsUrl": "/apps/public/public-options/options.json",
+      "icon": {
+        "class": "c8y-icon-sub-tenants"
+      }
+    },
+    "cli": {}
+  }
+}

@@ -1,0 +1,32 @@
+<div class="modal-header dialog-header">
+  <i class="c8y-icon c8y-icon-firmware"></i>
+  <h4 translate>Configuration Update for {{deviceDetails.data.name}} on tenant: {{deviceDetails.tenantId}}</h4>
+</div>
+<div class="modal-body dialog-body">
+    <div class="form-group">
+      <div class="legend form-block top-m-xxl">
+        <span translate>Device Configuration</span>
+      </div>
+      <textarea class="form-control" rows="6" placeholder="Device Configuration" [(ngModel)]="this.config"></textarea>
+    </div>
+</div>
+<div class="modal-footer">
+  <button
+    class="btn btn-default"
+    translate
+    type="button"
+    title="{{ 'Cancel' | translate }}"
+    (click)="onDismiss($event)"
+  >
+    Cancel
+  </button>
+  <button
+    class="btn btn-primary"
+    translate
+    type="submit"
+    title="{{ 'Update Configuration' | translate }}"
+    (click)="onSave($event)"
+  >
+    Update Configuration
+  </button>
+</div>
