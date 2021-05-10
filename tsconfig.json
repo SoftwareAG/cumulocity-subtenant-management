@@ -4,16 +4,16 @@
     "baseUrl": "./",
     "paths": {
       "@models/*": [
-        "models/*"
+        "src/models/*"
       ],
       "@services/*": [
-        "services/*"
+        "src/services/*"
       ],
       "@modules/*": [
-        "modules/*"
+        "src/modules/*"
       ],
       "@directives/*": [
-        "directives/*"
+        "src/directives/*"
       ]
     },
     "outDir": "./dist/out-tsc",

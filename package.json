@@ -7,7 +7,8 @@
     "start": "c8ycli server",
     "build": "c8ycli build",
     "deploy": "c8ycli deploy",
-    "locale-extract": "c8ycli locale-extract"
+    "locale-extract": "c8ycli locale-extract",
+    "lint": "tsc --noEmit && eslint . --ext js,ts,json --quiet --fix"
   },
   "keywords": [],
   "author": "",
@@ -38,9 +39,11 @@
     "@angular/language-service": "8.2.13",
     "@c8y/cli": "1009.0.5",
     "@types/lodash-es": "^4.17.4",
-    "tslint": "^6.1.3",
-    "tslint-angular": "^3.0.3",
-    "tslint-config-prettier": "^1.18.0",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "^2.3.0",
     "typescript": "3.5.3"
   },
   "c8y": {
