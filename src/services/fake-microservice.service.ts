@@ -69,6 +69,7 @@ export class FakeMicroserviceService {
     }
     await this.unsubscribeAppsFromAllTenants(app);
     await this.deleteApp(app);
+    this.credentialsCache = null;
   }
 
   private async getBootstrapUser(app: IApplication) {

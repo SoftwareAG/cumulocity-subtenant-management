@@ -10,7 +10,7 @@ export class DeviceDetailsService {
     const firmwareCounterMap = new Map<string, number>();
     const filter = {
       q: '$filter=(has(c8y_Firmware))',
-      pageSize: 100
+      pageSize: 2000
     };
     try {
       let res = await client.inventory.list(filter);
@@ -58,51 +58,63 @@ export class DeviceDetailsService {
     return firmwareCounterMap;
   }
 
+  private async deviceLookupForTenant(client: Client, query: string) {
+    const deviceArr = new Array<TenantSpecificDetails<Partial<IManagedObject>>>();
+    const filter = {
+      query,
+      pageSize: 2000
+    };
+    let res = await client.inventory.list(filter);
+    while (res.data.length > 0) {
+      const devices = res.data.map((tmp) => {
+        const operations = {};
+        if (
+          tmp.c8y_SupportedOperations &&
+          tmp.c8y_SupportedOperations.length &&
+          Array.isArray(tmp.c8y_SupportedOperations)
+        ) {
+          const supportedOperations: string[] = tmp.c8y_SupportedOperations;
+          supportedOperations.forEach((operation) => {
+            operations[operation] = {};
+          });
+        }
+        return {
+          // only process the actual displayed values to save memory in case of a lot and/or large managed objects
+          data: {
+            id: tmp.id,
+            name: tmp.name,
+            type: tmp.type,
+            creationTime: tmp.creationTime,
+            lastUpdated: tmp.lastUpdated,
+            c8y_Mobile: tmp.c8y_Mobile,
+            c8y_Firmware: tmp.c8y_Firmware,
+            c8y_Availability: tmp.c8y_Availability,
+            c8y_RequiredAvailability: tmp.c8y_RequiredAvailability,
+            c8y_ActiveAlarmsStatus: tmp.c8y_ActiveAlarmsStatus,
+            c8y_Connection: tmp.c8y_Connection,
+            c8y_Configuration: tmp.c8y_Configuration,
+            operations
+          },
+          tenantId: client.core.tenant
+        } as TenantSpecificDetails<Partial<IManagedObject>>;
+      });
+      deviceArr.push(...devices);
+      if (res.data.length < filter.pageSize) {
+        break;
+      }
+      res = await res.paging.next(filter);
+    }
+    return deviceArr;
+  }
+
   public async deviceLookup(
     clients: Client[],
     query: string
   ): Promise<Array<TenantSpecificDetails<Partial<IManagedObject>>>> {
     const deviceDetailsArry = new Array<TenantSpecificDetails<Partial<IManagedObject>>>();
     const promArray = clients.map((client) => {
-      const filter = {
-        query,
-        pageSize: 2000
-      };
-      return client.inventory.list(filter).then(
-        (result) => {
-          return result.data.map((tmp) => {
-            const operations = {};
-            if (
-              tmp.c8y_SupportedOperations &&
-              tmp.c8y_SupportedOperations.length &&
-              Array.isArray(tmp.c8y_SupportedOperations)
-            ) {
-              const supportedOperations: string[] = tmp.c8y_SupportedOperations;
-              supportedOperations.forEach((operation) => {
-                operations[operation] = {};
-              });
-            }
-            return {
-              // only process the actual displayed values to save memory in case of a lot and/or large managed objects
-              data: {
-                id: tmp.id,
-                name: tmp.name,
-                type: tmp.type,
-                creationTime: tmp.creationTime,
-                lastUpdated: tmp.lastUpdated,
-                c8y_Mobile: tmp.c8y_Mobile,
-                c8y_Firmware: tmp.c8y_Firmware,
-                c8y_Availability: tmp.c8y_Availability,
-                c8y_RequiredAvailability: tmp.c8y_RequiredAvailability,
-                c8y_ActiveAlarmsStatus: tmp.c8y_ActiveAlarmsStatus,
-                c8y_Connection: tmp.c8y_Connection,
-                c8y_Configuration: tmp.c8y_Configuration,
-                operations
-              },
-              tenantId: client.core.tenant
-            } as TenantSpecificDetails<Partial<IManagedObject>>;
-          });
-        },
+      return this.deviceLookupForTenant(client, query).then(
+        (result) => result,
         () => [] as TenantSpecificDetails<Partial<IManagedObject>>[]
       );
     });
