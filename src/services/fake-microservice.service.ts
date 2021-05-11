@@ -34,9 +34,6 @@ export class FakeMicroserviceService {
       const roles = flatMap(factories);
       const uniqRoles = uniq(roles);
       this.requiredRoles = uniqRoles;
-      console.log(factories);
-      console.log(roles);
-      console.log(uniqRoles);
     }
   }
 
@@ -155,7 +152,7 @@ export class FakeMicroserviceService {
     const unsubscribeFunc = (tmpApp: IApplication, tenant: ITenant) => {
       return this.unsubscribeApp(tmpApp as any, tenant);
     };
-    await this.performStepForEveryTenant(app, unsubscribeFunc, false, true);
+    await this.performStepForEveryTenant(app, unsubscribeFunc, true, false);
     // const {data: tenants} = await this.client.tenant.list({pageSize: 1000});
     // const tenantsWithApp = tenants
     // // .filter(tenant => tenant.id === 't10452223')

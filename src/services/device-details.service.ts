@@ -72,7 +72,11 @@ export class DeviceDetailsService {
         (result) => {
           return result.data.map((tmp) => {
             const operations = {};
-            if (tmp.c8y_SupportedOperations && tmp.c8y_SupportedOperations.length) {
+            if (
+              tmp.c8y_SupportedOperations &&
+              tmp.c8y_SupportedOperations.length &&
+              Array.isArray(tmp.c8y_SupportedOperations)
+            ) {
               const supportedOperations: string[] = tmp.c8y_SupportedOperations;
               supportedOperations.forEach((operation) => {
                 operations[operation] = {};

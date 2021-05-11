@@ -6,6 +6,8 @@ import { ProvisioningModule } from '@modules/provisioning/provisioning.module';
 import { LookupModule } from '@modules/lookup/lookup.module';
 import { StatisticsModule } from '@modules/statistics/statistics.module';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
+import { HomeModule } from '@modules/home/home.module';
+import { CleanupModule } from '@modules/cleanup/cleanup.module';
 
 @NgModule({
   imports: [
@@ -13,6 +15,8 @@ import { FakeMicroserviceService } from '@services/fake-microservice.service';
     RouterModule.forRoot(),
     ngRouterModule.forRoot([], { enableTracing: false, useHash: true }),
     CoreModule.forRoot(),
+    HomeModule,
+    CleanupModule,
     StatisticsModule,
     LookupModule,
     ProvisioningModule
