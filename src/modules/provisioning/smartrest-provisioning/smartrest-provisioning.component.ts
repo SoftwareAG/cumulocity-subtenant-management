@@ -65,6 +65,13 @@ export class SmartrestProvisioningComponent {
         filterable: true
       },
       {
+        name: 'type',
+        header: 'Type',
+        path: 'type',
+        dataType: ColumnDataType.TextShort,
+        sortable: false
+      },
+      {
         name: 'requestTemplates',
         header: 'Request Templates',
         path: 'com_cumulocity_model_smartrest_csv_CsvSmartRestTemplate.requestTemplates',
@@ -75,6 +82,13 @@ export class SmartrestProvisioningComponent {
         name: 'responseTemplates',
         header: 'Response Templates',
         path: 'com_cumulocity_model_smartrest_csv_CsvSmartRestTemplate.responseTemplates',
+        dataType: ColumnDataType.TextShort,
+        sortable: false
+      },
+      {
+        name: 'version',
+        header: 'SmartREST Version',
+        path: '',
         dataType: ColumnDataType.TextShort,
         sortable: false
       },

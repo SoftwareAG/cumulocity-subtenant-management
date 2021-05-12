@@ -20,12 +20,17 @@
     </c8y-column>
     <c8y-column name="requestTemplates">
       <ng-container *c8yCellRendererDef="let context">
-        {{ context.value?.length || '0' }}
+        {{ (context.item?.com_cumulocity_model_smartrest_csv_CsvSmartRestTemplate || context.item?.com_cumulocity_model_smartrest_SmartRestTemplate)?.requestTemplates?.length || '0' }}
       </ng-container>
     </c8y-column>
     <c8y-column name="responseTemplates">
       <ng-container *c8yCellRendererDef="let context">
-        {{ context.value?.length || '0' }}
+        {{ (context.item?.com_cumulocity_model_smartrest_csv_CsvSmartRestTemplate || context.item?.com_cumulocity_model_smartrest_SmartRestTemplate)?.responseTemplates?.length || '0' }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="version">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ (context.item?.com_cumulocity_model_smartrest_csv_CsvSmartRestTemplate) ? 'v2' : 'v1'  }}
       </ng-container>
     </c8y-column>
     <c8y-column name="lastUpdated">

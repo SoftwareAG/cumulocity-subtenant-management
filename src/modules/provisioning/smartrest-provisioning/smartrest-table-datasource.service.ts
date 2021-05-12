@@ -18,6 +18,7 @@ export class SmartrestTableDatasourceService {
    */
   private BASE_QUERY = {
     type: 'c8y_SmartRest2Template'
+    // __has: 'com_cumulocity_model_smartrest_SmartRestTemplate'
   };
 
   constructor(private inventoryService: InventoryService) {
@@ -75,8 +76,10 @@ export class SmartrestTableDatasourceService {
       __filter: this.BASE_QUERY,
       __orderby: []
     });
+    const smartRESTQuery = `(type eq 'c8y_SmartRest2Template' or has(com_cumulocity_model_smartrest_SmartRestTemplate) or has(com_cumulocity_model_smartrest_csv_CsvSmartRestTemplate))`;
 
-    const queryString = this.queriesUtil.buildQuery(query);
+    let queryString = this.queriesUtil.buildQuery(query);
+    queryString = queryString.replace(`(type eq 'c8y_SmartRest2Template')`, smartRESTQuery);
 
     return { query: queryString };
   }

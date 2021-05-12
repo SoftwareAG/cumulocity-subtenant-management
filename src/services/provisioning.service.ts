@@ -123,7 +123,10 @@ export class ProvisioningService {
         delete template[key];
       }
     });
-    const filteredExternalId = externalIds.find((tmp) => tmp.type === 'c8y_SmartRest2DeviceIdentifier');
+    // filter for just SmartREST2 and SmartREST1 externalId types
+    const filteredExternalId = externalIds.find(
+      (tmp) => tmp.type === 'c8y_SmartRest2DeviceIdentifier' || tmp.type === 'c8y_SmartRestDeviceIdentifier'
+    );
     if (!filteredExternalId) {
       throw 'No externalId available for Template.';
     }
