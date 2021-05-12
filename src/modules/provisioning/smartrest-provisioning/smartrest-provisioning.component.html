@@ -1,3 +1,47 @@
-<p>
-  smartrest-provisioning works!
-</p>
+<c8y-title>{{ 'SmartREST templates' | translate }}</c8y-title>
+<div class="split-scroll">
+  <c8y-data-grid
+    [title]="'SmartREST templates' | translate"
+    class="scroll-column sort-fix"
+    [noMatchingItemsLabel]="'No matching Template.'"
+    [columns]="columns"
+    [pagination]="datasource.pagination"
+    [selectable]="false"
+    [actionControls]="actionControls"
+    [bulkActionControls]="bulkActionControls"
+    (itemsSelect)="handleItemsSelect($event)"
+    [serverSideDataCallback]="datasource.serverSideDataCallback"
+    [itemsSelectLimit]="10"
+  >
+    <c8y-column name="id">
+      <ng-container *c8yCellRendererDef="let context">
+        <a [href]="'/apps/devicemanagement/index.html#/smart-rest-templates/' + context.value">{{ context.value }}</a>
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="requestTemplates">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value?.length || '0' }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="responseTemplates">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value?.length || '0' }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="lastUpdated">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value | date: "dd MMM yyyy, HH:mm:ss" }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="actions1">
+      <ng-container *c8yCellRendererDef="let context">
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-default" title="Provision" (click)="provisionItem(context.item)" [disabled]="provisioningOngoing">
+            <i class="fa fw fa-reply" *ngIf="!provisioningOngoing"></i>
+            <i class="fa fa-spinner fa-spin" *ngIf="provisioningOngoing"></i>
+          </button>
+        </div>
+      </ng-container>
+    </c8y-column>
+  </c8y-data-grid>
+</div>

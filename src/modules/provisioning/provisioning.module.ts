@@ -17,7 +17,9 @@ import { HOOK_MICROSERVICE_ROLE } from '@services/fake-microservice.service';
         'ROLE_INVENTORY_ADMIN',
         'ROLE_INVENTORY_READ',
         'ROLE_OPTION_MANAGEMENT_READ',
-        'ROLE_OPTION_MANAGEMENT_ADMIN'
+        'ROLE_OPTION_MANAGEMENT_ADMIN',
+        'ROLE_IDENTITY_READ',
+        'ROLE_IDENTITY_ADMIN'
       ],
       multi: true
     },

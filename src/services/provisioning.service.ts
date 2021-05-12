@@ -1,5 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Client, IManagedObject, InventoryBinaryService, InventoryService } from '@c8y/client';
+import {
+  Client,
+  IdentityService,
+  IExternalIdentity,
+  IManagedObject,
+  InventoryBinaryService,
+  InventoryService
+} from '@c8y/client';
 import { cloneDeep } from 'lodash-es';
 
 @Injectable({
@@ -20,9 +27,13 @@ export class ProvisioningService {
   ];
   provisioningIdent = 'c8y_SubtenantManagementProvisioning';
 
-  constructor(private inventoryService: InventoryService, private binaryService: InventoryBinaryService) {}
+  constructor(
+    private inventoryService: InventoryService,
+    private binaryService: InventoryBinaryService,
+    private identityService: IdentityService
+  ) {}
 
-  createCopyOfManagedObject(originalMO: IManagedObject, provisioningDetails: any = {}) {
+  createCopyOfManagedObject(originalMO: IManagedObject, provisioningDetails: any = {}): IManagedObject {
     const copy = cloneDeep(originalMO);
     Object.keys(copy).forEach((entry) => {
       if (this.defaultMoAttributesToRemove.includes(entry)) {
@@ -33,7 +44,7 @@ export class ProvisioningService {
     return copy;
   }
 
-  async provisionLegacyFirmwareToTenants(clients: Client[], firmware: IManagedObject) {
+  async provisionLegacyFirmwareToTenants(clients: Client[], firmware: IManagedObject): Promise<IManagedObject[]> {
     const url = (firmware.url as string) || '';
     if (url && url.includes('/inventory/binaries/')) {
       const binaryMOId = this.binaryService.getIdFromUrl(url);
@@ -53,7 +64,7 @@ export class ProvisioningService {
     firmware: IManagedObject,
     binaryMO?: IManagedObject,
     binary?: Blob
-  ) {
+  ): Promise<IManagedObject> {
     const knownFirmware = await this.checkIfFirmwareIsAvailable(client, firmware);
     if (!knownFirmware) {
       const newFirmwareMO = this.createCopyOfManagedObject(firmware);
@@ -63,12 +74,12 @@ export class ProvisioningService {
         newFirmwareMO.url = newBinaryMO.data.self;
       }
       const res = await client.inventory.create(newFirmwareMO);
-      return res;
+      return res.data;
     }
     return null;
   }
 
-  async checkIfFirmwareIsAvailable(client: Client, firmware: IManagedObject) {
+  async checkIfFirmwareIsAvailable(client: Client, firmware: IManagedObject): Promise<IManagedObject> {
     const filter = {
       query: `$filter=((type eq 'c8y_Firmware') and (name eq '${firmware.name}') and (version eq '${firmware.version}') and has(${this.provisioningIdent}) and (${this.provisioningIdent}.firmwareMOId eq '${firmware.id}'))`
     };
@@ -76,11 +87,11 @@ export class ProvisioningService {
     return firmwares.length > 0 ? firmwares[0] : null;
   }
 
-  async deprovisionLegacyFirmwareFromTenants(clients: Client[], firmware: IManagedObject) {
+  async deprovisionLegacyFirmwareFromTenants(clients: Client[], firmware: IManagedObject): Promise<void[]> {
     return await Promise.all(clients.map((tmp) => this.deprovisionLegacyFirmwareFromTenant(tmp, firmware)));
   }
 
-  async deprovisionLegacyFirmwareFromTenant(client: Client, firmware: IManagedObject) {
+  async deprovisionLegacyFirmwareFromTenant(client: Client, firmware: IManagedObject): Promise<void> {
     const findFirmware = await this.checkIfFirmwareIsAvailable(client, firmware);
     if (findFirmware) {
       const url = findFirmware.url as string;
@@ -89,6 +100,65 @@ export class ProvisioningService {
         await client.inventoryBinary.delete(binaryMOId);
       }
       await client.inventory.delete(findFirmware.id);
+    }
+  }
+
+  async provisionSmartRESTTemplate(clients: Client[], templateId: string): Promise<void> {
+    const { data: template } = await this.inventoryService.detail(templateId);
+    const { data: externalIds } = await this.identityService.list(templateId);
+    const keysToRemove = [
+      'additionParents',
+      'assetParents',
+      'childAdditions',
+      'childAssets',
+      'childDevices',
+      'creationTime',
+      'deviceParents',
+      'owner',
+      'self',
+      'id'
+    ];
+    Object.keys(template).forEach((key) => {
+      if (keysToRemove.includes(key)) {
+        delete template[key];
+      }
+    });
+    const filteredExternalId = externalIds.find((tmp) => tmp.type === 'c8y_SmartRest2DeviceIdentifier');
+    if (!filteredExternalId) {
+      throw 'No externalId available for Template.';
+    }
+    const promArray = clients.map((client) =>
+      this.provisionSmartRESTTemplateForTenant(client, template, filteredExternalId)
+    );
+    await Promise.all(promArray);
+  }
+
+  async provisionSmartRESTTemplateForTenant(
+    client: Client,
+    template: Partial<IManagedObject>,
+    externalId: IExternalIdentity
+  ): Promise<void> {
+    const externalIdDetails = await client.identity
+      .detail({ externalId: externalId.externalId, type: externalId.type })
+      .then(
+        (result) => {
+          return result.data;
+        },
+        () => {
+          return null as IExternalIdentity;
+        }
+      );
+    const templateCopy = Object.assign({}, template);
+    if (externalIdDetails) {
+      templateCopy.id = externalIdDetails.managedObject.id as string;
+      await client.inventory.update(templateCopy);
+    } else {
+      const { data: createdTemplate } = await client.inventory.create(templateCopy);
+      await client.identity.create({
+        externalId: externalId.externalId,
+        type: externalId.type,
+        managedObject: { id: createdTemplate.id }
+      });
     }
   }
 }
