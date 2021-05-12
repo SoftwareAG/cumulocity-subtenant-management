@@ -14,7 +14,6 @@ export class CleanupActionFactory implements ActionFactory {
     this.action = {
       label: 'Cleanup subscriptions',
       action: () => {
-        console.log('Custom action');
         this.router.navigate(['/']);
         this.credService.cleanup().then(
           () => {

@@ -13,28 +13,34 @@ import { LoadQueryModalComponent } from './modals/load-query-modal/load-query-mo
 import { SharedModule } from '@modules/shared/shared.module';
 import { UserPasswordChangeModalComponent } from './modals/user-password-change-modal/user-password-change-modal.component';
 import { AddUserModalComponent } from './modals/add-user-modal/add-user-modal.component';
+import { DeviceRegistrationLookupComponent } from './device-registration-lookup/device-registration-lookup.component';
+import { AddDeviceRegistrationModalComponent } from './modals/add-device-registration-modal/add-device-registration-modal.component';
 
 @NgModule({
   imports: [CommonModule, CoreModule, ModalModule.forChild(), SharedModule],
   declarations: [
     DeviceLookupComponent,
     UserLookupComponent,
+    DeviceRegistrationLookupComponent,
     FirmwareUpdateModalComponent,
     ConfigurationUpdateModalComponent,
     StoreQueryModalComponent,
     LoadQueryModalComponent,
     UserPasswordChangeModalComponent,
-    AddUserModalComponent
+    AddUserModalComponent,
+    AddDeviceRegistrationModalComponent
   ],
   entryComponents: [
     DeviceLookupComponent,
     UserLookupComponent,
+    DeviceRegistrationLookupComponent,
     FirmwareUpdateModalComponent,
     ConfigurationUpdateModalComponent,
     StoreQueryModalComponent,
     LoadQueryModalComponent,
     UserPasswordChangeModalComponent,
-    AddUserModalComponent
+    AddUserModalComponent,
+    AddDeviceRegistrationModalComponent
   ],
   providers: [
     {
@@ -43,6 +49,7 @@ import { AddUserModalComponent } from './modals/add-user-modal/add-user-modal.co
         'ROLE_INVENTORY_READ',
         'ROLE_USER_MANAGEMENT_READ',
         'ROLE_USER_MANAGEMENT_ADMIN',
+        'ROLE_DEVICE_CONTROL_READ',
         'ROLE_DEVICE_CONTROL_ADMIN'
       ],
       multi: true
@@ -57,6 +64,10 @@ import { AddUserModalComponent } from './modals/add-user-modal/add-user-modal.co
         {
           path: 'lookup/device',
           component: DeviceLookupComponent
+        },
+        {
+          path: 'lookup/device-registration',
+          component: DeviceRegistrationLookupComponent
         },
         {
           path: 'lookup/user',

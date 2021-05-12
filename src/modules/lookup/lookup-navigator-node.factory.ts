@@ -17,6 +17,12 @@ export class LookupNavigatorNodeFactory implements NavigatorNodeFactory {
       icon: 'c8y-device'
     });
     this.lookupNode.add(deviceNode);
+    const deviceRegistrationNode = new NavigatorNode({
+      label: 'Device Registration',
+      path: 'lookup/device-registration',
+      icon: 'c8y-device-connect'
+    });
+    this.lookupNode.add(deviceRegistrationNode);
     const userNode = new NavigatorNode({
       label: 'User',
       path: 'lookup/user',

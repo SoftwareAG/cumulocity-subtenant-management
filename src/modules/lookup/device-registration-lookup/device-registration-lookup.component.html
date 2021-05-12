@@ -1,0 +1,52 @@
+<c8y-title>Device Registration Lookup</c8y-title>
+
+<c8y-action-bar-item [placement]="'right'">
+  <button class="btn btn-link" (click)="registerDevice()">
+    <i c8yIcon="c8y-device-connect"></i>
+    Create Device Registration
+  </button>
+</c8y-action-bar-item>
+
+<div class="split-scroll">
+  <c8y-data-grid
+    [title]="'Device Registrations' | translate"
+    class="scroll-column sort-fix"
+    [noMatchingItemsLabel]="'No matching Device Registration.'"
+    [columns]="columns"
+    [pagination]="datasource.pagination"
+    [selectable]="false"
+    [actionControls]="[]"
+    [bulkActionControls]="[]"
+    [serverSideDataCallback]="datasource.serverSideDataCallback"
+    [itemsSelectLimit]="10"
+    [refresh]="refresh"
+  >
+    <c8y-column name="tenant">
+      <ng-container *c8yCellRendererDef="let context">
+        <ps-tenant-details [tenantId]="context.value"></ps-tenant-details>
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="creationTime">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value | date: "medium" }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="actions1">
+      <ng-container *c8yCellRendererDef="let context">
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-primary" *ngIf="context.item.data.status === 'PENDING_ACCEPTANCE'" title="Accept Request" (click)="acceptRequest(context.item)">
+            <!-- <i [class]="!context.item.data.enabled ? 'fa fa-check text-success': 'fa fa-ban text-danger'"></i> -->
+            ACCEPT
+          </button>
+          <button class="btn btn-danger" title="Cancel Request" (click)="cancelRequest(context.item)">
+            <!-- <i class="fa fw fa-trash"></i> -->
+            CANCEL
+          </button>
+          <!-- <button class="btn btn-default" title="Change Password" (click)="changePassword(context.item)">
+            <i class="fa fw fa-pencil"></i>
+          </button> -->
+        </div>
+      </ng-container>
+    </c8y-column>
+  </c8y-data-grid>
+</div>
