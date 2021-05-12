@@ -6,7 +6,8 @@ import {
   BuiltInActionType,
   BulkActionControl,
   Column,
-  ColumnDataType
+  ColumnDataType,
+  ModalService
 } from '@c8y/ngx-components';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { ProvisioningService } from '@services/provisioning.service';
@@ -48,7 +49,8 @@ export class SmartrestProvisioningComponent {
     public datasource: SmartrestTableDatasourceService,
     private credService: FakeMicroserviceService,
     private provisioning: ProvisioningService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private c8yModalService: ModalService
   ) {
     this.columns = this.getDefaultColumns();
   }
@@ -114,24 +116,41 @@ export class SmartrestProvisioningComponent {
   }
 
   provisionItem(item: IManagedObject): void {
-    this.provisioningOngoing = true;
-    this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(
-      (credentials) => {
-        const clients = this.credService.createClients(credentials);
-        this.provisioning.provisionSmartRESTTemplate(clients, item.id).then(
-          () => {
-            this.provisioningOngoing = false;
-            this.alertService.success('Provisioned SmartREST Template to subtenants.');
-          },
-          (error) => {
-            this.provisioningOngoing = false;
-            this.alertService.danger('Failed to provision SmartREST Template to subtenants.', JSON.stringify(error));
-          }
-        );
-      },
-      () => {
-        this.provisioningOngoing = false;
-      }
-    );
+    this.c8yModalService
+      .confirm(
+        `Provisioning SmartREST template`,
+        'Are you sure that you want to provision this SmartREST template to all of your subtenants? This will create a new template on tenants where it did not exist previously. If a Template with the same id already exists, it will be overwritten.',
+        'warning'
+      )
+      .then(
+        async () => {
+          // modal confirmed
+          this.provisioningOngoing = true;
+          this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(
+            (credentials) => {
+              const clients = this.credService.createClients(credentials);
+              this.provisioning.provisionSmartRESTTemplate(clients, item.id).then(
+                () => {
+                  this.provisioningOngoing = false;
+                  this.alertService.success('Provisioned SmartREST Template to subtenants.');
+                },
+                (error) => {
+                  this.provisioningOngoing = false;
+                  this.alertService.danger(
+                    'Failed to provision SmartREST Template to subtenants.',
+                    JSON.stringify(error)
+                  );
+                }
+              );
+            },
+            () => {
+              this.provisioningOngoing = false;
+            }
+          );
+        },
+        () => {
+          // model canceled
+        }
+      );
   }
 }

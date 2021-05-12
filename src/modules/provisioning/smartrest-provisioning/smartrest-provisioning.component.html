@@ -41,9 +41,10 @@
     <c8y-column name="actions1">
       <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
-          <button class="btn btn-default" title="Provision" (click)="provisionItem(context.item)" [disabled]="provisioningOngoing">
-            <i class="fa fw fa-reply" *ngIf="!provisioningOngoing"></i>
+          <button class="btn btn-default" title="(Re-)Provision to all subtenants" (click)="provisionItem(context.item)" [disabled]="provisioningOngoing">
+            <i class="fa fw fa-external-link" *ngIf="!provisioningOngoing"></i>
             <i class="fa fa-spinner fa-spin" *ngIf="provisioningOngoing"></i>
+            (Re-)Provision to all subtenants
           </button>
         </div>
       </ng-container>
