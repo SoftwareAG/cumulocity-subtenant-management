@@ -1,30 +1,45 @@
-import { Component, OnInit } from '@angular/core';
-import { DeviceDetailsService } from '@services/device-details.service';
-import { FakeMicroserviceService } from '@services/fake-microservice.service';
+import { Component } from '@angular/core';
+import { Column, ColumnDataType } from '@c8y/ngx-components';
+import { FirmwareStatisticsTableDatasourceService } from './firmware-statistics-table-datasource.service';
 
 @Component({
+  providers: [FirmwareStatisticsTableDatasourceService],
   selector: 'ps-firmware-statistics',
   templateUrl: './firmware-statistics.component.html'
 })
-export class FirmwareStatisticsComponent implements OnInit {
-  versionArray = new Array<{ version: string; count: number }>();
-  totalNumberOfInstalledFirmwares = 0;
-  isLoading = true;
+export class FirmwareStatisticsComponent {
+  columns: Column[];
 
-  constructor(private credService: FakeMicroserviceService, private deviceDetailsService: DeviceDetailsService) {}
+  constructor(public datasource: FirmwareStatisticsTableDatasourceService) {
+    this.columns = this.getDefaultColumns();
+  }
 
-  ngOnInit() {
-    this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(async (credentials) => {
-      const clients = this.credService.createClients(credentials);
-      const stats = await this.deviceDetailsService.getFirmwareStatisticsOfTenants(clients);
-      this.versionArray = [];
-      this.totalNumberOfInstalledFirmwares = 0;
-      stats.forEach((value, key) => {
-        this.versionArray.push({ version: key, count: value });
-        this.totalNumberOfInstalledFirmwares = this.totalNumberOfInstalledFirmwares + value;
-      });
-      this.versionArray.sort((a, b) => b.count - a.count);
-      this.isLoading = false;
-    });
+  getDefaultColumns(): Column[] {
+    return [
+      {
+        name: 'version',
+        header: 'Firmware Version',
+        path: 'version',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: false
+      },
+      {
+        name: 'count',
+        header: 'Sum over all Tenants',
+        path: 'count',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: false
+      },
+      {
+        name: 'percentage',
+        header: 'Percentage',
+        path: 'percentage',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: false
+      }
+    ];
   }
 }

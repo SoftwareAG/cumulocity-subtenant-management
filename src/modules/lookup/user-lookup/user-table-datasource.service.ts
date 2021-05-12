@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { QueriesUtil, IResultList, Client, IUser } from '@c8y/client';
+import { IResultList, Client, IUser } from '@c8y/client';
 import { ServerSideDataResult, Column, Pagination, DataSourceModifier } from '@c8y/ngx-components';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
@@ -16,14 +16,6 @@ export class UserTableDatasourceService {
     currentPage: 1
   };
 
-  private readonly queriesUtil = new QueriesUtil();
-  /**
-   * The query to be used if the table loads without any column filters.
-   */
-  private BASE_QUERY = {
-    __has: 'c8y_IsDevice'
-  };
-
   private cachedPromise: Promise<TenantSpecificDetails<IUser>[]>;
 
   constructor(private credService: FakeMicroserviceService, private userDetailsService: UserDetailsService) {
@@ -36,7 +28,7 @@ export class UserTableDatasourceService {
 
   async onDataSourceModifier(dataSourceModifier: DataSourceModifier): Promise<ServerSideDataResult> {
     this.columns = [...(dataSourceModifier.columns || [])];
-    console.log(dataSourceModifier.columns);
+
     const filteredColumns = dataSourceModifier.columns.filter((tmp) => !!tmp.filterPredicate);
 
     // const filterQuery = this.createQueryFilter(dataSourceModifier.columns);
@@ -74,7 +66,6 @@ export class UserTableDatasourceService {
       filteredSize: filteredUsers.length,
       ...resList
     };
-    console.log(result);
 
     return result;
   }
@@ -87,34 +78,4 @@ export class UserTableDatasourceService {
     }
     return promise;
   }
-
-  private createQueryFilter(columns: Column[]): { query: string } {
-    const query = columns.reduce(this.extendQueryByColumn, {
-      __filter: this.BASE_QUERY,
-      __orderby: []
-    });
-    const queryString = this.queriesUtil.buildQuery(query);
-
-    return { query: queryString };
-  }
-
-  private extendQueryByColumn = (query: any, column: Column) => {
-    if (column.filterable && column.filterPredicate) {
-      const queryObj: any = {};
-      queryObj[column.path] = column.filterPredicate;
-      query.__filter = { ...query.__filter, ...queryObj };
-    }
-
-    if (column.filterable && column.externalFilterQuery) {
-      query.__filter = { ...query.__filter, ...column.externalFilterQuery };
-    }
-
-    if (column.sortable && column.sortOrder) {
-      const cs: any = {};
-      cs[column.path] = column.sortOrder === 'asc' ? 1 : -1;
-      query.__orderby.push(cs);
-    }
-
-    return query;
-  };
 }

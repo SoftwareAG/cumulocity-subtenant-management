@@ -1,37 +1,17 @@
 <c8y-title>Firmware Statistics</c8y-title>
-<div class="c8y-empty-state text-center" *ngIf="isLoading || versionArray?.length === 0">
-  <div class="spinner p-relative" *ngIf="isLoading">
-    <div class="rect1"></div>
-    <div class="rect2"></div>
-    <div class="rect3"></div>
-    <div class="rect4"></div>
-    <div class="rect5"></div>
-  </div>
-  <h1 class="c8y-icon c8y-icon-report c8y-icon-duocolor" *ngIf="!isLoading"></h1>
-  <h3>{{(isLoading ? 'Loading Statistics' : 'Nothing to display') | translate}}</h3>
+
+<div class="split-scroll">
+  <c8y-data-grid
+    [title]="'Installed Firmwares' | translate"
+    class="scroll-column sort-fix"
+    [noMatchingItemsLabel]="'No matching Template.'"
+    [columns]="columns"
+    [pagination]="datasource.pagination"
+    [selectable]="false"
+    [actionControls]="[]"
+    [bulkActionControls]="[]"
+    [serverSideDataCallback]="datasource.serverSideDataCallback"
+    [itemsSelectLimit]="10"
+  >
+  </c8y-data-grid>
 </div>
-<table class="table" *ngIf="!isLoading && versionArray?.length">
-  <caption>Installed device Firmwares</caption>
-  <colgroup>
-    <col width="20px">
-    <col width="33%">
-    <col width="33%">
-    <col width="33%">
-  </colgroup>
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Version</th>
-      <th>Sum over all Tennats</th>
-      <th>Percentage</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let item of versionArray; let i=index">
-      <th scope="row">{{i + 1}}</th>
-      <td>{{ item.version }}</td>
-      <td>{{ item.count }}</td>
-      <td>{{ totalNumberOfInstalledFirmwares ? (((item.count / totalNumberOfInstalledFirmwares) * 100) | number) + '%' : '--' }}</td>
-    </tr>
-  </tbody>
-</table>
