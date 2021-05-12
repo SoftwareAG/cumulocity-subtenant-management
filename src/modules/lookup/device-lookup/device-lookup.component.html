@@ -1,199 +1,64 @@
 <c8y-title>Device Lookup</c8y-title>
-<c8y-action-bar-item [placement]="'left'">
-  <button class="btn btn-link" (click)="loadQuery()">
-    <i class="fa fa-upload"></i>
-    Load query
-  </button>
-</c8y-action-bar-item>
 
-<c8y-action-bar-item [itemClass]="'navbar-form'">
-  <div class="input-group input-group-search">
-    <input title="IMEI Filter" type="search" class="form-control" placeholder="Filter for IMEI" [(ngModel)]="imeiSearchString">
-    <span class="input-group-addon">
-      <i c8y-icon="search" *ngIf="!imeiSearchString" class="fa fw fa-search"></i>
-      <i c8y-icon="times" class="text-muted fa fw fa-times" *ngIf="imeiSearchString" (click)="imeiSearchString = ''"></i>
-    </span>
-  </div>
-</c8y-action-bar-item>
+<div class="split-scroll">
+  <c8y-data-grid
+    [title]="'Devices' | translate"
+    class="scroll-column sort-fix"
+    [noMatchingItemsLabel]="'No matching Template.'"
+    [columns]="columns"
+    [pagination]="datasource.pagination"
+    [selectable]="false"
+    [actionControls]="[]"
+    [bulkActionControls]="[]"
+    [serverSideDataCallback]="datasource.serverSideDataCallback"
+    [itemsSelectLimit]="10"
+  >
+    <c8y-column name="tenant">
+      <ng-container *c8yCellRendererDef="let context">
+        <ps-tenant-details [tenantId]="context.value"></ps-tenant-details>
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="alarms">
+      <ng-container *c8yCellRendererDef="let context">
+        <i class="status fa fw fa-warning" [ngClass]="context.value?.critical ? 'critical' : ''" [title]="'Critical Alarms: ' + (context.value?.critical || 0)"></i>
+        <i class="status fa fw fa-exclamation-circle" [ngClass]="context.value?.major ? 'major' : ''" [title]="'Major Alarms: ' + (context.value?.major || 0)"></i>
+        <i class="status fa fw fa-exclamation-circle" [ngClass]="context.value?.minor ? 'minor' : ''" [title]="'Minor Alarms: ' + (context.value?.minor || 0)"></i>
+        <i class="status fa fw fa-circle" [ngClass]="context.value?.warning ? 'warning' : ''" [title]="'Warning Alarms: ' + (context.value?.warning || 0)"></i>
+      </ng-container>
+    </c8y-column>
 
-<c8y-action-bar-item [itemClass]="'navbar-form'">
-  <div class="input-group input-group-search">
-    <input title="ICCID Filter" type="search" class="form-control" placeholder="Filter for ICCID" [(ngModel)]="iccidSearchString">
-    <span class="input-group-addon">
-      <i c8y-icon="search" *ngIf="!iccidSearchString" class="fa fw fa-search"></i>
-      <i c8y-icon="times" class="text-muted fa fw fa-times" *ngIf="iccidSearchString" (click)="iccidSearchString = ''"></i>
-    </span>
-  </div>
-</c8y-action-bar-item>
-
-<c8y-action-bar-item [itemClass]="'navbar-form'" [placement]="'right'">
-  <div class="input-group input-group-search">
-    <input title="Query" type="search" class="form-control" placeholder="Query" [(ngModel)]="query">
-    <span class="input-group-addon">
-      <i c8y-icon="search" *ngIf="!query" class="fa fw fa-search"></i>
-      <i c8y-icon="times" class="text-muted fa fw fa-times" *ngIf="query" (click)="query = ''"></i>
-    </span>
-  </div>
-</c8y-action-bar-item>
-
-<c8y-action-bar-item [placement]="'right'">
-  <button class="btn btn-link" (click)="lookup()">
-    <i c8yIcon="arrow-circle-right"></i>
-    Lookup Devices
-  </button>
-</c8y-action-bar-item>
-
-<c8y-action-bar-item [placement]="'right'">
-  <button class="btn btn-link" (click)="storeQuery()" [disabled]="!query">
-    <i class="fa fa-save"></i>
-    Store query
-  </button>
-</c8y-action-bar-item>
-
-<div class="c8y-empty-state text-center" *ngIf="isLoading || response?.length === 0">
-  <div class="spinner p-relative" *ngIf="isLoading">
-    <div class="rect1"></div>
-    <div class="rect2"></div>
-    <div class="rect3"></div>
-    <div class="rect4"></div>
-    <div class="rect5"></div>
-  </div>
-  <h1 class="c8y-icon c8y-icon-device c8y-icon-duocolor" *ngIf="!isLoading"></h1>
-  <h3>{{(isLoading ? 'Loading devices' : 'Nothing to display') | translate}}</h3>
-</div>
-
-<div *ngIf="!isLoading && response?.length">
-  <h3>Configure Table Columns</h3>
-  <div class="form">
-    <label class="c8y-checkbox checkbox-inline" title="Device Name">
-      <input [(ngModel)]="this.columnConfig.name" type="checkbox">
-      <span></span>
-      <span>Device Name</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="Device Type">
-      <input [(ngModel)]="this.columnConfig.type" type="checkbox">
-      <span></span>
-      <span>Device Type</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="IMEI">
-      <input [(ngModel)]="this.columnConfig.imei" type="checkbox">
-      <span></span>
-      <span>IMEI</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="ICCID">
-      <input [(ngModel)]="this.columnConfig.iccid" type="checkbox">
-      <span></span>
-      <span>ICCID</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="Firmware">
-      <input [(ngModel)]="this.columnConfig.firmware" type="checkbox">
-      <span></span>
-      <span>Firmware</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="Required Availability">
-      <input [(ngModel)]="this.columnConfig.requiredAvail" type="checkbox">
-      <span></span>
-      <span>Required Availability</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="Active Alarms">
-      <input [(ngModel)]="this.columnConfig.alarms" type="checkbox">
-      <span></span>
-      <span>Active Alarms</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="Registration Date">
-      <input [(ngModel)]="this.columnConfig.registrationDate" type="checkbox">
-      <span></span>
-      <span>Registration Date</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="Last Updated Date">
-      <input [(ngModel)]="this.columnConfig.lastUpdate" type="checkbox">
-      <span></span>
-      <span>Last Updated Date</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="Last Message">
-      <input [(ngModel)]="this.columnConfig.lastMessage" type="checkbox">
-      <span></span>
-      <span>Last Message</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="Availability Status">
-      <input [(ngModel)]="this.columnConfig.c8y_Availability" type="checkbox">
-      <span></span>
-      <span>Availability Status</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="Connection Status">
-      <input [(ngModel)]="this.columnConfig.c8y_Connection" type="checkbox">
-      <span></span>
-      <span>Connection Status</span>
-    </label>
-    <label class="c8y-checkbox checkbox-inline" title="Actions">
-      <input [(ngModel)]="this.columnConfig.actions" type="checkbox">
-      <span></span>
-      <span>Actions</span>
-    </label>
-  </div>
-</div>
-
-<table class="table" *ngIf="!isLoading && response?.length">
-  <caption>Devices Matching above filter</caption>
-  <colgroup>
-    <col width="20px">
-    <!-- <col width="33%">
-    <col width="33%">
-    <col width="33%"> -->
-  </colgroup>
-  <thead>
-    <tr>
-      <th>#</th>
-      <th>Tenant</th>
-      <th *ngIf="this.columnConfig.name">Device Name</th>
-      <th *ngIf="this.columnConfig.type">Type</th>
-      <th *ngIf="this.columnConfig.imei">IMEI</th>
-      <th *ngIf="this.columnConfig.iccid">ICCID</th>
-      <th *ngIf="this.columnConfig.firmware">Firmware</th>
-      <th *ngIf="this.columnConfig.requiredAvail">Required Availability</th>
-      <th *ngIf="this.columnConfig.alarms">Active Alarms</th>
-      <th *ngIf="this.columnConfig.registrationDate">Registration Date</th>
-      <th *ngIf="this.columnConfig.lastUpdate">Last Updated Date</th>
-      <th *ngIf="this.columnConfig.lastMessage">Last Message</th>
-      <th *ngIf="this.columnConfig.c8y_Availability">Availability Status</th>
-      <th *ngIf="this.columnConfig.c8y_Connection">Connection Status</th>
-      <th *ngIf="this.columnConfig.actions">Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let item of response; let i=index">
-      <th scope="row">{{i + 1}}</th>
-      <td><ps-tenant-details [tenantId]="item.tenantId"></ps-tenant-details></td>
-      <td *ngIf="this.columnConfig.name">{{ item.data.name }}</td>
-      <td *ngIf="this.columnConfig.type">{{ item.data.type }}</td>
-      <td *ngIf="this.columnConfig.imei">{{ item.data.c8y_Mobile?.imei || '--' }}</td>
-      <td *ngIf="this.columnConfig.iccid">{{ item.data.c8y_Mobile?.iccid || '--' }}</td>
-      <td *ngIf="this.columnConfig.firmware">{{ (item.data.c8y_Firmware?.name || '--') + ' - ' + (item.data.c8y_Firmware?.version || '--') }}</td>
-      <td *ngIf="this.columnConfig.requiredAvail">{{ item.data.c8y_RequiredAvailability?.responseInterval || '--' }}</td>
-      <td *ngIf="this.columnConfig.alarms">
-        <i class="status fa fw fa-warning" [ngClass]="item.data.c8y_ActiveAlarmsStatus?.critical ? 'critical' : ''" [title]="'Critical Alarms: ' + (item.data.c8y_ActiveAlarmsStatus?.critical || 0)"></i>
-        <i class="status fa fw fa-exclamation-circle" [ngClass]="item.data.c8y_ActiveAlarmsStatus?.major ? 'major' : ''" [title]="'Major Alarms: ' + (item.data.c8y_ActiveAlarmsStatus?.major || 0)"></i>
-        <i class="status fa fw fa-exclamation-circle" [ngClass]="item.data.c8y_ActiveAlarmsStatus?.minor ? 'minor' : ''" [title]="'Minor Alarms: ' + (item.data.c8y_ActiveAlarmsStatus?.minor || 0)"></i>
-        <i class="status fa fw fa-circle" [ngClass]="item.data.c8y_ActiveAlarmsStatus?.warning ? 'warning' : ''" [title]="'Warning Alarms: ' + (item.data.c8y_ActiveAlarmsStatus?.warning || 0)"></i>
-      </td>
-      <td *ngIf="this.columnConfig.registrationDate">{{ item.data.creationTime | date: 'short' || '--' }}</td>
-      <td *ngIf="this.columnConfig.lastUpdate">{{ item.data.lastUpdated | date: 'short' || '--' }}</td>
-      <td *ngIf="this.columnConfig.lastMessage">{{ item.data.c8y_Availability?.lastMessage | date: 'short' || '--' }}</td>
-      <td *ngIf="this.columnConfig.c8y_Availability">{{ item.data.c8y_Availability?.status || '--' }}</td>
-      <td *ngIf="this.columnConfig.c8y_Connection">{{ item.data.c8y_Connection?.status || '--' }}</td>
-      <td *ngIf="this.columnConfig.actions">
+    
+    <c8y-column name="lastUpdated">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value | date: "medium" }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="creationTime">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value | date: "medium" }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="lastMessage">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value | date: "medium" }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="actions1">
+      <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
-          <button class="btn btn-default" title="Restart Device" *ngIf="item.data.operations?.c8y_Restart" (click)="restartDevice(item)">
-            <i class="fa fw fa-refresh"></i>
-          </button>
-          <button class="btn btn-default" title="Firmware Update" *ngIf="item.data.operations?.c8y_Firmware" (click)="firmwareUpdate(item)">
-            <i class="fa fw fa-floppy-o"></i>
-          </button>
-          <button class="btn btn-default" title="Configuration Update" *ngIf="item.data.operations?.c8y_Configuration" (click)="configurationUpdate(item)">
-            <i class="fa fw fa-gears"></i>
-          </button>
+          <div class="btn-group btn-group-sm" role="group">
+            <button class="btn btn-default" title="Restart Device" *ngIf="context.item.data?.operations?.c8y_Restart" (click)="restartDevice(context.item)">
+              <i class="fa fw fa-refresh"></i>
+            </button>
+            <button class="btn btn-default" title="Firmware Update" *ngIf="context.item.data?.operations?.c8y_Firmware" (click)="firmwareUpdate(context.item)">
+              <i class="fa fw fa-floppy-o"></i>
+            </button>
+            <button class="btn btn-default" title="Configuration Update" *ngIf="context.item.data?.operations?.c8y_Configuration" (click)="configurationUpdate(context.item)">
+              <i class="fa fw fa-gears"></i>
+            </button>
+          </div>
         </div>
-      </td>
-    </tr>
-  </tbody>
-</table>
+      </ng-container>
+    </c8y-column>
+  </c8y-data-grid>
+</div>

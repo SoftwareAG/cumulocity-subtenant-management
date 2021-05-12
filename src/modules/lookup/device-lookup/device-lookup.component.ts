@@ -1,112 +1,172 @@
-import { Component, OnInit } from '@angular/core';
-import { Client, IManagedObject } from '@c8y/client';
-import { AlertService, ModalService } from '@c8y/ngx-components';
+import { Component } from '@angular/core';
+import { IManagedObject } from '@c8y/client';
+import { AlertService, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
-import { DeviceDetailsService } from '@services/device-details.service';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { BsModalService } from 'ngx-bootstrap/modal';
-import { Subject } from 'rxjs';
-import { take, filter } from 'rxjs/operators';
 import { ConfigurationUpdateModalComponent } from '../modals/configuration-update-modal/configuration-update-modal.component';
 import { FirmwareUpdateModalComponent } from '../modals/firmware-update-modal/firmware-update-modal.component';
-import { LoadQueryModalComponent } from '../modals/load-query-modal/load-query-modal.component';
-import { StoreQueryModalComponent } from '../modals/store-query-modal/store-query-modal.component';
+import { DeviceTableDatasourceService } from './device-table-datasource.service';
 
 @Component({
+  providers: [DeviceTableDatasourceService],
   selector: 'ps-device-lookup',
   templateUrl: './device-lookup.component.html'
 })
 export class DeviceLookupComponent {
-  private clients: Client[] = [];
-  private imeiPath = 'c8y_Mobile.imei';
-  private iccidPath = 'c8y_Mobile.iccid';
-
-  set imeiSearchString(val: string) {
-    this.imeiSearchStringValue = val;
-    this.updateQuery();
-  }
-  get imeiSearchString(): string {
-    return this.imeiSearchStringValue;
-  }
-  imeiSearchStringValue = '';
-  set iccidSearchString(val: string) {
-    this.iccidSearchStringValue = val;
-    this.updateQuery();
-  }
-  get iccidSearchString(): string {
-    return this.iccidSearchStringValue;
-  }
-  iccidSearchStringValue = '';
-  query = 'has(c8y_IsDevice)';
-
-  response: TenantSpecificDetails<Partial<IManagedObject>>[] = [];
-  isLoading = false;
-
-  columnConfig = {
-    name: true,
-    type: true,
-    imei: true,
-    iccid: false,
-    firmware: true,
-    requiredAvail: false,
-    alarms: false,
-    registrationDate: false,
-    lastUpdate: true,
-    lastMessage: true,
-    c8y_Connection: false,
-    c8y_Availability: false,
-    actions: false
-  };
+  columns: Column[];
 
   constructor(
     private credService: FakeMicroserviceService,
-    private deviceDetailsService: DeviceDetailsService,
     private c8yModalService: ModalService,
     private modalService: BsModalService,
-    private alertService: AlertService
-  ) {}
-
-  updateQuery(): void {
-    let tmpQuery = '';
-    if (this.imeiSearchString) {
-      tmpQuery += `(${this.imeiPath} eq '*${this.imeiSearchString}*')`;
-    }
-    if (this.iccidSearchString) {
-      const query = `(${this.iccidPath} eq '*${this.iccidSearchString}*')`;
-      if (tmpQuery) {
-        tmpQuery += ' and ' + query;
-      } else {
-        tmpQuery += query;
-      }
-    }
-
-    this.query = tmpQuery ? '$filter=' + tmpQuery : '';
+    private alertService: AlertService,
+    public datasource: DeviceTableDatasourceService
+  ) {
+    this.columns = this.getDefaultColumns();
   }
 
-  lookup(): void {
-    this.isLoading = true;
-    this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(
-      async (credentials) => {
-        const clients = this.credService.createClients(credentials);
-        this.clients = clients;
-        this.response = await this.deviceDetailsService.deviceLookup(clients, this.query);
-        this.response.sort((a, b) => a.tenantId.localeCompare(b.tenantId));
-        this.isLoading = false;
+  getDefaultColumns(): Column[] {
+    return [
+      { name: 'id', header: 'ID', path: 'data.id', dataType: ColumnDataType.TextShort, sortable: false },
+      {
+        name: 'tenant',
+        header: 'Tenant',
+        path: 'tenantId',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: false
       },
-      (e) => {
-        console.error(e);
-        this.isLoading = false;
+      {
+        name: 'name',
+        header: 'Name',
+        path: 'data.name',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true
+      },
+      {
+        name: 'type',
+        header: 'Type',
+        path: 'data.type',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true
+      },
+      {
+        name: 'imei',
+        header: 'IMEI',
+        path: 'data.c8y_Mobile.imei',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true,
+        visible: false
+      },
+      {
+        name: 'iccid',
+        header: 'ICCID',
+        path: 'data.c8y_Mobile.iccid',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true,
+        visible: false
+      },
+      {
+        name: 'firmware_name',
+        header: 'Firmware Name',
+        path: 'data.c8y_Firmware.name',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true,
+        visible: false
+      },
+      {
+        name: 'firmware_version',
+        header: 'Firmware Version',
+        path: 'data.c8y_Firmware.version',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true,
+        visible: false
+      },
+      {
+        name: 'required_availability',
+        header: 'Required Availability',
+        path: 'data.c8y_RequiredAvailability.responseInterval',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true,
+        visible: false
+      },
+      {
+        name: 'alarms',
+        header: 'Alarms',
+        path: 'data.c8y_ActiveAlarmsStatus',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: false,
+        visible: false
+      },
+      {
+        name: 'creationTime',
+        header: 'Creation Time',
+        path: 'data.creationTime',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: false,
+        visible: false
+      },
+      {
+        name: 'lastMessage',
+        header: 'Last Message',
+        path: 'data.c8y_Availability.lastMessage',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true,
+        visible: false
+      },
+      {
+        name: 'availability',
+        header: 'Availability',
+        path: 'data.c8y_Availability.status',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true,
+        visible: false
+      },
+      {
+        name: 'connection',
+        header: 'Connection Status',
+        path: 'data.c8y_Connection.status',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true,
+        visible: false
+      },
+      {
+        header: 'Last Updated',
+        name: 'lastUpdated',
+        sortable: false,
+        path: 'data.lastUpdated',
+        dataType: ColumnDataType.TextShort
+      },
+      {
+        header: 'Actions',
+        name: 'actions1',
+        sortable: false
       }
-    );
+    ];
   }
 
   restartDevice(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>): void {
     this.c8yModalService
       .confirm(`Restart Device: ${deviceItem.data.name}`, 'Are you sure that you want to restart this device?')
       .then(
-        () => {
+        async () => {
           // modal confirmed
-          const client = this.clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
+          const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+          const clients = await this.credService.createClients(credentials);
+          const client = clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
           if (!client) {
             this.alertService.warning('No credentials found.');
           }
@@ -131,37 +191,23 @@ export class DeviceLookupComponent {
       );
   }
 
-  firmwareUpdate(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>): void {
-    const client = this.clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
+  async firmwareUpdate(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>): Promise<void> {
+    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+    const clients = await this.credService.createClients(credentials);
+    const client = clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
     if (!client) {
       this.alertService.warning('No credentials found.');
     }
     this.modalService.show(FirmwareUpdateModalComponent, { initialState: { client, deviceDetails: deviceItem } });
   }
 
-  configurationUpdate(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>): void {
-    const client = this.clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
+  async configurationUpdate(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>): Promise<void> {
+    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+    const clients = await this.credService.createClients(credentials);
+    const client = clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
     if (!client) {
       this.alertService.warning('No credentials found.');
     }
     this.modalService.show(ConfigurationUpdateModalComponent, { initialState: { client, deviceDetails: deviceItem } });
-  }
-
-  storeQuery(): void {
-    this.modalService.show(StoreQueryModalComponent, { initialState: { query: this.query } });
-  }
-
-  loadQuery(): void {
-    const response = new Subject<string>();
-    response
-      .asObservable()
-      .pipe(
-        take(1),
-        filter((tmp) => !!tmp)
-      )
-      .subscribe((res) => {
-        this.query = res;
-      });
-    this.modalService.show(LoadQueryModalComponent, { initialState: { response }, ignoreBackdropClick: true });
   }
 }
