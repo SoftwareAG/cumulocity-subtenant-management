@@ -24,6 +24,7 @@ export class DeviceTableDatasourceService {
   };
 
   private previousQuery = '';
+  private previousTenant = '';
   private cachedPromise: Promise<TenantSpecificDetails<Partial<IManagedObject>>[]>;
 
   constructor(private credService: FakeMicroserviceService, private deviceDetailsService: DeviceDetailsService) {
@@ -32,13 +33,20 @@ export class DeviceTableDatasourceService {
 
   async onDataSourceModifier(dataSourceModifier: DataSourceModifier): Promise<ServerSideDataResult> {
     this.columns = [...(dataSourceModifier.columns || [])];
+    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+    let clients = this.credService.createClients(credentials);
+    let tenantFilter = '';
+    const tenantIdCol = dataSourceModifier.columns.find((tmp) => tmp.path === 'tenantId');
+    if (tenantIdCol && tenantIdCol.filterPredicate) {
+      clients = clients.filter((tmp) => tmp.core.tenant.includes(tenantIdCol.filterPredicate as string));
+      tenantFilter = tenantIdCol.filterPredicate as string;
+      tenantIdCol.filterPredicate = undefined;
+    }
 
     const filterQuery = this.createQueryFilter(dataSourceModifier.columns);
     filterQuery.query = filterQuery.query.replace('(data.', '(');
-    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    const clients = this.credService.createClients(credentials);
 
-    const devices = await this.fetchForPage(filterQuery, clients);
+    const devices = await this.fetchForPage(filterQuery, tenantFilter, clients);
     const start = 0 + dataSourceModifier.pagination.pageSize * (dataSourceModifier.pagination.currentPage - 1);
     const dataSubset = devices.slice(start, start + dataSourceModifier.pagination.pageSize);
     const resList: IResultList<TenantSpecificDetails<Partial<IManagedObject>>> = {
@@ -63,12 +71,14 @@ export class DeviceTableDatasourceService {
 
   private async fetchForPage(
     query: { query: string },
+    tenantFilter: string,
     clients: Client[]
   ): Promise<TenantSpecificDetails<Partial<IManagedObject>>[]> {
     let promise = this.cachedPromise;
-    if (!promise || this.previousQuery !== query.query) {
+    if (!promise || this.previousQuery !== query.query || this.previousTenant !== tenantFilter) {
       promise = this.deviceDetailsService.deviceLookup(clients, query.query);
       this.previousQuery = query.query;
+      this.previousTenant = tenantFilter;
       this.cachedPromise = promise;
     }
     return promise;

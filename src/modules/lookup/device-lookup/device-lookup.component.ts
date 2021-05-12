@@ -31,11 +31,11 @@ export class DeviceLookupComponent {
       { name: 'id', header: 'ID', path: 'data.id', dataType: ColumnDataType.TextShort, sortable: false },
       {
         name: 'tenant',
-        header: 'Tenant',
+        header: 'Tenant Id',
         path: 'tenantId',
         dataType: ColumnDataType.TextShort,
         sortable: false,
-        filterable: false
+        filterable: true
       },
       {
         name: 'name',

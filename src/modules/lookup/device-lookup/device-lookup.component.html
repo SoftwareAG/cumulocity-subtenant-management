@@ -46,17 +46,15 @@
     <c8y-column name="actions1">
       <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
-          <div class="btn-group btn-group-sm" role="group">
-            <button class="btn btn-default" title="Restart Device" *ngIf="context.item.data?.operations?.c8y_Restart" (click)="restartDevice(context.item)">
-              <i class="fa fw fa-refresh"></i>
-            </button>
-            <button class="btn btn-default" title="Firmware Update" *ngIf="context.item.data?.operations?.c8y_Firmware" (click)="firmwareUpdate(context.item)">
-              <i class="fa fw fa-floppy-o"></i>
-            </button>
-            <button class="btn btn-default" title="Configuration Update" *ngIf="context.item.data?.operations?.c8y_Configuration" (click)="configurationUpdate(context.item)">
-              <i class="fa fw fa-gears"></i>
-            </button>
-          </div>
+          <button class="btn btn-default" title="Restart Device" *ngIf="context.item.data?.operations?.c8y_Restart" (click)="restartDevice(context.item)">
+            <i class="fa fw fa-refresh"></i>
+          </button>
+          <button class="btn btn-default" title="Firmware Update" *ngIf="context.item.data?.operations?.c8y_Firmware" (click)="firmwareUpdate(context.item)">
+            <i class="fa fw fa-floppy-o"></i>
+          </button>
+          <button class="btn btn-default" title="Configuration Update" *ngIf="context.item.data?.operations?.c8y_Configuration" (click)="configurationUpdate(context.item)">
+            <i class="fa fw fa-gears"></i>
+          </button>
         </div>
       </ng-container>
     </c8y-column>
