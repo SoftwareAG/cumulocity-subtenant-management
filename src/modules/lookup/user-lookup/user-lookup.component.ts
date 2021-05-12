@@ -1,46 +1,106 @@
-import { Component } from '@angular/core';
-import { Client, IUser } from '@c8y/client';
+import { Component, EventEmitter } from '@angular/core';
+import { IUser } from '@c8y/client';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
-import { UserDetailsService } from '@services/user-details.service';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
-import { AlertService, ModalService } from '@c8y/ngx-components';
+import { AlertService, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
 import { UserPasswordChangeModalComponent } from '../modals/user-password-change-modal/user-password-change-modal.component';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { AddUserModalComponent } from '../modals/add-user-modal/add-user-modal.component';
 import { Subject } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
+import { UserTableDatasourceService } from './user-table-datasource.service';
 
 @Component({
+  providers: [UserTableDatasourceService],
   selector: 'ps-user-lookup',
   templateUrl: './user-lookup.component.html'
 })
 export class UserLookupComponent {
-  usernameSearchString = '';
-  emailSearchString = '';
-  isLoading = false;
-  users: TenantSpecificDetails<IUser>[] = [];
-  clients: Client[];
+  columns: Column[];
+  refresh = new EventEmitter();
 
   constructor(
     private credService: FakeMicroserviceService,
-    private userDetailsService: UserDetailsService,
     private c8yModalService: ModalService,
     private alertService: AlertService,
-    private modalService: BsModalService
-  ) {}
+    private modalService: BsModalService,
+    public datasource: UserTableDatasourceService
+  ) {
+    this.columns = this.getDefaultColumns();
+  }
 
-  lookup(): void {
-    this.isLoading = true;
-    this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(async (creds) => {
-      this.clients = this.credService.createClients(creds);
-      const users = await this.userDetailsService.searchForUsersMatchingFilterInTennats(
-        this.clients,
-        this.usernameSearchString,
-        this.emailSearchString
-      );
-      this.users = users;
-      this.isLoading = false;
-    });
+  getDefaultColumns(): Column[] {
+    return [
+      {
+        name: 'tenant',
+        header: 'Tenant Id',
+        path: 'tenantId',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true
+      },
+      {
+        name: 'activated',
+        header: 'Activated',
+        path: 'data.enabled',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: false
+      },
+      {
+        name: 'userName',
+        header: 'Username',
+        path: 'data.userName',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true
+      },
+      {
+        name: 'email',
+        header: 'E-Mail',
+        path: 'data.email',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true
+      },
+      {
+        name: 'firstName',
+        header: 'Firstname',
+        path: 'data.firstName',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true
+      },
+      {
+        name: 'lastName',
+        header: 'Lastname',
+        path: 'data.lastName',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: true
+      },
+      {
+        name: 'tfaEnabled',
+        header: 'TFA Enabled',
+        path: 'data.twoFactorAuthenticationEnabled',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: false
+      },
+      {
+        name: 'lastPasswordChange',
+        header: 'Last Password Change',
+        path: 'data.lastPasswordChange',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: false
+      },
+      {
+        header: 'Actions',
+        name: 'actions1',
+        sortable: false
+      }
+    ];
   }
 
   toggleUserActivation(user: TenantSpecificDetails<IUser>): void {
@@ -53,9 +113,11 @@ export class UserLookupComponent {
         user.data.enabled ? 'danger' : 'info'
       )
       .then(
-        () => {
+        async () => {
           // modal confirmed
-          const client = this.clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
+          const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+          const clients = this.credService.createClients(credentials);
+          const client = clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
           if (!client) {
             this.alertService.warning('No credentials found.');
           }
@@ -88,20 +150,18 @@ export class UserLookupComponent {
         'danger'
       )
       .then(
-        () => {
+        async () => {
           // modal confirmed
-          const client = this.clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
+          const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+          const clients = this.credService.createClients(credentials);
+          const client = clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
           if (!client) {
             this.alertService.warning('No credentials found.');
           }
           client.user.delete(user.data.id).then(
             () => {
-              const index = this.users.findIndex(
-                (tmp) => tmp.tenantId === user.tenantId && tmp.data.id === user.data.id
-              );
-              if (index >= 0) {
-                this.users.splice(index, 1);
-              }
+              this.datasource.clearCache();
+              this.refresh.emit();
               this.alertService.success('User removed.');
             },
             () => {
@@ -115,15 +175,17 @@ export class UserLookupComponent {
       );
   }
 
-  changePassword(user: TenantSpecificDetails<IUser>): void {
-    const client = this.clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
+  async changePassword(user: TenantSpecificDetails<IUser>): Promise<void> {
+    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+    const clients = this.credService.createClients(credentials);
+    const client = clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
     if (!client) {
       this.alertService.warning('No credentials found.');
     }
     this.modalService.show(UserPasswordChangeModalComponent, { initialState: { client, user: user.data } });
   }
 
-  createNewUser(): void {
+  async createNewUser(): Promise<void> {
     const response = new Subject<TenantSpecificDetails<IUser> | null>();
     response
       .asObservable()
@@ -131,11 +193,14 @@ export class UserLookupComponent {
         take(1),
         filter((tmp) => !!tmp)
       )
-      .subscribe((res) => {
-        this.users.push(res);
+      .subscribe(() => {
+        this.datasource.clearCache();
+        this.refresh.emit();
       });
+    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+    const clients = this.credService.createClients(credentials);
     this.modalService.show(AddUserModalComponent, {
-      initialState: { clients: this.clients, response },
+      initialState: { clients, response },
       ignoreBackdropClick: true
     });
   }

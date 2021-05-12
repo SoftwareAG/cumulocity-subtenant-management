@@ -1,0 +1,120 @@
+import { Injectable } from '@angular/core';
+import { QueriesUtil, IResultList, Client, IUser } from '@c8y/client';
+import { ServerSideDataResult, Column, Pagination, DataSourceModifier } from '@c8y/ngx-components';
+import { TenantSpecificDetails } from '@models/tenant-specific-details';
+import { FakeMicroserviceService } from '@services/fake-microservice.service';
+import { UserDetailsService } from '@services/user-details.service';
+import { get } from 'lodash-es';
+
+@Injectable()
+export class UserTableDatasourceService {
+  serverSideDataCallback: Promise<ServerSideDataResult>;
+  columns: Column[];
+
+  pagination: Pagination = {
+    pageSize: 50,
+    currentPage: 1
+  };
+
+  private readonly queriesUtil = new QueriesUtil();
+  /**
+   * The query to be used if the table loads without any column filters.
+   */
+  private BASE_QUERY = {
+    __has: 'c8y_IsDevice'
+  };
+
+  private cachedPromise: Promise<TenantSpecificDetails<IUser>[]>;
+
+  constructor(private credService: FakeMicroserviceService, private userDetailsService: UserDetailsService) {
+    this.serverSideDataCallback = this.onDataSourceModifier.bind(this);
+  }
+
+  clearCache(): void {
+    this.cachedPromise = undefined;
+  }
+
+  async onDataSourceModifier(dataSourceModifier: DataSourceModifier): Promise<ServerSideDataResult> {
+    this.columns = [...(dataSourceModifier.columns || [])];
+    console.log(dataSourceModifier.columns);
+    const filteredColumns = dataSourceModifier.columns.filter((tmp) => !!tmp.filterPredicate);
+
+    // const filterQuery = this.createQueryFilter(dataSourceModifier.columns);
+    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+    const clients = this.credService.createClients(credentials);
+
+    const users = await this.fetchForPage(clients);
+    let filteredUsers = users;
+    if (filteredColumns.length) {
+      filteredUsers = users.filter((user) => {
+        return !filteredColumns.some((col) => {
+          const property: string = get(user, col.path);
+          if (property && property.includes(col.filterPredicate as string)) {
+            return false;
+          }
+          return true;
+        });
+      });
+    }
+    const start = 0 + dataSourceModifier.pagination.pageSize * (dataSourceModifier.pagination.currentPage - 1);
+    const dataSubset = filteredUsers.slice(start, start + dataSourceModifier.pagination.pageSize);
+    const resList: IResultList<TenantSpecificDetails<IUser>> = {
+      data: dataSubset,
+      res: undefined,
+      // @ts-ignore
+      paging: {
+        currentPage: dataSourceModifier.pagination.currentPage,
+        pageSize: dataSourceModifier.pagination.pageSize,
+        nextPage: dataSourceModifier.pagination.currentPage + 1
+      }
+    };
+
+    const result: ServerSideDataResult = {
+      size: users.length,
+      filteredSize: filteredUsers.length,
+      ...resList
+    };
+    console.log(result);
+
+    return result;
+  }
+
+  private async fetchForPage(clients: Client[]): Promise<TenantSpecificDetails<IUser>[]> {
+    let promise = this.cachedPromise;
+    if (!promise) {
+      promise = this.userDetailsService.searchForUsersMatchingFilterInTennats(clients, '', '');
+      this.cachedPromise = promise;
+    }
+    return promise;
+  }
+
+  private createQueryFilter(columns: Column[]): { query: string } {
+    const query = columns.reduce(this.extendQueryByColumn, {
+      __filter: this.BASE_QUERY,
+      __orderby: []
+    });
+    const queryString = this.queriesUtil.buildQuery(query);
+
+    return { query: queryString };
+  }
+
+  private extendQueryByColumn = (query: any, column: Column) => {
+    if (column.filterable && column.filterPredicate) {
+      const queryObj: any = {};
+      queryObj[column.path] = column.filterPredicate;
+      query.__filter = { ...query.__filter, ...queryObj };
+    }
+
+    if (column.filterable && column.externalFilterQuery) {
+      query.__filter = { ...query.__filter, ...column.externalFilterQuery };
+    }
+
+    if (column.sortable && column.sortOrder) {
+      const cs: any = {};
+      cs[column.path] = column.sortOrder === 'asc' ? 1 : -1;
+      query.__orderby.push(cs);
+    }
+
+    return query;
+  };
+}
