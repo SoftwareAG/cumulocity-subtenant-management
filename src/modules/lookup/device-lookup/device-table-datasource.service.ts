@@ -32,7 +32,6 @@ export class DeviceTableDatasourceService {
 
   async onDataSourceModifier(dataSourceModifier: DataSourceModifier): Promise<ServerSideDataResult> {
     this.columns = [...(dataSourceModifier.columns || [])];
-    console.log(this.columns);
 
     const filterQuery = this.createQueryFilter(dataSourceModifier.columns);
     filterQuery.query = filterQuery.query.replace('(data.', '(');

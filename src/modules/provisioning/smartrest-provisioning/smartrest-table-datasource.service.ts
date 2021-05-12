@@ -27,7 +27,6 @@ export class SmartrestTableDatasourceService {
 
   async onDataSourceModifier(dataSourceModifier: DataSourceModifier): Promise<ServerSideDataResult> {
     this.columns = [...(dataSourceModifier.columns || [])];
-    console.log(this.columns);
 
     const filterQuery = this.createQueryFilter(dataSourceModifier.columns);
     const allQuery = this.createQueryFilter([]);
