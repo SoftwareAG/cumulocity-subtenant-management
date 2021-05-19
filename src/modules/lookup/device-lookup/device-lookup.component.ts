@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { IManagedObject } from '@c8y/client';
 import { AlertService, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
+import { DeviceAction } from '@models/extensions';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { BsModalService } from 'ngx-bootstrap/modal';
@@ -158,7 +159,7 @@ export class DeviceLookupComponent {
     ];
   }
 
-  restartDevice(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>): void {
+  restartDevice(deviceItem: TenantSpecificDetails<IManagedObject>): void {
     this.c8yModalService
       .confirm(`Restart Device: ${deviceItem.data.name}`, 'Are you sure that you want to restart this device?')
       .then(
@@ -191,7 +192,7 @@ export class DeviceLookupComponent {
       );
   }
 
-  async firmwareUpdate(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>): Promise<void> {
+  async firmwareUpdate(deviceItem: TenantSpecificDetails<IManagedObject>): Promise<void> {
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
     const clients = await this.credService.createClients(credentials);
     const client = clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
@@ -201,7 +202,7 @@ export class DeviceLookupComponent {
     this.modalService.show(FirmwareUpdateModalComponent, { initialState: { client, deviceDetails: deviceItem } });
   }
 
-  async configurationUpdate(deviceItem: TenantSpecificDetails<Partial<IManagedObject>>): Promise<void> {
+  async configurationUpdate(deviceItem: TenantSpecificDetails<IManagedObject>): Promise<void> {
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
     const clients = await this.credService.createClients(credentials);
     const client = clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
@@ -209,5 +210,20 @@ export class DeviceLookupComponent {
       this.alertService.warning('No credentials found.');
     }
     this.modalService.show(ConfigurationUpdateModalComponent, { initialState: { client, deviceDetails: deviceItem } });
+  }
+
+  public async performCustomAction(
+    action: DeviceAction,
+    deviceItem: TenantSpecificDetails<IManagedObject>
+  ): Promise<void> {
+    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+    const clients = await this.credService.createClients(credentials);
+    const client = clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
+    if (!client) {
+      this.alertService.warning('No credentials found.');
+    }
+    if (action && action.onClickAction) {
+      action.onClickAction(client, deviceItem.data as IManagedObject);
+    }
   }
 }

@@ -1,9 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, Optional } from '@angular/core';
 import { QueriesUtil, IResultList, IManagedObject, Client } from '@c8y/client';
 import { ServerSideDataResult, Column, Pagination, DataSourceModifier } from '@c8y/ngx-components';
+import { DeviceActionsFactory, HOOK_DEVICE_ACTION_FACTORY } from '@models/extensions';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { DeviceDetailsService } from '@services/device-details.service';
+import { ExtensionsService } from '@services/extensions.service';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
+import { flatMap } from 'lodash-es';
 
 @Injectable()
 export class DeviceTableDatasourceService {
@@ -25,9 +28,15 @@ export class DeviceTableDatasourceService {
 
   private previousQuery = '';
   private previousTenant = '';
-  private cachedPromise: Promise<TenantSpecificDetails<Partial<IManagedObject>>[]>;
+  private cachedPromise: Promise<TenantSpecificDetails<IManagedObject>[]>;
+  private deviceActionFactories: DeviceActionsFactory[] = [];
 
-  constructor(private credService: FakeMicroserviceService, private deviceDetailsService: DeviceDetailsService) {
+  constructor(
+    private credService: FakeMicroserviceService,
+    private deviceDetailsService: DeviceDetailsService,
+    private extensionService: ExtensionsService
+  ) {
+    this.deviceActionFactories = this.extensionService.getDeviceActionFactories();
     this.serverSideDataCallback = this.onDataSourceModifier.bind(this);
   }
 
@@ -42,14 +51,25 @@ export class DeviceTableDatasourceService {
       tenantFilter = tenantIdCol.filterPredicate as string;
       tenantIdCol.filterPredicate = undefined;
     }
-
-    const filterQuery = this.createQueryFilter(dataSourceModifier.columns);
-    filterQuery.query = filterQuery.query.replace('(data.', '(');
+    const columnsCopy = dataSourceModifier.columns.map((tmp) => Object.assign({}, tmp));
+    console.log(columnsCopy);
+    columnsCopy.forEach((entry) => {
+      if (entry && entry.path) {
+        entry.path = entry.path.replace('data.', '');
+      }
+    });
+    console.log(columnsCopy);
+    const filterQuery = this.createQueryFilter(columnsCopy);
+    // filterQuery.query = filterQuery.query.replace('(data.', '(');
 
     const devices = await this.fetchForPage(filterQuery, tenantFilter, clients);
     const start = 0 + dataSourceModifier.pagination.pageSize * (dataSourceModifier.pagination.currentPage - 1);
     const dataSubset = devices.slice(start, start + dataSourceModifier.pagination.pageSize);
-    const resList: IResultList<TenantSpecificDetails<Partial<IManagedObject>>> = {
+    dataSubset.forEach((entry) => {
+      const actions = flatMap(this.deviceActionFactories.map((tmp) => tmp.get(entry.data)));
+      entry.actions = actions;
+    });
+    const resList: IResultList<TenantSpecificDetails<IManagedObject>> = {
       data: dataSubset,
       res: undefined,
       // @ts-ignore
@@ -73,7 +93,7 @@ export class DeviceTableDatasourceService {
     query: { query: string },
     tenantFilter: string,
     clients: Client[]
-  ): Promise<TenantSpecificDetails<Partial<IManagedObject>>[]> {
+  ): Promise<TenantSpecificDetails<IManagedObject>[]> {
     let promise = this.cachedPromise;
     if (!promise || this.previousQuery !== query.query || this.previousTenant !== tenantFilter) {
       promise = this.deviceDetailsService.deviceLookup(clients, query.query);

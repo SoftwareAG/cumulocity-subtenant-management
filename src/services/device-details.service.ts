@@ -59,7 +59,7 @@ export class DeviceDetailsService {
   }
 
   private async deviceLookupForTenant(client: Client, query: string) {
-    const deviceArr = new Array<TenantSpecificDetails<Partial<IManagedObject>>>();
+    const deviceArr = new Array<TenantSpecificDetails<IManagedObject>>();
     const filter = {
       query,
       pageSize: 2000
@@ -80,23 +80,11 @@ export class DeviceDetailsService {
         }
         return {
           // only process the actual displayed values to save memory in case of a lot and/or large managed objects
-          data: {
-            id: tmp.id,
-            name: tmp.name,
-            type: tmp.type,
-            creationTime: tmp.creationTime,
-            lastUpdated: tmp.lastUpdated,
-            c8y_Mobile: tmp.c8y_Mobile,
-            c8y_Firmware: tmp.c8y_Firmware,
-            c8y_Availability: tmp.c8y_Availability,
-            c8y_RequiredAvailability: tmp.c8y_RequiredAvailability,
-            c8y_ActiveAlarmsStatus: tmp.c8y_ActiveAlarmsStatus,
-            c8y_Connection: tmp.c8y_Connection,
-            c8y_Configuration: tmp.c8y_Configuration,
-            operations
-          },
+          data: tmp,
+          actions: [],
+          operations,
           tenantId: client.core.tenant
-        } as TenantSpecificDetails<Partial<IManagedObject>>;
+        } as TenantSpecificDetails<IManagedObject>;
       });
       deviceArr.push(...devices);
       if (res.data.length < filter.pageSize) {
@@ -107,15 +95,12 @@ export class DeviceDetailsService {
     return deviceArr;
   }
 
-  public async deviceLookup(
-    clients: Client[],
-    query: string
-  ): Promise<Array<TenantSpecificDetails<Partial<IManagedObject>>>> {
-    const deviceDetailsArry = new Array<TenantSpecificDetails<Partial<IManagedObject>>>();
+  public async deviceLookup(clients: Client[], query: string): Promise<Array<TenantSpecificDetails<IManagedObject>>> {
+    const deviceDetailsArry = new Array<TenantSpecificDetails<IManagedObject>>();
     const promArray = clients.map((client) => {
       return this.deviceLookupForTenant(client, query).then(
         (result) => result,
-        () => [] as TenantSpecificDetails<Partial<IManagedObject>>[]
+        () => [] as TenantSpecificDetails<IManagedObject>[]
       );
     });
     await Promise.all(promArray).then((resArr) => {

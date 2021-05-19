@@ -48,6 +48,21 @@ export class UserTableDatasourceService {
         });
       });
     }
+
+    // sorting
+    const columnToOrderBy = dataSourceModifier.columns.find((tmp) => tmp.sortable && tmp.sortOrder);
+    if (columnToOrderBy) {
+      if (columnToOrderBy.sortOrder === 'asc') {
+        filteredUsers.sort((a, b) =>
+          ((get(a, columnToOrderBy.path) as string) || '').localeCompare((get(b, columnToOrderBy.path) as string) || '')
+        );
+      } else {
+        filteredUsers.sort((a, b) =>
+          ((get(b, columnToOrderBy.path) as string) || '').localeCompare((get(a, columnToOrderBy.path) as string) || '')
+        );
+      }
+    }
+
     const start = 0 + dataSourceModifier.pagination.pageSize * (dataSourceModifier.pagination.currentPage - 1);
     const dataSubset = filteredUsers.slice(start, start + dataSourceModifier.pagination.pageSize);
     const resList: IResultList<TenantSpecificDetails<IUser>> = {

@@ -36,7 +36,7 @@ export class UserLookupComponent {
         header: 'Tenant Id',
         path: 'tenantId',
         dataType: ColumnDataType.TextShort,
-        sortable: false,
+        sortable: true,
         filterable: true
       },
       {
@@ -52,7 +52,7 @@ export class UserLookupComponent {
         header: 'Username',
         path: 'data.userName',
         dataType: ColumnDataType.TextShort,
-        sortable: false,
+        sortable: true,
         filterable: true
       },
       {
@@ -60,7 +60,7 @@ export class UserLookupComponent {
         header: 'E-Mail',
         path: 'data.email',
         dataType: ColumnDataType.TextShort,
-        sortable: false,
+        sortable: true,
         filterable: true
       },
       {
@@ -68,7 +68,7 @@ export class UserLookupComponent {
         header: 'Firstname',
         path: 'data.firstName',
         dataType: ColumnDataType.TextShort,
-        sortable: false,
+        sortable: true,
         filterable: true
       },
       {
@@ -76,7 +76,7 @@ export class UserLookupComponent {
         header: 'Lastname',
         path: 'data.lastName',
         dataType: ColumnDataType.TextShort,
-        sortable: false,
+        sortable: true,
         filterable: true
       },
       {
@@ -92,7 +92,7 @@ export class UserLookupComponent {
         header: 'Last Password Change',
         path: 'data.lastPasswordChange',
         dataType: ColumnDataType.TextShort,
-        sortable: false,
+        sortable: true,
         filterable: false
       },
       {

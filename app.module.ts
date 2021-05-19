@@ -9,6 +9,7 @@ import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { HomeModule } from '@modules/home/home.module';
 import { CleanupModule } from '@modules/cleanup/cleanup.module';
 import { SubtenantDetailsService } from '@services/subtenant-details.service';
+import { ExtensionsService } from '@services/extensions.service';
 
 @NgModule({
   imports: [
@@ -22,7 +23,7 @@ import { SubtenantDetailsService } from '@services/subtenant-details.service';
     LookupModule,
     ProvisioningModule
   ],
-  providers: [FakeMicroserviceService, SubtenantDetailsService],
+  providers: [FakeMicroserviceService, SubtenantDetailsService, ExtensionsService],
   bootstrap: [BootstrapComponent]
 })
 export class AppModule {}

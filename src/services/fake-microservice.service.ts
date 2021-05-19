@@ -12,6 +12,7 @@ import {
   TenantService,
   TenantStatus
 } from '@c8y/client';
+import { ModalService, Status } from '@c8y/ngx-components';
 import { flatMap, uniq } from 'lodash-es';
 
 export const HOOK_MICROSERVICE_ROLE = new InjectionToken('MicroserviceRole');
@@ -23,17 +24,39 @@ export class FakeMicroserviceService {
   private requiredRoles: string[] = [];
 
   private credentialsCache: Promise<ICredentials[]>;
+  private cachedModal: Promise<unknown>;
 
   constructor(
     @Optional() @Inject(HOOK_MICROSERVICE_ROLE) factories: (string | string[])[],
     private fetchClient: FetchClient,
     private tenantService: TenantService,
-    private appService: ApplicationService
+    private appService: ApplicationService,
+    private modalService: ModalService
   ) {
     if (factories) {
       const roles = flatMap(factories);
       const uniqRoles = uniq(roles);
       this.requiredRoles = uniqRoles;
+    }
+  }
+
+  private async checkDataUsageConfirmed() {
+    if (!this.cachedModal) {
+      this.cachedModal = this.modalService.confirm(
+        'Accessing data of subtenants/customers',
+        'This is a very powerful tool, that allows you to look into subtenants of your current tenant and to perform actions that could potentially break things. Also for data protection reasons make sure that your subtenants are aware of the fact that you are able to access their devices and data.\r\n\r\n"With great power there must also come great responsibility."',
+        Status.DANGER,
+        {
+          ok: 'I accept the potential risks & made subtenants aware',
+          cancel: 'Cancel'
+        }
+      );
+    }
+    try {
+      await this.cachedModal;
+    } catch (e) {
+      this.cachedModal = null;
+      throw e;
     }
   }
 
@@ -47,14 +70,20 @@ export class FakeMicroserviceService {
     });
   }
 
-  public prepareCachedDummyMicroserviceForAllSubtenants(baseUrl?: string): Promise<ICredentials[]> {
+  public async prepareCachedDummyMicroserviceForAllSubtenants(baseUrl?: string): Promise<ICredentials[]> {
     if (!this.credentialsCache) {
       this.credentialsCache = this.prepareDummyMicroserviceForAllSubtenants(baseUrl);
     }
-    return this.credentialsCache;
+    try {
+      return await this.credentialsCache;
+    } catch (e) {
+      this.credentialsCache = null;
+      throw e;
+    }
   }
 
   public async prepareDummyMicroserviceForAllSubtenants(baseUrl?: string): Promise<ICredentials[]> {
+    await this.checkDataUsageConfirmed();
     const app = await this.createDummyMicroserviceIfNotExisting();
     await this.subscribeAppToAppAllTenants(app);
     const bootstrapCredentials = await this.getBootstrapUser(app);
@@ -134,19 +163,6 @@ export class FakeMicroserviceService {
       return this.subscribeApp(tmpApp as any, tenant);
     };
     await this.performStepForEveryTenant(app, subscribeFunc, false, true);
-
-    // const tenantsWithoutApp = tenants.filter(tmp => tmp.status === TenantStatus.ACTIVE)
-    // // .filter(tenant => tenant.id === 't10452223')
-    // .filter(tenant => {
-    //     // @ts-ignore
-    //     const appReferences: {application: IApplication}[] = tenant.applications.references;
-    //     return !appReferences.some(tmp => tmp.application.id === app.id);
-    // });
-    // console.log('Subscribing apps to: ', tenantsWithoutApp.map(tmp => tmp.id));
-    // const promArray = tenantsWithoutApp.map(tenant => this.subscribeApp(app as any, tenant));
-    // await Promise.all(promArray).then(result => {
-    //     console.log('Subscribed to: ', result.length, ' Tenants');
-    // });
   }
 
   private async unsubscribeAppsFromAllTenants(app: IApplication) {
@@ -154,19 +170,6 @@ export class FakeMicroserviceService {
       return this.unsubscribeApp(tmpApp as any, tenant);
     };
     await this.performStepForEveryTenant(app, unsubscribeFunc, true, false);
-    // const {data: tenants} = await this.client.tenant.list({pageSize: 1000});
-    // const tenantsWithApp = tenants
-    // // .filter(tenant => tenant.id === 't10452223')
-    // .filter(tenant => {
-    //     // @ts-ignore
-    //     const appReferences: {application: IApplication}[] = tenant.applications.references;
-    //     return appReferences.some(tmp => tmp.application.id === app.id);
-    // });
-    // console.log('Unsubscribing app from: ', tenantsWithApp.map(tmp => tmp.id));
-    // const promArray = tenantsWithApp.map(tenant => this.unsubscribeApp(app as any, tenant));
-    // await Promise.all(promArray).then(result => {
-    //     console.log('Unsubscribed from: ', result.length, ' Tenants');
-    // });
   }
 
   private subscribeApp(app: IApplication & { self: string }, tenant: ITenant) {

@@ -1,0 +1,18 @@
+<div class="card d-flex d-col" style="min-height: 50vh; max-height: 90vh;">
+  <div class="card-header separator">
+    <h4 class="card-title">Tenant Creation History</h4>
+  </div>
+  <div class="card-block flex-grow">
+    <canvas baseChart
+      [datasets]="lineChartData"
+      [labels]="lineChartLabels"
+      [options]="lineChartOptions"
+      [plugins]="lineChartPlugins"
+      [legend]="lineChartLegend"
+      [chartType]="lineChartType"
+      [colors]="lineChartColors"
+      (dblclick)="resetZoom()">
+    </canvas>
+  </div>
+  
+</div>
