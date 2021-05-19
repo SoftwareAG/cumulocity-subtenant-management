@@ -1,15 +1,15 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ITenant, TenantStatus } from '@c8y/client';
-import { SubtenantDetailsService } from '@services/subtenant-details.service';
 import { ChartDataSets, ChartOptions, ChartPoint, ChartType } from 'chart.js';
 import { BaseChartDirective, Color, Label } from 'ng2-charts';
 import * as pluginChartZoom from 'chartjs-plugin-zoom';
+import { DeviceDetailsService } from '@services/device-details.service';
+import { FakeMicroserviceService } from '@services/fake-microservice.service';
 
 @Component({
-  selector: 'ps-tenant-creation-history',
-  templateUrl: './tenant-creation-history.component.html'
+  selector: 'ps-device-creation-history',
+  templateUrl: './device-creation-history.component.html'
 })
-export class TenantCreationHistoryComponent implements OnInit {
+export class DeviceCreationHistoryComponent implements OnInit {
   @ViewChild(BaseChartDirective, { static: true }) chart: BaseChartDirective;
   public lineChartLabels: Label[] = [];
   public lineChartData: ChartDataSets[] = [];
@@ -92,17 +92,15 @@ export class TenantCreationHistoryComponent implements OnInit {
   ];
   isLoading = true;
 
-  constructor(private tenantService: SubtenantDetailsService) {}
+  constructor(private credService: FakeMicroserviceService, private deviceDetailsService: DeviceDetailsService) {}
 
   ngOnInit(): void {
     this.getData().then((result) => {
       this.lineChartData = [
         {
-          label: 'Sum of created Tenants',
+          label: 'Sum of created Devices',
           data: result.map((tmp) => ({ t: tmp.creationTime, y: tmp.value } as ChartPoint)),
-          pointBackgroundColor: result.map((tmp) => {
-            return tmp.status === TenantStatus.ACTIVE ? 'green' : 'red';
-          }),
+          pointBackgroundColor: 'green',
           backgroundColor: 'transparent',
           borderColor: '#1776BF'
         }
@@ -115,22 +113,21 @@ export class TenantCreationHistoryComponent implements OnInit {
       label: string;
       value: number;
       creationTime: Date;
-      status: TenantStatus;
     }[]
   > {
     this.isLoading = true;
-    const tenants = (await this.tenantService.getCachedTenants()) as (ITenant & { creationTime: string })[];
-    const creationDates = tenants
-      .sort((a, b) => a.creationTime.localeCompare(b.creationTime))
+    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+    const clients = await this.credService.createClients(credentials);
+    const devices = await this.deviceDetailsService.deviceLookup(clients, '$filter=has(c8y_IsDevice)');
+    const creationDates = devices
+      .sort((a, b) => a.data.creationTime.localeCompare(b.data.creationTime))
       .map((tmp, index) => {
         return {
-          label: tmp.domain,
+          label: tmp.data.name,
           value: index + 1,
-          creationTime: new Date(tmp.creationTime),
-          status: tmp.status
+          creationTime: new Date(tmp.data.creationTime)
         };
       });
-
     this.isLoading = false;
     return creationDates;
   }

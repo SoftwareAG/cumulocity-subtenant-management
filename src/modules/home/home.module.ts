@@ -4,6 +4,7 @@ import { HomeComponent } from './home.component';
 import { CoreModule, gettext, HOOK_NAVIGATOR_NODES, HOOK_ONCE_ROUTE, NavigatorNode, Route } from '@c8y/ngx-components';
 import { TenantCreationHistoryComponent } from './tenant-creation-history/tenant-creation-history.component';
 import { ChartsModule, ThemeService } from 'ng2-charts';
+import { DeviceCreationHistoryComponent } from './device-creation-history/device-creation-history.component';
 
 const translations = new NavigatorNode({
   label: gettext('Home'),
@@ -20,7 +21,7 @@ export const navigatorNodes = {
 
 @NgModule({
   imports: [CommonModule, CoreModule, ChartsModule],
-  declarations: [HomeComponent, TenantCreationHistoryComponent],
+  declarations: [HomeComponent, TenantCreationHistoryComponent, DeviceCreationHistoryComponent],
   entryComponents: [HomeComponent],
   providers: [
     ThemeService,
