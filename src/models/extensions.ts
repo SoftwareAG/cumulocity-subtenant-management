@@ -1,7 +1,7 @@
 import { InjectionToken } from '@angular/core';
 import { Client, IManagedObject } from '@c8y/client';
 
-export const HOOK_DEVICE_ACTION_FACTORY = new InjectionToken('DevcieActionFactory');
+export const HOOK_DEVICE_ACTION_FACTORY = new InjectionToken<DeviceActionsFactory>('DevcieActionFactory');
 export interface DeviceAction {
   title: string;
   iconClasses?: string;

@@ -116,20 +116,25 @@ export class DeviceCreationHistoryComponent implements OnInit {
     }[]
   > {
     this.isLoading = true;
-    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    const clients = await this.credService.createClients(credentials);
-    const devices = await this.deviceDetailsService.deviceLookup(clients, '$filter=has(c8y_IsDevice)');
-    const creationDates = devices
-      .sort((a, b) => a.data.creationTime.localeCompare(b.data.creationTime))
-      .map((tmp, index) => {
-        return {
-          label: tmp.data.name,
-          value: index + 1,
-          creationTime: new Date(tmp.data.creationTime)
-        };
-      });
-    this.isLoading = false;
-    return creationDates;
+    try {
+      const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+      const clients = await this.credService.createClients(credentials);
+      const devices = await this.deviceDetailsService.deviceLookup(clients, '$filter=has(c8y_IsDevice)');
+      const creationDates = devices
+        .sort((a, b) => a.data.creationTime.localeCompare(b.data.creationTime))
+        .map((tmp, index) => {
+          return {
+            label: tmp.data.name,
+            value: index + 1,
+            creationTime: new Date(tmp.data.creationTime)
+          };
+        });
+      this.isLoading = false;
+      return creationDates;
+    } catch (e) {
+      this.isLoading = false;
+      throw e;
+    }
   }
 
   resetZoom(): void {
