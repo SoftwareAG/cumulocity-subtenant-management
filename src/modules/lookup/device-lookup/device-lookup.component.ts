@@ -1,11 +1,14 @@
 import { Component } from '@angular/core';
 import { IManagedObject } from '@c8y/client';
-import { AlertService, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
+import { AlertService, BulkActionControl, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
 import { DeviceAction } from '@models/extensions';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { BsModalService } from 'ngx-bootstrap/modal';
+import { Subject } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
 import { ConfigurationUpdateModalComponent } from '../modals/configuration-update-modal/configuration-update-modal.component';
+import { CustomFirmwareUpdateModalComponent } from '../modals/custom-firmware-update-modal/custom-firmware-update-modal.component';
 import { FirmwareUpdateModalComponent } from '../modals/firmware-update-modal/firmware-update-modal.component';
 import { DeviceTableDatasourceService } from './device-table-datasource.service';
 
@@ -16,6 +19,22 @@ import { DeviceTableDatasourceService } from './device-table-datasource.service'
 })
 export class DeviceLookupComponent {
   columns: Column[];
+  bulkActionControls: BulkActionControl[] = [
+    {
+      type: 'Restart',
+      icon: 'refresh',
+      text: 'Restart',
+      callback: (selectedItemIds): void =>
+        this.restartDevices(selectedItemIds as any as { tenant: string; id: string }[])
+    },
+    {
+      type: 'Firmware Update',
+      icon: 'floppy-o',
+      text: 'Firmware Update',
+      callback: (selectedItemIds): Promise<void> =>
+        this.updateFirmware(selectedItemIds as any as { tenant: string; id: string }[])
+    }
+  ];
 
   constructor(
     private credService: FakeMicroserviceService,
@@ -190,6 +209,86 @@ export class DeviceLookupComponent {
           // model canceled
         }
       );
+  }
+
+  restartDevices(selection: { tenant: string; id: string }[]): void {
+    this.c8yModalService.confirm(`Restart Devices`, 'Are you sure that you want to restart the selected Devices?').then(
+      async () => {
+        // modal confirmed
+        const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+        const clients = await this.credService.createClients(credentials);
+        const promArray = selection.map((item) => {
+          const client = clients.find((tmpClient) => tmpClient.core.tenant === item.tenant);
+          if (!client) {
+            this.alertService.warning('No credentials found.');
+          }
+          return client.operation.create({
+            deviceId: item.id,
+            description: 'Restart device',
+            c8y_Restart: {}
+          });
+        });
+        Promise.all(promArray).then(
+          () => {
+            this.alertService.success(`${promArray.length} Restart Operations created.`);
+          },
+          () => {
+            this.alertService.danger('Unable to create Restart Operations.');
+          }
+        );
+      },
+      () => {
+        // model canceled
+      }
+    );
+  }
+
+  async updateFirmware(selection: { tenant: string; id: string }[]): Promise<void> {
+    const response = new Subject<{ name: string; version: string; url: string }>();
+    response
+      .asObservable()
+      .pipe(
+        take(1),
+        filter((tmp) => !!tmp)
+      )
+      .subscribe(async (selectedFirmware) => {
+        this.c8yModalService
+          .confirm(`Firmware Update`, 'Are you sure that you want to update the selected Devices?')
+          .then(
+            async () => {
+              // modal confirmed
+              const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+              const clients = await this.credService.createClients(credentials);
+              const promArray = selection.map((item) => {
+                const client = clients.find((tmpClient) => tmpClient.core.tenant === item.tenant);
+                if (!client) {
+                  this.alertService.warning('No credentials found.');
+                }
+                return client.operation.create({
+                  deviceId: item.id,
+                  description: `Update firmware to: "${selectedFirmware.name}" (version: ${selectedFirmware.version})`,
+                  c8y_Firmware: {
+                    name: selectedFirmware.name,
+                    version: selectedFirmware.version,
+                    url: selectedFirmware.url
+                  }
+                });
+              });
+              Promise.all(promArray).then(
+                () => {
+                  this.alertService.success(`${promArray.length} Firmware Update Operations created.`);
+                },
+                () => {
+                  this.alertService.danger('Unable to create Firmware Update Operations.');
+                }
+              );
+            },
+            () => {
+              // model canceled
+            }
+          );
+      });
+    this.modalService.show(CustomFirmwareUpdateModalComponent, { initialState: { response } });
   }
 
   async firmwareUpdate(deviceItem: TenantSpecificDetails<IManagedObject>): Promise<void> {

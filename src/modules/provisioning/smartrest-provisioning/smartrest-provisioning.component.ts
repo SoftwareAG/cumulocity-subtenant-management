@@ -124,7 +124,6 @@ export class SmartrestProvisioningComponent {
         filter((tmp) => !!tmp)
       )
       .subscribe(async (res) => {
-        console.log(res);
         const tenantsIds = res.map((tmp) => tmp.name);
         const filteredCredentials = credentials.filter((cred) => tenantsIds.includes(cred.tenant));
         if (filteredCredentials.length) {

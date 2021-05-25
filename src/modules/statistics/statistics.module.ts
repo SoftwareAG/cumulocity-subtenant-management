@@ -5,9 +5,11 @@ import { FirmwareStatisticsComponent } from './firmware-statistics/firmware-stat
 import { StatisticsNavigatorNodeFactory } from './statistics-navigator-node.factory';
 import { InventoryStatisticsComponent } from './inventory-statistics/inventory-statistics.component';
 import { HOOK_MICROSERVICE_ROLE } from '@services/fake-microservice.service';
+import { PopoverModule } from 'ngx-bootstrap/popover';
+import { SharedModule } from '@modules/shared/shared.module';
 
 @NgModule({
-  imports: [CommonModule, CoreModule],
+  imports: [CommonModule, CoreModule, PopoverModule, SharedModule],
   declarations: [FirmwareStatisticsComponent, InventoryStatisticsComponent],
   entryComponents: [FirmwareStatisticsComponent, InventoryStatisticsComponent],
   providers: [

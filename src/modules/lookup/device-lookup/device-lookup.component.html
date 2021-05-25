@@ -7,11 +7,11 @@
     [noMatchingItemsLabel]="'No matching Template.'"
     [columns]="columns"
     [pagination]="datasource.pagination"
-    [selectable]="false"
+    [selectable]="true"
     [actionControls]="[]"
-    [bulkActionControls]="[]"
+    [bulkActionControls]="bulkActionControls"
     [serverSideDataCallback]="datasource.serverSideDataCallback"
-    [itemsSelectLimit]="10"
+    [itemsSelectLimit]="50"
   >
     <c8y-column name="tenant">
       <ng-container *c8yCellRendererDef="let context">

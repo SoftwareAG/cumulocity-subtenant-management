@@ -52,13 +52,13 @@ export class DeviceTableDatasourceService {
       tenantIdCol.filterPredicate = undefined;
     }
     const columnsCopy = dataSourceModifier.columns.map((tmp) => Object.assign({}, tmp));
-    console.log(columnsCopy);
+
     columnsCopy.forEach((entry) => {
       if (entry && entry.path) {
         entry.path = entry.path.replace('data.', '');
       }
     });
-    console.log(columnsCopy);
+
     const filterQuery = this.createQueryFilter(columnsCopy);
     // filterQuery.query = filterQuery.query.replace('(data.', '(');
 

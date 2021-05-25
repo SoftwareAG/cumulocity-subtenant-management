@@ -50,7 +50,6 @@ export class AddUserModalComponent {
   }
 
   onSave(): void {
-    console.log(this.selectedGroups);
     this.selectedClient.user.create(this.user as IUser).then(
       (result) => {
         const createdUser = result.data;

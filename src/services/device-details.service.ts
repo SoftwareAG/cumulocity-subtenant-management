@@ -83,7 +83,8 @@ export class DeviceDetailsService {
           data: tmp,
           actions: [],
           operations,
-          tenantId: client.core.tenant
+          tenantId: client.core.tenant,
+          id: { tenant: client.core.tenant, id: tmp.id }
         } as TenantSpecificDetails<IManagedObject>;
       });
       deviceArr.push(...devices);

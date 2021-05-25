@@ -15,6 +15,7 @@ import { UserPasswordChangeModalComponent } from './modals/user-password-change-
 import { AddUserModalComponent } from './modals/add-user-modal/add-user-modal.component';
 import { DeviceRegistrationLookupComponent } from './device-registration-lookup/device-registration-lookup.component';
 import { AddDeviceRegistrationModalComponent } from './modals/add-device-registration-modal/add-device-registration-modal.component';
+import { CustomFirmwareUpdateModalComponent } from './modals/custom-firmware-update-modal/custom-firmware-update-modal.component';
 
 @NgModule({
   imports: [CommonModule, CoreModule, ModalModule.forChild(), SharedModule],
@@ -28,7 +29,8 @@ import { AddDeviceRegistrationModalComponent } from './modals/add-device-registr
     LoadQueryModalComponent,
     UserPasswordChangeModalComponent,
     AddUserModalComponent,
-    AddDeviceRegistrationModalComponent
+    AddDeviceRegistrationModalComponent,
+    CustomFirmwareUpdateModalComponent
   ],
   entryComponents: [
     DeviceLookupComponent,
@@ -40,7 +42,8 @@ import { AddDeviceRegistrationModalComponent } from './modals/add-device-registr
     LoadQueryModalComponent,
     UserPasswordChangeModalComponent,
     AddUserModalComponent,
-    AddDeviceRegistrationModalComponent
+    AddDeviceRegistrationModalComponent,
+    CustomFirmwareUpdateModalComponent
   ],
   providers: [
     {

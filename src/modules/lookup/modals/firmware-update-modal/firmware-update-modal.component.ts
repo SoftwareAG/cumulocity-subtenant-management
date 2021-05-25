@@ -48,6 +48,7 @@ export class FirmwareUpdateModalComponent implements OnInit {
       this.client.operation
         .create({
           deviceId: this.deviceDetails.data.id,
+          description: `Update firmware to: "${this.selectedFirmware.name}" (version: ${this.selectedFirmware.version})`,
           c8y_Firmware: {
             name: this.selectedFirmware.name,
             version: this.selectedFirmware.version,

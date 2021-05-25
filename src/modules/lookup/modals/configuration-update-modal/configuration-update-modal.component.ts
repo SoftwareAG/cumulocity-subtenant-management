@@ -31,6 +31,7 @@ export class ConfigurationUpdateModalComponent implements OnInit {
       this.client.operation
         .create({
           deviceId: this.deviceDetails.data.id,
+          description: 'Configuration Update',
           c8y_Configuration: {
             config: this.config
           }

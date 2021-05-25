@@ -9,6 +9,16 @@
 </c8y-action-bar-item>
 
 <c8y-action-bar-item [placement]="'right'">
+  <a
+    class="btn btn-link"
+    href="https://cumulocity.com/api/#tag/Query-language"
+    target="_blank"
+  >
+    <i c8yIcon="question-circle-o"></i>
+  </a>
+</c8y-action-bar-item>
+
+<c8y-action-bar-item [placement]="'right'">
   <button class="btn btn-link" (click)="lookup()">
     <i c8yIcon="arrow-circle-right"></i>
     Count items
@@ -33,7 +43,7 @@
   <tbody>
     <tr *ngFor="let item of response; let i=index">
       <th scope="row">{{i + 1}}</th>
-      <td>{{ item.tenant }}</td>
+      <td><ps-tenant-details [tenantId]="item.tenant"></ps-tenant-details></td>
       <td>{{ item.count }}</td>
     </tr>
   </tbody>
