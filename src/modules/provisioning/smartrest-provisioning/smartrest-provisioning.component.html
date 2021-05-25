@@ -6,10 +6,9 @@
     [noMatchingItemsLabel]="'No matching Template.'"
     [columns]="columns"
     [pagination]="datasource.pagination"
-    [selectable]="false"
+    [selectable]="true"
     [actionControls]="actionControls"
     [bulkActionControls]="bulkActionControls"
-    (itemsSelect)="handleItemsSelect($event)"
     [serverSideDataCallback]="datasource.serverSideDataCallback"
     [itemsSelectLimit]="10"
   >
@@ -42,10 +41,10 @@
     <c8y-column name="actions1">
       <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
-          <button class="btn btn-default" title="(Re-)Provision to all subtenants" (click)="provisionItem(context.item)" [disabled]="provisioningOngoing">
-            <i class="fa fw fa-external-link" *ngIf="!provisioningOngoing"></i>
+          <button class="btn btn-default" title="(Re-)Provision to specific subtenants" (click)="provisioningItemToTenantSelection([context.item.id])" [disabled]="provisioningOngoing">
+            <i class="fa fw fa-refresh" *ngIf="!provisioningOngoing"></i>
             <i class="fa fa-spinner fa-spin" *ngIf="provisioningOngoing"></i>
-            (Re-)Provision to all subtenants
+            (Re-)Provision
           </button>
         </div>
       </ng-container>

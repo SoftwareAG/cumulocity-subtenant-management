@@ -103,6 +103,11 @@ export class ProvisioningService {
     }
   }
 
+  async provisionSmartRESTTemplates(clients: Client[], templateIds: string[]): Promise<void> {
+    const promArray = templateIds.map((tmp) => this.provisionSmartRESTTemplate(clients, tmp));
+    await Promise.all(promArray);
+  }
+
   async provisionSmartRESTTemplate(clients: Client[], templateId: string): Promise<void> {
     const { data: template } = await this.inventoryService.detail(templateId);
     const { data: externalIds } = await this.identityService.list(templateId);
