@@ -5,11 +5,24 @@ import { ProvisioningNavigatorNodeFactory } from './provisioning-navigator-node.
 import { FirmwareProvisioningComponent } from './firmware-provisioning/firmware-provisioning.component';
 import { SmartrestProvisioningComponent } from './smartrest-provisioning/smartrest-provisioning.component';
 import { HOOK_MICROSERVICE_ROLE } from '@services/fake-microservice.service';
+import { TenantOptionsProvisioningComponent } from './tenant-options-provisioning/tenant-options-provisioning.component';
+import { TenantOptionModalComponent } from './modals/tenant-option-modal/tenant-option-modal.component';
+import { ModalModule } from 'ngx-bootstrap/modal';
 
 @NgModule({
-  imports: [CommonModule, CoreModule],
-  declarations: [FirmwareProvisioningComponent, SmartrestProvisioningComponent],
-  entryComponents: [FirmwareProvisioningComponent, SmartrestProvisioningComponent],
+  imports: [CommonModule, CoreModule, ModalModule],
+  declarations: [
+    FirmwareProvisioningComponent,
+    SmartrestProvisioningComponent,
+    TenantOptionsProvisioningComponent,
+    TenantOptionModalComponent
+  ],
+  entryComponents: [
+    FirmwareProvisioningComponent,
+    SmartrestProvisioningComponent,
+    TenantOptionsProvisioningComponent,
+    TenantOptionModalComponent
+  ],
   providers: [
     {
       provide: HOOK_MICROSERVICE_ROLE,
@@ -38,6 +51,11 @@ import { HOOK_MICROSERVICE_ROLE } from '@services/fake-microservice.service';
         {
           path: 'provisioning/smartrest',
           component: SmartrestProvisioningComponent
+          // canActivate: [DeviceDashboardGuard],
+        },
+        {
+          path: 'provisioning/tenant-options',
+          component: TenantOptionsProvisioningComponent
           // canActivate: [DeviceDashboardGuard],
         }
       ] as Route[],

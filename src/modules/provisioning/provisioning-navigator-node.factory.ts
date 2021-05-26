@@ -23,6 +23,13 @@ export class ProvisioningNavigatorNodeFactory implements NavigatorNodeFactory {
       icon: 'file-code-o'
     });
     this.provisioningNode.add(smartRestNode);
+
+    const tenantOptionsNode = new NavigatorNode({
+      label: 'Tenant Options',
+      path: 'provisioning/tenant-options'
+      // icon: 'file-code-o'
+    });
+    this.provisioningNode.add(tenantOptionsNode);
   }
 
   get(activatedRoute?: ActivatedRoute): NavigatorNode {

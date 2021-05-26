@@ -3,7 +3,7 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Subject } from 'rxjs';
 
 @Component({
-  selector: 'app-tenant-selection',
+  selector: 'ps-tenant-selection',
   templateUrl: './tenant-selection.component.html'
 })
 export class TenantSelectionComponent {

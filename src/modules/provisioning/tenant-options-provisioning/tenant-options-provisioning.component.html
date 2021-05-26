@@ -1,0 +1,33 @@
+<c8y-title>{{ 'Tenant Options' | translate }}</c8y-title>
+<c8y-action-bar-item [placement]="'right'">
+  <button class="btn btn-link" (click)="provisionTenantOption()">
+    <i c8yIcon="arrow-circle-right"></i>
+    Provision Custom/New Tenant Option
+  </button>
+</c8y-action-bar-item>
+
+<div class="split-scroll">
+  <c8y-data-grid
+    [title]="'Tenant Options' | translate"
+    class="scroll-column sort-fix"
+    [noMatchingItemsLabel]="'No matching Template.'"
+    [columns]="columns"
+    [pagination]="datasource.pagination"
+    [selectable]="false"
+    [actionControls]="[]"
+    [bulkActionControls]="[]"
+    [serverSideDataCallback]="datasource.serverSideDataCallback"
+    [itemsSelectLimit]="50"
+  >
+    <c8y-column name="actions1">
+      <ng-container *c8yCellRendererDef="let context">
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-default" title="(Re-)Provision to specific subtenants" (click)="provisionTenantOption(context.item)">
+            <i class="fa fw fa-refresh"></i>
+            (Re-)Provision
+          </button>
+        </div>
+      </ng-container>
+    </c8y-column>
+  </c8y-data-grid>
+</div>

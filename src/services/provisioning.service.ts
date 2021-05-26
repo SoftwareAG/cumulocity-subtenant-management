@@ -5,7 +5,9 @@ import {
   IExternalIdentity,
   IManagedObject,
   InventoryBinaryService,
-  InventoryService
+  InventoryService,
+  IResult,
+  ITenantOption
 } from '@c8y/client';
 import { cloneDeep } from 'lodash-es';
 
@@ -168,5 +170,10 @@ export class ProvisioningService {
         managedObject: { id: createdTemplate.id }
       });
     }
+  }
+
+  provisionTenantOptionToTenants(clients: Client[], tenantOption: ITenantOption): Promise<IResult<ITenantOption>[]> {
+    const promArray = clients.map((client) => client.options.tenant.update(tenantOption));
+    return Promise.all(promArray);
   }
 }
