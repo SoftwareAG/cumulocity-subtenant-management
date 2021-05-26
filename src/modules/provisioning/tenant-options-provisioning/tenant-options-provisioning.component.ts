@@ -119,7 +119,7 @@ export class TenantOptionsProvisioningComponent {
       .toPromise()
       .then((result) => {
         if (!result) {
-          return Promise.reject();
+          throw '';
         }
         return result;
       });

@@ -70,7 +70,7 @@ export class RestartApamaActionFactory implements ActionFactory {
       .toPromise()
       .then((res) => {
         if (!res) {
-          return Promise.reject();
+          throw '';
         }
         return res;
       });
