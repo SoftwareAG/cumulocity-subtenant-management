@@ -3,6 +3,7 @@ import { IResultList, Client, IOperation } from '@c8y/client';
 import { ServerSideDataResult, Column, Pagination, DataSourceModifier } from '@c8y/ngx-components';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
+import { get } from 'lodash-es';
 
 @Injectable()
 export class FirmwareUpdateHistoryTableDatasourceService {
@@ -14,6 +15,7 @@ export class FirmwareUpdateHistoryTableDatasourceService {
     currentPage: 1
   };
 
+  private tenantFilter: string = null;
   private cachedPromise: Promise<TenantSpecificDetails<IOperation>[]>;
 
   constructor(private credService: FakeMicroserviceService) {
@@ -22,16 +24,39 @@ export class FirmwareUpdateHistoryTableDatasourceService {
 
   async onDataSourceModifier(dataSourceModifier: DataSourceModifier): Promise<ServerSideDataResult> {
     this.columns = [...(dataSourceModifier.columns || [])];
+
+    const filteredColumns = dataSourceModifier.columns.filter((tmp) => !!tmp.filterPredicate);
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
     let clients = this.credService.createClients(credentials);
     const tenantIdCol = dataSourceModifier.columns.find((tmp) => tmp.path === 'tenantId');
-    if (tenantIdCol && tenantIdCol.filterPredicate) {
-      clients = clients.filter((tmp) => tmp.core.tenant.includes(tenantIdCol.filterPredicate as string));
+
+    if (tenantIdCol) {
+      if (this.tenantFilter !== tenantIdCol.filterPredicate) {
+        this.cachedPromise = null;
+      }
+      if (tenantIdCol.filterPredicate) {
+        clients = clients.filter((tmp) => tmp.core.tenant.includes(tenantIdCol.filterPredicate as string));
+      }
+      this.tenantFilter = tenantIdCol.filterPredicate as string;
     }
 
-    const devices = await this.fetchForPage(clients);
+    const operations = await this.fetchForPage(clients);
+
+    let filteredOperations = operations;
+    if (filteredColumns.length) {
+      filteredOperations = operations.filter((user) => {
+        return !filteredColumns.some((col) => {
+          const property: string = get(user, col.path);
+          if (property && property.includes(col.filterPredicate as string)) {
+            return false;
+          }
+          return true;
+        });
+      });
+    }
+
     const start = 0 + dataSourceModifier.pagination.pageSize * (dataSourceModifier.pagination.currentPage - 1);
-    const dataSubset = devices.slice(start, start + dataSourceModifier.pagination.pageSize);
+    const dataSubset = filteredOperations.slice(start, start + dataSourceModifier.pagination.pageSize);
     const resList: IResultList<TenantSpecificDetails<IOperation>> = {
       data: dataSubset,
       res: undefined,
@@ -45,7 +70,7 @@ export class FirmwareUpdateHistoryTableDatasourceService {
 
     const result: ServerSideDataResult = {
       size: undefined,
-      filteredSize: devices.length,
+      filteredSize: filteredOperations.length,
       ...resList
     };
 
@@ -77,6 +102,7 @@ export class FirmwareUpdateHistoryTableDatasourceService {
         result.forEach((entry) => array.push(...entry));
         return array.sort((a, b) => ((b.data.creationTime as string) || '').localeCompare(a.data.creationTime || ''));
       });
+      this.cachedPromise = promise;
     }
     return promise;
   }

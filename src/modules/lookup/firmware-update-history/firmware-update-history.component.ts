@@ -30,7 +30,7 @@ export class FirmwareUpdateHistoryComponent {
         path: 'data.deviceName',
         dataType: ColumnDataType.TextShort,
         sortable: false,
-        filterable: false
+        filterable: true
       },
       {
         name: 'firmwareName',
@@ -38,7 +38,7 @@ export class FirmwareUpdateHistoryComponent {
         path: 'data.c8y_Firmware.name',
         dataType: ColumnDataType.TextShort,
         sortable: false,
-        filterable: false
+        filterable: true
       },
       {
         name: 'firmwareVersion',
@@ -46,7 +46,7 @@ export class FirmwareUpdateHistoryComponent {
         path: 'data.c8y_Firmware.version',
         dataType: ColumnDataType.TextShort,
         sortable: false,
-        filterable: false
+        filterable: true
       },
       {
         name: 'firmwareURL',
@@ -54,7 +54,7 @@ export class FirmwareUpdateHistoryComponent {
         path: 'data.c8y_Firmware.url',
         dataType: ColumnDataType.TextShort,
         sortable: false,
-        filterable: false
+        filterable: true
       },
       {
         name: 'description',
@@ -62,7 +62,7 @@ export class FirmwareUpdateHistoryComponent {
         path: 'data.description',
         dataType: ColumnDataType.TextShort,
         sortable: false,
-        filterable: false,
+        filterable: true,
         visible: false
       },
       {
@@ -71,7 +71,7 @@ export class FirmwareUpdateHistoryComponent {
         path: 'data.failureReason',
         dataType: ColumnDataType.TextShort,
         sortable: false,
-        filterable: false
+        filterable: true
       },
       {
         name: 'creationTime',
@@ -79,7 +79,8 @@ export class FirmwareUpdateHistoryComponent {
         path: 'data.creationTime',
         dataType: ColumnDataType.TextShort,
         sortable: false,
-        filterable: false
+        filterable: false,
+        sortOrder: 'desc'
       },
       {
         name: 'status',
@@ -87,7 +88,7 @@ export class FirmwareUpdateHistoryComponent {
         path: 'data.status',
         dataType: ColumnDataType.TextShort,
         sortable: false,
-        filterable: false
+        filterable: true
       }
       // {
       //   header: 'Actions',
