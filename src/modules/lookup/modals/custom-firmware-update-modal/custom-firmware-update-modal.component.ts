@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 
 @Component({
-  selector: 'app-custom-firmware-update-modal',
+  selector: 'ps-custom-firmware-update-modal',
   templateUrl: './custom-firmware-update-modal.component.html'
 })
 export class CustomFirmwareUpdateModalComponent {

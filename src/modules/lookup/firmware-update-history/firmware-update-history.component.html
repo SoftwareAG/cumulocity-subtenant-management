@@ -1,0 +1,55 @@
+<c8y-title>Firmware Update History</c8y-title>
+
+<div class="split-scroll">
+  <c8y-data-grid
+    [title]="'Firmware Update History (last 50 Operations per Tenant)' | translate"
+    class="scroll-column sort-fix"
+    [noMatchingItemsLabel]="'No matching Operations.'"
+    [columns]="columns"
+    [pagination]="datasource.pagination"
+    [selectable]="false"
+    [actionControls]="[]"
+    [bulkActionControls]="[]"
+    [serverSideDataCallback]="datasource.serverSideDataCallback"
+    [itemsSelectLimit]="50"
+  >
+    <c8y-column name="tenant">
+      <ng-container *c8yCellRendererDef="let context">
+        <ps-tenant-details [tenantId]="context.value"></ps-tenant-details>
+      </ng-container>
+    </c8y-column>
+
+    <c8y-column name="firmwareURL">
+      <ng-container *c8yCellRendererDef="let context">
+        <a [href]="context.value" target="_blank">{{ context.value }}</a>
+      </ng-container>
+    </c8y-column>
+
+    <c8y-column name="status">
+      <ng-container *c8yCellRendererDef="let context">
+        <ng-container [ngSwitch]="context.value">
+          <i class="fa fw fa-clock-o" *ngSwitchCase="'PENDING'" [title]="'Status: ' + context.value"></i>
+          <i class="fa fw fa-refresh text-info" *ngSwitchCase="'EXECUTING'" [title]="'Status: ' + context.value"></i>
+          <i class="fa fw fa-check text-success" *ngSwitchCase="'SUCCESSFUL'" [title]="'Status: ' + context.value"></i>
+          <i class="fa fw fa-exclamation-circle text-danger" *ngSwitchCase="'FAILED'" [title]="'Status: ' + context.value"></i>
+        </ng-container>
+      </ng-container>
+    </c8y-column>
+
+    <c8y-column name="creationTime">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value | date: "medium" }}
+      </ng-container>
+    </c8y-column>
+
+    <!-- <c8y-column name="actions1">
+      <ng-container *c8yCellRendererDef="let context">
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-default" title="Restart Device" *ngIf="context.item.operations?.c8y_Restart" (click)="restartDevice(context.item)">
+            <i class="fa fw fa-refresh"></i>
+          </button>
+        </div>
+      </ng-container>
+    </c8y-column> -->
+  </c8y-data-grid>
+</div>

@@ -29,6 +29,12 @@ export class LookupNavigatorNodeFactory implements NavigatorNodeFactory {
       icon: 'c8y-user'
     });
     this.lookupNode.add(userNode);
+    const firmwareHistoryNode = new NavigatorNode({
+      label: 'Firmware Update History',
+      path: 'lookup/firmware-history',
+      icon: 'floppy-o'
+    });
+    this.lookupNode.add(firmwareHistoryNode);
   }
 
   get(activatedRoute?: ActivatedRoute): NavigatorNode {

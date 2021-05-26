@@ -16,6 +16,7 @@ import { AddUserModalComponent } from './modals/add-user-modal/add-user-modal.co
 import { DeviceRegistrationLookupComponent } from './device-registration-lookup/device-registration-lookup.component';
 import { AddDeviceRegistrationModalComponent } from './modals/add-device-registration-modal/add-device-registration-modal.component';
 import { CustomFirmwareUpdateModalComponent } from './modals/custom-firmware-update-modal/custom-firmware-update-modal.component';
+import { FirmwareUpdateHistoryComponent } from './firmware-update-history/firmware-update-history.component';
 
 @NgModule({
   imports: [CommonModule, CoreModule, ModalModule.forChild(), SharedModule],
@@ -30,7 +31,8 @@ import { CustomFirmwareUpdateModalComponent } from './modals/custom-firmware-upd
     UserPasswordChangeModalComponent,
     AddUserModalComponent,
     AddDeviceRegistrationModalComponent,
-    CustomFirmwareUpdateModalComponent
+    CustomFirmwareUpdateModalComponent,
+    FirmwareUpdateHistoryComponent
   ],
   entryComponents: [
     DeviceLookupComponent,
@@ -43,7 +45,8 @@ import { CustomFirmwareUpdateModalComponent } from './modals/custom-firmware-upd
     UserPasswordChangeModalComponent,
     AddUserModalComponent,
     AddDeviceRegistrationModalComponent,
-    CustomFirmwareUpdateModalComponent
+    CustomFirmwareUpdateModalComponent,
+    FirmwareUpdateHistoryComponent
   ],
   providers: [
     {
@@ -75,6 +78,10 @@ import { CustomFirmwareUpdateModalComponent } from './modals/custom-firmware-upd
         {
           path: 'lookup/user',
           component: UserLookupComponent
+        },
+        {
+          path: 'lookup/firmware-history',
+          component: FirmwareUpdateHistoryComponent
         }
       ] as Route[],
       multi: true
