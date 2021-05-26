@@ -8,6 +8,7 @@ import { StatisticsModule } from '@modules/statistics/statistics.module';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { HomeModule } from '@modules/home/home.module';
 import { CleanupModule } from '@modules/cleanup/cleanup.module';
+import { RestartApamaActionModule } from '@modules/restart-apama/restart-apama.module';
 import { SubtenantDetailsService } from '@services/subtenant-details.service';
 import { ExtensionsService } from '@services/extensions.service';
 
@@ -21,7 +22,8 @@ import { ExtensionsService } from '@services/extensions.service';
     CleanupModule,
     StatisticsModule,
     LookupModule,
-    ProvisioningModule
+    ProvisioningModule,
+    RestartApamaActionModule,
   ],
   providers: [FakeMicroserviceService, SubtenantDetailsService, ExtensionsService],
   bootstrap: [BootstrapComponent]
