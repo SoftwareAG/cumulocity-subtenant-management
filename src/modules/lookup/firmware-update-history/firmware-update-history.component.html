@@ -21,7 +21,7 @@
 
     <c8y-column name="firmwareURL">
       <ng-container *c8yCellRendererDef="let context">
-        <a [href]="context.value" target="_blank">{{ context.value }}</a>
+        <a (click)="openFirmwareLinkWithCreds(context.item)">{{ context.value }}</a>
       </ng-container>
     </c8y-column>
 

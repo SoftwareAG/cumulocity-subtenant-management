@@ -1,5 +1,9 @@
 import { Component } from '@angular/core';
+import { IOperation } from '@c8y/client';
 import { Column, ColumnDataType } from '@c8y/ngx-components';
+import { TenantSpecificDetails } from '@models/tenant-specific-details';
+import { FakeMicroserviceService } from '@services/fake-microservice.service';
+import { get } from 'lodash';
 import { FirmwareUpdateHistoryTableDatasourceService } from './firmware-update-history-table-datasource.service';
 
 @Component({
@@ -10,7 +14,10 @@ import { FirmwareUpdateHistoryTableDatasourceService } from './firmware-update-h
 export class FirmwareUpdateHistoryComponent {
   columns: Column[];
 
-  constructor(public datasource: FirmwareUpdateHistoryTableDatasourceService) {
+  constructor(
+    public datasource: FirmwareUpdateHistoryTableDatasourceService,
+    private credService: FakeMicroserviceService
+  ) {
     this.columns = this.getDefaultColumns();
   }
 
@@ -98,5 +105,21 @@ export class FirmwareUpdateHistoryComponent {
       //   visible: false
       // }
     ];
+  }
+
+  async openFirmwareLinkWithCreds(context: TenantSpecificDetails<IOperation>): Promise<void> {
+    try {
+      const url: string = get(context, 'data.c8y_Firmware.url');
+      const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+      const creds = credentials.find((tmp) => tmp.tenant === context.tenantId);
+      if (creds) {
+        const urlObj = new URL(url);
+        urlObj.username = `${creds.tenant}/${creds.user}`;
+        urlObj.password = creds.password;
+        window.open(urlObj.toString());
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }
 }
