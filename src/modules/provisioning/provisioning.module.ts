@@ -8,20 +8,27 @@ import { HOOK_MICROSERVICE_ROLE } from '@services/fake-microservice.service';
 import { TenantOptionsProvisioningComponent } from './tenant-options-provisioning/tenant-options-provisioning.component';
 import { TenantOptionModalComponent } from './modals/tenant-option-modal/tenant-option-modal.component';
 import { ModalModule } from 'ngx-bootstrap/modal';
+import { RetentionRuleProvisioningComponent } from './retention-rule-provisioning/retention-rule-provisioning.component';
+import { SharedModule } from '@modules/shared/shared.module';
+import { CreateOrEditRetentionRuleModalComponent } from './modals/create-or-edit-retention-rule/create-or-edit-retention-rule-modal.component';
 
 @NgModule({
-  imports: [CommonModule, CoreModule, ModalModule],
+  imports: [CommonModule, CoreModule, ModalModule, SharedModule],
   declarations: [
     FirmwareProvisioningComponent,
     SmartrestProvisioningComponent,
     TenantOptionsProvisioningComponent,
-    TenantOptionModalComponent
+    TenantOptionModalComponent,
+    RetentionRuleProvisioningComponent,
+    CreateOrEditRetentionRuleModalComponent
   ],
   entryComponents: [
     FirmwareProvisioningComponent,
     SmartrestProvisioningComponent,
     TenantOptionsProvisioningComponent,
-    TenantOptionModalComponent
+    TenantOptionModalComponent,
+    RetentionRuleProvisioningComponent,
+    CreateOrEditRetentionRuleModalComponent
   ],
   providers: [
     {
@@ -32,7 +39,9 @@ import { ModalModule } from 'ngx-bootstrap/modal';
         'ROLE_OPTION_MANAGEMENT_READ',
         'ROLE_OPTION_MANAGEMENT_ADMIN',
         'ROLE_IDENTITY_READ',
-        'ROLE_IDENTITY_ADMIN'
+        'ROLE_IDENTITY_ADMIN',
+        'ROLE_RETENTION_RULE_READ',
+        'ROLE_RETENTION_RULE_ADMIN'
       ],
       multi: true
     },
@@ -56,6 +65,11 @@ import { ModalModule } from 'ngx-bootstrap/modal';
         {
           path: 'provisioning/tenant-options',
           component: TenantOptionsProvisioningComponent
+          // canActivate: [DeviceDashboardGuard],
+        },
+        {
+          path: 'provisioning/retention-rules',
+          component: RetentionRuleProvisioningComponent
           // canActivate: [DeviceDashboardGuard],
         }
       ] as Route[],

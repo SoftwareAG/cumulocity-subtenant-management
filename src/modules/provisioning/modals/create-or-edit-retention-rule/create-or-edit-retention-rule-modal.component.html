@@ -1,0 +1,62 @@
+<div class="modal-header dialog-header">
+  <i class="c8y-icon c8y-icon-firmware"></i>
+  <h4 translate>{{rule?.id ? 'Edit' : 'New'}} Retention Rule</h4>
+</div>
+<div class="modal-body dialog-body">
+  <div class="form-group">
+    <label for="dataType">Data Type</label>
+    <div class="c8y-select-wrapper">
+      <select id="dataType" class="form-control" [ngModel]="rule.dataType" (change)="onDataTypeChange($event)">
+        <option>ALARM</option>
+        <option>EVENT</option>
+        <option>MEASUREMENT</option>
+        <option>OPERATION</option>
+        <option>BULK_OPERATION</option>
+        <option>AUDIT</option>
+        <option>*</option>
+      </select>
+      <span></span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="fragmentType">Fragment Type</label>
+    <input id="fragmentType" type="text" class="form-control" [(ngModel)]="rule.fragmentType" [disabled]="rule.dataType === 'ALARM' || rule.dataType === 'BULK_OPERATION'  || rule.dataType === 'AUDIT' || rule.dataType === '*'">
+  </div>
+
+  <div class="form-group">
+    <label for="type">Type</label>
+    <input id="type" type="text" class="form-control" [(ngModel)]="rule.type" [disabled]="rule.dataType === 'OPERATION' || rule.dataType === 'BULK_OPERATION'">
+  </div>
+
+  <div class="form-group">
+    <label for="source">Source</label>
+    <input id="source" type="text" class="form-control" [(ngModel)]="rule.source">
+  </div>
+
+  <div class="form-group">
+    <label for="maxAge">Maximum Age [days]</label>
+    <input id="maxAge" type="number" [min]="1" class="form-control" [(ngModel)]="rule.maximumAge">
+  </div>
+</div>
+<div class="modal-footer">
+  <button
+    class="btn btn-default"
+    translate
+    type="button"
+    title="{{ 'Cancel' | translate }}"
+    (click)="onDismiss($event)"
+  >
+    Cancel
+  </button>
+  <button
+    class="btn btn-primary"
+    translate
+    type="submit"
+    [title]="(rule?.id ? 'Update Rule' : 'Create Rule') | translate"
+    [disabled]="!rule.dataType || !rule.fragmentType || !rule.maximumAge || !rule.source || !rule.type"
+    (click)="onSave($event)"
+  >
+    {{ (rule?.id ? 'Update Rule' : 'Create Rule') | translate }}
+  </button>
+</div>

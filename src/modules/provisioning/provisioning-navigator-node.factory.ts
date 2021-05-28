@@ -30,6 +30,13 @@ export class ProvisioningNavigatorNodeFactory implements NavigatorNodeFactory {
       // icon: 'file-code-o'
     });
     this.provisioningNode.add(tenantOptionsNode);
+
+    const retentionRulesNode = new NavigatorNode({
+      label: 'Retention Rules',
+      path: 'provisioning/retention-rules',
+      icon: 'briefcase'
+    });
+    this.provisioningNode.add(retentionRulesNode);
   }
 
   get(activatedRoute?: ActivatedRoute): NavigatorNode {
