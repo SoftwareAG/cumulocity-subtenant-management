@@ -37,6 +37,13 @@ export class ProvisioningNavigatorNodeFactory implements NavigatorNodeFactory {
       icon: 'briefcase'
     });
     this.provisioningNode.add(retentionRulesNode);
+
+    const globalRolesNode = new NavigatorNode({
+      label: 'Global Roles',
+      path: 'provisioning/global_roles',
+      icon: 'c8y-users'
+    });
+    this.provisioningNode.add(globalRolesNode);
   }
 
   get(activatedRoute?: ActivatedRoute): NavigatorNode {

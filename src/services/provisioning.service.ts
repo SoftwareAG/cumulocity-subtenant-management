@@ -1,15 +1,20 @@
 import { Injectable } from '@angular/core';
 import {
   Client,
+  IApplication,
   IdentityService,
   IExternalIdentity,
   IManagedObject,
   InventoryBinaryService,
   InventoryService,
   IResult,
-  ITenantOption
+  IRole,
+  ITenantOption,
+  IUserGroup,
+  UserGroupService
 } from '@c8y/client';
 import { cloneDeep } from 'lodash-es';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root'
@@ -32,7 +37,8 @@ export class ProvisioningService {
   constructor(
     private inventoryService: InventoryService,
     private binaryService: InventoryBinaryService,
-    private identityService: IdentityService
+    private identityService: IdentityService,
+    private userGroupService: UserGroupService
   ) {}
 
   createCopyOfManagedObject(originalMO: IManagedObject, provisioningDetails: any = {}): IManagedObject {
@@ -175,5 +181,140 @@ export class ProvisioningService {
   provisionTenantOptionToTenants(clients: Client[], tenantOption: ITenantOption): Promise<IResult<ITenantOption>[]> {
     const promArray = clients.map((client) => client.options.tenant.update(tenantOption));
     return Promise.all(promArray);
+  }
+
+  async removeUserGroupFromTenants(clients: Client[], userGroup: IUserGroup): Promise<void> {
+    if (userGroup && userGroup.customProperties && userGroup.customProperties.uuid) {
+      const uuid: string = userGroup.customProperties.uuid;
+      const promArray = clients.map((client) => this.removeUserGroupFromTenant(client, uuid));
+      await Promise.all(promArray);
+    } else {
+      throw 'No uuid available for this group';
+    }
+  }
+
+  async removeUserGroupFromTenant(client: Client, uuid: string): Promise<void> {
+    const foundUserGroup = await this.getUserGroupMatchingId(client, uuid);
+    if (foundUserGroup) {
+      await client.userGroup.delete(foundUserGroup);
+    }
+  }
+
+  async provisionUserGroupToTenants(clients: Client[], userGroup: IUserGroup): Promise<void[]> {
+    let uniqueId = '';
+    let userGroupForRollout = userGroup;
+    if (!userGroup.customProperties || userGroup.customProperties.uuid) {
+      uniqueId = userGroup.customProperties.uuid;
+    } else {
+      uniqueId = uuidv4();
+      if (!userGroup.customProperties) {
+        userGroup.customProperties = {};
+      }
+      userGroup.customProperties.uuid = uniqueId;
+      const result = await this.userGroupService.update(userGroup);
+      userGroupForRollout = result.data;
+    }
+    const promArray = clients.map((client) => this.provisionUserGroupToTenant(client, userGroupForRollout, uniqueId));
+    return Promise.all(promArray);
+  }
+
+  async provisionUserGroupToTenant(client: Client, userGroup: IUserGroup, uuid: string): Promise<void> {
+    const { '0': availableApps, '1': availableRoles } = await Promise.all([
+      this.getAllApps(client),
+      this.getAllRoles(client)
+    ]);
+
+    const appList = userGroup.applications.filter((tmp) => availableApps.some((entry) => entry.id === tmp.id));
+
+    let foundUserGroup = await this.getUserGroupMatchingId(client, uuid);
+    if (!foundUserGroup) {
+      const res = await client.userGroup.create({
+        name: userGroup.name,
+        description: userGroup.description,
+        customProperties: userGroup.customProperties,
+        applications: appList
+      });
+      foundUserGroup = res.data;
+    } else {
+      // update app list
+      const someAppIsMissing = appList.some((tmp) => !foundUserGroup.applications.some((entry) => entry.id === tmp.id));
+      const someAppTooMuch = foundUserGroup.applications.some((tmp) => !appList.some((entry) => entry.id === tmp.id));
+      if (someAppIsMissing || someAppTooMuch) {
+        foundUserGroup.applications = appList;
+        const res = await client.userGroup.update(foundUserGroup);
+        foundUserGroup = res.data;
+      }
+    }
+
+    const promArray = new Array<Promise<any>>();
+    // assign roles
+    const missingRoles = userGroup.roles.references.filter(
+      (tmp) => !foundUserGroup.roles.references.some((entry) => entry.role.id === tmp.role.id)
+    );
+    promArray.push(
+      ...missingRoles
+        .filter((tmp) => availableRoles.some((entry) => entry.id === tmp.role.id))
+        .map((tmp) => client.userGroup.addRoleToGroup(foundUserGroup.id, tmp.role).catch((e) => null))
+    );
+
+    // removing roles
+    const tooManyRoles = foundUserGroup.roles.references.filter(
+      (tmp) => !userGroup.roles.references.some((entry) => entry.role.id === tmp.role.id)
+    );
+    promArray.push(
+      ...tooManyRoles.map((tmp) => client.userGroup.removeRoleFromGroup(foundUserGroup.id, tmp.role).catch((e) => null))
+    );
+
+    await Promise.all(promArray);
+  }
+
+  async getAllApps(client: Client): Promise<IApplication[]> {
+    const arr = new Array<IApplication>();
+    const filter = {
+      pageSize: 1000
+    };
+    let res = await client.application.list(filter);
+    while (res.data.length) {
+      arr.push(...res.data);
+      if (res.data.length < res.paging.pageSize) {
+        break;
+      }
+      res = await res.paging.next();
+    }
+    return arr;
+  }
+
+  async getAllRoles(client: Client): Promise<IRole[]> {
+    const arr = new Array<IRole>();
+    const filter = {
+      pageSize: 1000
+    };
+    let res = await client.userRole.list(filter);
+    while (res.data.length) {
+      arr.push(...res.data);
+      if (res.data.length < res.paging.pageSize) {
+        break;
+      }
+      res = await res.paging.next();
+    }
+    return arr;
+  }
+
+  async getUserGroupMatchingId(client: Client, uuid: string): Promise<IUserGroup | null> {
+    const filter = {
+      pageSize: 100
+    };
+    let res = await client.userGroup.list(filter);
+    while (res.data.length) {
+      const foundGroup = res.data.find((tmp) => tmp.customProperties && tmp.customProperties.uuid === uuid);
+      if (foundGroup) {
+        return foundGroup;
+      }
+      if (res.data.length < res.paging.pageSize) {
+        break;
+      }
+      res = await res.paging.next();
+    }
+    return null;
   }
 }

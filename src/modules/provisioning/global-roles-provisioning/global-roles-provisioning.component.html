@@ -1,0 +1,43 @@
+<c8y-title>Global Roles</c8y-title>
+
+<div class="split-scroll">
+  <c8y-data-grid
+    [title]="'Global Roles' | translate"
+    class="scroll-column sort-fix"
+    [noMatchingItemsLabel]="'No matching Global Roles.'"
+    [columns]="columns"
+    [pagination]="datasource.pagination"
+    [selectable]="false"
+    [actionControls]="[]"
+    [bulkActionControls]="[]"
+    [serverSideDataCallback]="datasource.serverSideDataCallback"
+    [itemsSelectLimit]="50"
+  >
+
+    <c8y-column name="roles">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value?.references?.length || 0 }}
+      </ng-container>
+    </c8y-column>
+
+    <c8y-column name="applications">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value?.length || 0 }}
+      </ng-container>
+    </c8y-column>
+
+    <c8y-column name="actions1">
+      <ng-container *c8yCellRendererDef="let context">
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-default" title="(Re-)Provision to specific subtenants" (click)="provisionGlobalRole(context.item)">
+            <i class="fa fw fa-refresh"></i>
+            (Re-)Provision
+          </button>
+          <button class="btn btn-danger" title="Delete from specific subtenants" (click)="deleteGlobalRole(context.item)">
+            <i class="fa fw fa-trash"></i>
+          </button>
+        </div>
+      </ng-container>
+    </c8y-column>
+  </c8y-data-grid>
+</div>
