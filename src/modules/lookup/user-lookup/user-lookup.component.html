@@ -52,6 +52,9 @@
           <button class="btn btn-default" title="Change Password" (click)="changePassword(context.item)">
             <i class="fa fw fa-pencil"></i>
           </button>
+          <button class="btn btn-default" title="Send Password reset Mail" (click)="sendPasswordResetMail(context.item)" [disabled]="!context.item.data.enabled || !context.item.data.email">
+            <i class="fa fw fa-envelope"></i>
+          </button>
         </div>
       </ng-container>
     </c8y-column>

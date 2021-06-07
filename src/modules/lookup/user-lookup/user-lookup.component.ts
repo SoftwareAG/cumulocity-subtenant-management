@@ -1,14 +1,15 @@
 import { Component, EventEmitter } from '@angular/core';
-import { IUser } from '@c8y/client';
+import { BasicAuth, Client, CookieAuth, IUser } from '@c8y/client';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { AlertService, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
 import { UserPasswordChangeModalComponent } from '../modals/user-password-change-modal/user-password-change-modal.component';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { AddUserModalComponent } from '../modals/add-user-modal/add-user-modal.component';
-import { Subject } from 'rxjs';
+import { config, Subject } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { UserTableDatasourceService } from './user-table-datasource.service';
+import { SubtenantDetailsService } from '@services/subtenant-details.service';
 
 @Component({
   providers: [UserTableDatasourceService],
@@ -24,7 +25,8 @@ export class UserLookupComponent {
     private c8yModalService: ModalService,
     private alertService: AlertService,
     private modalService: BsModalService,
-    public datasource: UserTableDatasourceService
+    public datasource: UserTableDatasourceService,
+    private tenantDetails: SubtenantDetailsService
   ) {
     this.columns = this.getDefaultColumns();
   }
@@ -168,6 +170,45 @@ export class UserLookupComponent {
               this.alertService.danger('Unable to remove User.');
             }
           );
+        },
+        () => {
+          // model canceled
+        }
+      );
+  }
+
+  sendPasswordResetMail(user: TenantSpecificDetails<IUser>): void {
+    this.c8yModalService
+      .confirm(
+        `Send Password reset Mail: ${user.data.id} (${user.data.lastName || ''}, ${user.data.firstName || ''})`,
+        'Are you sure that you want to send a password reset mail to this User?',
+        'warning'
+      )
+      .then(
+        async () => {
+          // modal confirmed
+          const client = new Client(new BasicAuth());
+          client.core
+            .fetch(`/user/passwordReset?tenantId=${user.tenantId}`, {
+              method: 'POST',
+              body: JSON.stringify({ email: user.data.email }),
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            } as RequestInit)
+            .then((result) => {
+              if (result.status !== 200) {
+                throw result;
+              }
+            })
+            .then(
+              () => {
+                this.alertService.success('Sent password reset Mail.');
+              },
+              () => {
+                this.alertService.danger('Unable to sent password reset Mail.');
+              }
+            );
         },
         () => {
           // model canceled
