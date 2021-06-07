@@ -12,6 +12,7 @@ import { RetentionRuleProvisioningComponent } from './retention-rule-provisionin
 import { SharedModule } from '@modules/shared/shared.module';
 import { CreateOrEditRetentionRuleModalComponent } from './modals/create-or-edit-retention-rule/create-or-edit-retention-rule-modal.component';
 import { GlobalRolesProvisioningComponent } from './global-roles-provisioning/global-roles-provisioning.component';
+import { SmartGroupsProvisioningComponent } from './smart-group-provisioning/smart-group-provisioning.component';
 
 @NgModule({
   imports: [CommonModule, CoreModule, ModalModule, SharedModule],
@@ -22,7 +23,8 @@ import { GlobalRolesProvisioningComponent } from './global-roles-provisioning/gl
     TenantOptionModalComponent,
     RetentionRuleProvisioningComponent,
     CreateOrEditRetentionRuleModalComponent,
-    GlobalRolesProvisioningComponent
+    GlobalRolesProvisioningComponent,
+    SmartGroupsProvisioningComponent
   ],
   entryComponents: [
     FirmwareProvisioningComponent,
@@ -31,7 +33,8 @@ import { GlobalRolesProvisioningComponent } from './global-roles-provisioning/gl
     TenantOptionModalComponent,
     RetentionRuleProvisioningComponent,
     CreateOrEditRetentionRuleModalComponent,
-    GlobalRolesProvisioningComponent
+    GlobalRolesProvisioningComponent,
+    SmartGroupsProvisioningComponent
   ],
   providers: [
     {
@@ -79,6 +82,11 @@ import { GlobalRolesProvisioningComponent } from './global-roles-provisioning/gl
         {
           path: 'provisioning/global_roles',
           component: GlobalRolesProvisioningComponent
+          // canActivate: [DeviceDashboardGuard],
+        },
+        {
+          path: 'provisioning/smart-groups',
+          component: SmartGroupsProvisioningComponent
           // canActivate: [DeviceDashboardGuard],
         }
       ] as Route[],

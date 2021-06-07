@@ -203,7 +203,7 @@ export class ProvisioningService {
   async provisionUserGroupToTenants(clients: Client[], userGroup: IUserGroup): Promise<void[]> {
     let uniqueId = '';
     let userGroupForRollout = userGroup;
-    if (!userGroup.customProperties || userGroup.customProperties.uuid) {
+    if (userGroup.customProperties || userGroup.customProperties.uuid) {
       uniqueId = userGroup.customProperties.uuid;
     } else {
       uniqueId = uuidv4();
@@ -254,7 +254,7 @@ export class ProvisioningService {
     promArray.push(
       ...missingRoles
         .filter((tmp) => availableRoles.some((entry) => entry.id === tmp.role.id))
-        .map((tmp) => client.userGroup.addRoleToGroup(foundUserGroup.id, tmp.role).catch((e) => null))
+        .map((tmp) => client.userGroup.addRoleToGroup(foundUserGroup.id, tmp.role).catch(() => null))
     );
 
     // removing roles
@@ -262,7 +262,7 @@ export class ProvisioningService {
       (tmp) => !userGroup.roles.references.some((entry) => entry.role.id === tmp.role.id)
     );
     promArray.push(
-      ...tooManyRoles.map((tmp) => client.userGroup.removeRoleFromGroup(foundUserGroup.id, tmp.role).catch((e) => null))
+      ...tooManyRoles.map((tmp) => client.userGroup.removeRoleFromGroup(foundUserGroup.id, tmp.role).catch(() => null))
     );
 
     await Promise.all(promArray);
@@ -316,5 +316,66 @@ export class ProvisioningService {
       res = await res.paging.next();
     }
     return null;
+  }
+
+  async getSmartGroupMatchingId(client: Client, uuid: string): Promise<IManagedObject | null> {
+    const filter = {
+      pageSize: 1,
+      query: `uuid eq '${uuid}'`
+    };
+    const moList = await client.inventory.list(filter);
+    if (moList.data.length) {
+      const mo = moList.data[0];
+      return mo;
+    }
+    return null;
+  }
+
+  async provisionSmartGroupToTenants(clients: Client[], group: IManagedObject): Promise<void[]> {
+    let uniqueId = '';
+    if (group.uuid) {
+      uniqueId = group.uuid;
+    } else {
+      uniqueId = uuidv4();
+      group.uuid = uniqueId;
+      await this.inventoryService.update({ id: group.id, uuid: uniqueId });
+    }
+    const partialGroup: Partial<IManagedObject> = {
+      name: group.name,
+      uuid: uniqueId,
+      type: group.type,
+      c8y_DeviceQueryString: group.c8y_DeviceQueryString,
+      c8y_IsDynamicGroup: group.c8y_IsDynamicGroup,
+      c8y_UIDeviceColumnsMeta: group.c8y_UIDeviceColumnsMeta,
+      c8y_UIDeviceFilterConfig: group.c8y_UIDeviceFilterConfig
+    };
+    const promArray = clients.map((client) => this.provisionSmartGroupToTenant(client, partialGroup, uniqueId));
+    return Promise.all(promArray);
+  }
+
+  async provisionSmartGroupToTenant(client: Client, group: Partial<IManagedObject>, uuid: string): Promise<void> {
+    const mo = await this.getSmartGroupMatchingId(client, uuid);
+    if (mo) {
+      await client.inventory.update(Object.assign({ id: mo.id }, group));
+    } else {
+      await client.inventory.create(group);
+    }
+  }
+
+  async removeSmartGroupFromTenants(clients: Client[], group: IManagedObject): Promise<void> {
+    if (group.uuid) {
+      const uuid: string = group.uuid;
+      const promArray = clients.map((client) => this.removeSmartGroupFromTenant(client, uuid));
+      await Promise.all(promArray);
+    } else {
+      throw 'No uuid available for this group';
+    }
+  }
+
+  async removeSmartGroupFromTenant(client: Client, uuid: string): Promise<void> {
+    const foundGroup = await this.getSmartGroupMatchingId(client, uuid);
+    if (foundGroup) {
+      await client.inventory.delete(foundGroup);
+    }
   }
 }

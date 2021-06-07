@@ -44,6 +44,13 @@ export class ProvisioningNavigatorNodeFactory implements NavigatorNodeFactory {
       icon: 'c8y-users'
     });
     this.provisioningNode.add(globalRolesNode);
+
+    const smartGroupsNode = new NavigatorNode({
+      label: 'Smart Groups',
+      path: 'provisioning/smart-groups',
+      icon: 'c8y-group-smart'
+    });
+    this.provisioningNode.add(smartGroupsNode);
   }
 
   get(activatedRoute?: ActivatedRoute): NavigatorNode {
