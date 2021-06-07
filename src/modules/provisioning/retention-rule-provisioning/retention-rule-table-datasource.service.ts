@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IResultList, Client } from '@c8y/client';
 import { ServerSideDataResult, Column, Pagination, DataSourceModifier } from '@c8y/ngx-components';
-import { IRetention } from '@models/Retention';
+import { IRetention } from '@models/retention';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { get } from 'lodash-es';

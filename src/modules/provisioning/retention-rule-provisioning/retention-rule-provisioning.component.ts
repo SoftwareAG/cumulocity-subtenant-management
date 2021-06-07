@@ -1,7 +1,7 @@
 import { Component, EventEmitter } from '@angular/core';
 import { Client } from '@c8y/client';
 import { AlertService, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
-import { IRetention } from '@models/Retention';
+import { IRetention } from '@models/retention';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { RetentionRuleTableDatasourceService } from './retention-rule-table-datasource.service';

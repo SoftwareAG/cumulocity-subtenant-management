@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { IRetention } from '@models/Retention';
+import { IRetention } from '@models/retention';
 import { Subject } from 'rxjs';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 
