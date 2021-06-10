@@ -27,10 +27,16 @@ import { ApiService } from '@c8y/ngx-components/api';
     ProvisioningModule,
     RestartApamaActionModule,
   ],
-  providers: [FakeMicroserviceService, SubtenantDetailsService, ExtensionsService, CustomApiService, {
-    provide: ApiService,
-    useExisting: CustomApiService
-  }],
+  providers: [
+    FakeMicroserviceService,
+    SubtenantDetailsService,
+    ExtensionsService,
+    CustomApiService,
+    {
+      provide: ApiService,
+      useExisting: CustomApiService
+    }
+  ],
   bootstrap: [BootstrapComponent]
 })
 export class AppModule {}
