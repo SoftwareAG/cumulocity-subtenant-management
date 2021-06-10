@@ -14,6 +14,7 @@ import {
 } from '@c8y/client';
 import { ModalService, Status } from '@c8y/ngx-components';
 import { flatMap, uniq } from 'lodash-es';
+import { CustomApiService } from './custom-api.service';
 
 export const HOOK_MICROSERVICE_ROLE = new InjectionToken('MicroserviceRole');
 
@@ -31,7 +32,8 @@ export class FakeMicroserviceService {
     private fetchClient: FetchClient,
     private tenantService: TenantService,
     private appService: ApplicationService,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private customApiService: CustomApiService
   ) {
     if (factories) {
       const roles = flatMap(factories);
@@ -66,6 +68,7 @@ export class FakeMicroserviceService {
       client.core.tenant = cred.tenant;
       const header = { 'X-Cumulocity-Application-Key': FakeMicroserviceService.appkey };
       client.core.defaultHeaders = Object.assign(header, client.core.defaultHeaders);
+      this.customApiService.hookIntoCustomClientFetch(client);
       return client;
     });
   }
