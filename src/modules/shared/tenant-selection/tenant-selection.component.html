@@ -1,10 +1,11 @@
 <div class="modal-header dialog-header">
-  <i class="c8y-icon c8y-icon-device-connect"></i>
+  <i class="c8y-icon c8y-icon-sub-tenants"></i>
   <h4>{{ title | translate }}</h4>
 </div>
 <div class="modal-body dialog-body">
+  <br>
   <div class="form-group">
-    <label translate>Tenants</label>
+    <label translate>{{ label | translate }}</label>
     <c8y-select
       [items]="tenants"
       [selected]="selectedTenants"

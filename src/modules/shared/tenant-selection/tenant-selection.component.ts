@@ -8,6 +8,7 @@ import { Subject } from 'rxjs';
 })
 export class TenantSelectionComponent {
   @Input() title = 'Subtenant selection';
+  @Input() label = 'Tenants';
   @Input() tenants: { name: string }[] = [];
   @Input() response: Subject<{ name: string }[]>;
   selectedTenants: { name: string }[] = [];
