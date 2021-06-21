@@ -120,7 +120,7 @@ export class TenantCreationHistoryComponent implements OnInit {
   > {
     this.isLoading = true;
     const tenants = (await this.tenantService.getCachedTenants()) as (ITenant & { creationTime: string })[];
-    const creationDates = tenants
+    let creationDates = tenants
       .sort((a, b) => a.creationTime.localeCompare(b.creationTime))
       .map((tmp, index) => {
         return {
@@ -130,6 +130,23 @@ export class TenantCreationHistoryComponent implements OnInit {
           status: tmp.status
         };
       });
+
+    // only show a maximum of one datapoint per day
+    const creationDateMap: {
+      [key: string]: {
+        label: string;
+        value: number;
+        creationTime: Date;
+        status: TenantStatus;
+      };
+    } = {};
+    creationDates.forEach((tmp) => {
+      const date = tmp.creationTime.toDateString();
+      creationDateMap[date] = tmp;
+    });
+    creationDates = Object.keys(creationDateMap)
+      .map((key) => creationDateMap[key])
+      .sort((a, b) => a.creationTime.getTime() - b.creationTime.getTime());
 
     this.isLoading = false;
     return creationDates;
