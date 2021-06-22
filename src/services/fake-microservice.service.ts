@@ -83,7 +83,6 @@ export class FakeMicroserviceService {
     return promise.then((result) => {
       if (result) {
         const filteredTenantsIds = result.map((tmp) => tmp.name);
-        console.log(filteredTenantsIds);
         return tenants.filter((tmp) => filteredTenantsIds.includes(tmp.id));
       } else {
         throw 'Tenant selection canceled';

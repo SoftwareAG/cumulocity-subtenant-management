@@ -1,3 +1,5 @@
+<c8y-title>Firmware</c8y-title>
+
 <ng-container *ngIf="firmwares | async as firm; else loading">
   <c8y-list-group *ngIf="firm.length">
     <c8y-li *ngFor="let firmware of firmwares | async">
