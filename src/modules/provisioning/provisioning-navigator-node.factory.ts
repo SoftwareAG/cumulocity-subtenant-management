@@ -51,6 +51,13 @@ export class ProvisioningNavigatorNodeFactory implements NavigatorNodeFactory {
       icon: 'c8y-group-smart'
     });
     this.provisioningNode.add(smartGroupsNode);
+
+    const alarmMappingNode = new NavigatorNode({
+      label: 'Alarm Mapping',
+      path: 'provisioning/alarm-mapping',
+      icon: 'c8y-alarm'
+    });
+    this.provisioningNode.add(alarmMappingNode);
   }
 
   get(activatedRoute?: ActivatedRoute): NavigatorNode {

@@ -13,6 +13,7 @@ import { SharedModule } from '@modules/shared/shared.module';
 import { CreateOrEditRetentionRuleModalComponent } from './modals/create-or-edit-retention-rule/create-or-edit-retention-rule-modal.component';
 import { GlobalRolesProvisioningComponent } from './global-roles-provisioning/global-roles-provisioning.component';
 import { SmartGroupsProvisioningComponent } from './smart-group-provisioning/smart-group-provisioning.component';
+import { AlarmMappingProvisioningComponent } from './alarm-mapping-provisioning/alarm-mapping-provisioning.component';
 
 @NgModule({
   imports: [CommonModule, CoreModule, ModalModule, SharedModule],
@@ -24,7 +25,8 @@ import { SmartGroupsProvisioningComponent } from './smart-group-provisioning/sma
     RetentionRuleProvisioningComponent,
     CreateOrEditRetentionRuleModalComponent,
     GlobalRolesProvisioningComponent,
-    SmartGroupsProvisioningComponent
+    SmartGroupsProvisioningComponent,
+    AlarmMappingProvisioningComponent
   ],
   entryComponents: [
     FirmwareProvisioningComponent,
@@ -34,7 +36,8 @@ import { SmartGroupsProvisioningComponent } from './smart-group-provisioning/sma
     RetentionRuleProvisioningComponent,
     CreateOrEditRetentionRuleModalComponent,
     GlobalRolesProvisioningComponent,
-    SmartGroupsProvisioningComponent
+    SmartGroupsProvisioningComponent,
+    AlarmMappingProvisioningComponent
   ],
   providers: [
     {
@@ -48,7 +51,9 @@ import { SmartGroupsProvisioningComponent } from './smart-group-provisioning/sma
         'ROLE_IDENTITY_ADMIN',
         'ROLE_RETENTION_RULE_READ',
         'ROLE_RETENTION_RULE_ADMIN',
-        'ROLE_APPLICATION_MANAGEMENT_READ'
+        'ROLE_APPLICATION_MANAGEMENT_READ',
+        'ROLE_ALARM_READ',
+        'ROLE_ALARM_ADMIN'
       ],
       multi: true
     },
@@ -87,6 +92,11 @@ import { SmartGroupsProvisioningComponent } from './smart-group-provisioning/sma
         {
           path: 'provisioning/smart-groups',
           component: SmartGroupsProvisioningComponent
+          // canActivate: [DeviceDashboardGuard],
+        },
+        {
+          path: 'provisioning/alarm-mapping',
+          component: AlarmMappingProvisioningComponent
           // canActivate: [DeviceDashboardGuard],
         }
       ] as Route[],
