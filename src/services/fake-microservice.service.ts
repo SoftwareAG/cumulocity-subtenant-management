@@ -114,9 +114,10 @@ export class FakeMicroserviceService {
   }
 
   public async prepareDummyMicroserviceForAllSubtenants(baseUrl?: string): Promise<ICredentials[]> {
+    const tenantPromise = this.subtenantDetails.getTenants();
     await this.checkDataUsageConfirmed();
     const app = await this.createDummyMicroserviceIfNotExisting();
-    const tenants = await this.subtenantDetails.getTenants();
+    const tenants = await tenantPromise;
     const filteredTenants = await this.subsetOfTenantsSelected(tenants);
     await this.subscribeAppToAppAllTenants(app, filteredTenants);
     const bootstrapCredentials = await this.getBootstrapUser(app);
