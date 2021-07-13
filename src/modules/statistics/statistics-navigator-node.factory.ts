@@ -24,6 +24,13 @@ export class StatisticsNavigatorNodeFactory implements NavigatorNodeFactory {
       icon: 'object-group'
     });
     this.statisticsNode.add(inventoryNode);
+
+    const storageNode = new NavigatorNode({
+      label: 'Storage',
+      path: 'statistics/storage',
+      icon: 'object-group'
+    });
+    this.statisticsNode.add(storageNode);
   }
 
   get(activatedRoute?: ActivatedRoute): NavigatorNode {

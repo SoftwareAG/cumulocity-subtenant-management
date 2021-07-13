@@ -1,0 +1,32 @@
+<c8y-title>{{ 'Storage statistics' | translate }}</c8y-title>
+
+<div class="split-scroll">
+  <c8y-data-grid
+    [title]="'Storage statistics' | translate"
+    class="scroll-column sort-fix"
+    [noMatchingItemsLabel]="'No matching Tenant.'"
+    [columns]="columns"
+    [pagination]="datasource.pagination"
+    [selectable]="false"
+    [actionControls]="[]"
+    [bulkActionControls]="[]"
+    [serverSideDataCallback]="datasource.serverSideDataCallback"
+    [itemsSelectLimit]="50"
+  >
+    <c8y-column name="tenant">
+      <ng-container *c8yCellRendererDef="let context">
+        <ps-tenant-details [tenantId]="context.value"></ps-tenant-details>
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="actions1">
+      <ng-container *c8yCellRendererDef="let context">
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-default" title="Remove all reports older than 14 Days" (click)="cleanupReports(context.item)">
+            <i class="fa fw fa-refresh"></i>
+            Cleanup Reports
+          </button>
+        </div>
+      </ng-container>
+    </c8y-column>
+  </c8y-data-grid>
+</div>

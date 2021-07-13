@@ -10,6 +10,7 @@ import { SharedModule } from '@modules/shared/shared.module';
 import { PieChartComponent } from './pie-chart/pie-chart.component';
 import { ChartsModule } from 'ng2-charts';
 import { RouterModule } from '@angular/router';
+import { StorageStatisticsComponent } from './storage-statistics/storage-statistics.component';
 
 @NgModule({
   imports: [
@@ -34,17 +35,32 @@ import { RouterModule } from '@angular/router';
           {
             path: 'inventory',
             component: InventoryStatisticsComponent
+          },
+          {
+            path: 'storage',
+            component: StorageStatisticsComponent
           }
         ]
       }
     ])
   ],
-  declarations: [FirmwareStatisticsComponent, InventoryStatisticsComponent, PieChartComponent],
-  entryComponents: [FirmwareStatisticsComponent, InventoryStatisticsComponent],
+  declarations: [
+    FirmwareStatisticsComponent,
+    InventoryStatisticsComponent,
+    PieChartComponent,
+    StorageStatisticsComponent
+  ],
+  entryComponents: [FirmwareStatisticsComponent, InventoryStatisticsComponent, StorageStatisticsComponent],
   providers: [
     {
       provide: HOOK_MICROSERVICE_ROLE,
-      useValue: ['ROLE_INVENTORY_READ'],
+      useValue: [
+        'ROLE_INVENTORY_READ',
+        'ROLE_MEASUREMENT_READ',
+        'ROLE_EVENT_READ',
+        'ROLE_ALARM_READ',
+        'ROLE_DEVICE_CONTROL_READ'
+      ],
       multi: true
     },
     StatisticsNavigatorNodeFactory,
