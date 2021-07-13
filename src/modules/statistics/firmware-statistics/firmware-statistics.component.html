@@ -1,17 +1,38 @@
 <c8y-title>Firmware Statistics</c8y-title>
 
-<div class="split-scroll">
-  <c8y-data-grid
-    [title]="'Installed Firmwares' | translate"
-    class="scroll-column sort-fix"
-    [noMatchingItemsLabel]="'No matching Template.'"
-    [columns]="columns"
-    [pagination]="datasource.pagination"
-    [selectable]="false"
-    [actionControls]="[]"
-    [bulkActionControls]="[]"
-    [serverSideDataCallback]="datasource.serverSideDataCallback"
-    [itemsSelectLimit]="10"
-  >
-  </c8y-data-grid>
+<div class="row split-scroll" *ngIf="!isLoading">
+  <div class="col-md-4 scroll-column">
+    <ul class="c8y-nav-stacked inner-scroll">
+      <li class="c8y-stacked-item removable" *ngFor="let chart of charts" (click)="selectChart(chart)" [ngClass]="{'active': currentChart === chart}">
+        <h3>
+          <span class="text-truncate">
+            <i class="fa fw fa-floppy-o"></i>
+            <span [title]="chart.label">{{ chart.label }}</span>
+          </span>
+        </h3>
+      </li>
+    </ul>
+  </div>
+
+  <div class="col-md-8 scroll-column">
+    <div class="center-block full-height" *ngIf="!currentChart">
+      <div class="c8y-empty-state text-center">
+        <h1>
+          <i class="fa fa-th"></i>
+        </h1>
+        <h3>{{ "No device/firmware combination selected." | translate }}</h3>
+      </div>
+    </div>
+    <div class="card content-fullpage d-flex d-col" *ngIf="currentChart">
+      <div class="card-header separator">
+        <h4 class="card-title">{{ currentChart.label }}</h4>
+      </div>
+        <div class="card-block flex-grow">
+          <ps-pie-chart [pieChartLabels]="currentChart.labels" [pieChartData]="currentChart.values"></ps-pie-chart>
+
+        </div>
+      <!-- <div class="card-footer separator text-center">
+      </div> -->
+    </div>
+  </div>
 </div>

@@ -7,10 +7,12 @@ import { InventoryStatisticsComponent } from './inventory-statistics/inventory-s
 import { HOOK_MICROSERVICE_ROLE } from '@services/fake-microservice.service';
 import { PopoverModule } from 'ngx-bootstrap/popover';
 import { SharedModule } from '@modules/shared/shared.module';
+import { PieChartComponent } from './pie-chart/pie-chart.component';
+import { ChartsModule } from 'ng2-charts';
 
 @NgModule({
-  imports: [CommonModule, CoreModule, PopoverModule, SharedModule],
-  declarations: [FirmwareStatisticsComponent, InventoryStatisticsComponent],
+  imports: [CommonModule, CoreModule, PopoverModule, SharedModule, ChartsModule],
+  declarations: [FirmwareStatisticsComponent, InventoryStatisticsComponent, PieChartComponent],
   entryComponents: [FirmwareStatisticsComponent, InventoryStatisticsComponent],
   providers: [
     {

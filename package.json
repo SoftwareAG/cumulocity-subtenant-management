@@ -29,6 +29,7 @@
     "@c8y/ngx-components": "1009.0.5",
     "@c8y/style": "1009.0.5",
     "chart.js": "^2.9.4",
+    "chartjs-plugin-datalabels": "^0.7.0",
     "chartjs-plugin-zoom": "^0.7.7",
     "core-js": "^3.4.0",
     "lodash-es": "^4.17.21",
