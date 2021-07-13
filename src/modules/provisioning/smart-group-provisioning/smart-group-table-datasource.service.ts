@@ -27,7 +27,7 @@ export class SmartGroupTableDatasourceService {
     const result: ServerSideDataResult = {
       size: undefined,
       filteredSize: count,
-      ...resList
+      ...(resList as any)
     };
 
     return result;

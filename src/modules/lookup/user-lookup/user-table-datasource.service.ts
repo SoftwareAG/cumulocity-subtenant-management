@@ -79,7 +79,7 @@ export class UserTableDatasourceService {
     const result: ServerSideDataResult = {
       size: users.length,
       filteredSize: filteredUsers.length,
-      ...resList
+      ...(resList as any)
     };
 
     return result;

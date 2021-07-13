@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CoreModule, HOOK_NAVIGATOR_NODES, HOOK_ONCE_ROUTE, Route } from '@c8y/ngx-components';
+import { CoreModule, HOOK_NAVIGATOR_NODES } from '@c8y/ngx-components';
 import { ProvisioningNavigatorNodeFactory } from './provisioning-navigator-node.factory';
 import { FirmwareProvisioningComponent } from './firmware-provisioning/firmware-provisioning.component';
 import { SmartrestProvisioningComponent } from './smartrest-provisioning/smartrest-provisioning.component';
@@ -14,9 +14,55 @@ import { CreateOrEditRetentionRuleModalComponent } from './modals/create-or-edit
 import { GlobalRolesProvisioningComponent } from './global-roles-provisioning/global-roles-provisioning.component';
 import { SmartGroupsProvisioningComponent } from './smart-group-provisioning/smart-group-provisioning.component';
 import { AlarmMappingProvisioningComponent } from './alarm-mapping-provisioning/alarm-mapping-provisioning.component';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
-  imports: [CommonModule, CoreModule, ModalModule, SharedModule],
+  imports: [
+    CommonModule,
+    CoreModule,
+    ModalModule,
+    SharedModule,
+    RouterModule.forChild([
+      {
+        path: 'provisioning',
+        children: [
+          {
+            path: '',
+            redirectTo: 'firmware',
+            pathMatch: 'full'
+          },
+          {
+            path: 'firmware',
+            component: FirmwareProvisioningComponent
+          },
+          {
+            path: 'smartrest',
+            component: SmartrestProvisioningComponent
+          },
+          {
+            path: 'tenant-options',
+            component: TenantOptionsProvisioningComponent
+          },
+          {
+            path: 'retention-rules',
+            component: RetentionRuleProvisioningComponent
+          },
+          {
+            path: 'global_roles',
+            component: GlobalRolesProvisioningComponent
+          },
+          {
+            path: 'smart-groups',
+            component: SmartGroupsProvisioningComponent
+          },
+          {
+            path: 'alarm-mapping',
+            component: AlarmMappingProvisioningComponent
+          }
+        ]
+      }
+    ])
+  ],
   declarations: [
     FirmwareProvisioningComponent,
     SmartrestProvisioningComponent,
@@ -55,51 +101,6 @@ import { AlarmMappingProvisioningComponent } from './alarm-mapping-provisioning/
         'ROLE_ALARM_READ',
         'ROLE_ALARM_ADMIN'
       ],
-      multi: true
-    },
-    {
-      provide: HOOK_ONCE_ROUTE,
-      useValue: [
-        {
-          path: 'provisioning',
-          redirectTo: 'provisioning/firmware'
-        },
-        {
-          path: 'provisioning/firmware',
-          component: FirmwareProvisioningComponent
-          // canActivate: [DeviceDashboardGuard],
-        },
-        {
-          path: 'provisioning/smartrest',
-          component: SmartrestProvisioningComponent
-          // canActivate: [DeviceDashboardGuard],
-        },
-        {
-          path: 'provisioning/tenant-options',
-          component: TenantOptionsProvisioningComponent
-          // canActivate: [DeviceDashboardGuard],
-        },
-        {
-          path: 'provisioning/retention-rules',
-          component: RetentionRuleProvisioningComponent
-          // canActivate: [DeviceDashboardGuard],
-        },
-        {
-          path: 'provisioning/global_roles',
-          component: GlobalRolesProvisioningComponent
-          // canActivate: [DeviceDashboardGuard],
-        },
-        {
-          path: 'provisioning/smart-groups',
-          component: SmartGroupsProvisioningComponent
-          // canActivate: [DeviceDashboardGuard],
-        },
-        {
-          path: 'provisioning/alarm-mapping',
-          component: AlarmMappingProvisioningComponent
-          // canActivate: [DeviceDashboardGuard],
-        }
-      ] as Route[],
       multi: true
     },
     ProvisioningNavigatorNodeFactory,

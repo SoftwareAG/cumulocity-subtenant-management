@@ -28,7 +28,7 @@ export class TenantOptionsTableDatasourceService {
     const result: ServerSideDataResult = {
       size: undefined,
       filteredSize: count,
-      ...resList
+      ...(resList as any)
     };
 
     return result;

@@ -83,7 +83,7 @@ export class DeviceTableDatasourceService {
     const result: ServerSideDataResult = {
       size: undefined,
       filteredSize: devices.length,
-      ...resList
+      ...(resList as any)
     };
 
     return result;

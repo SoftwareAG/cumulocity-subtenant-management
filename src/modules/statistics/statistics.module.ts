@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CoreModule, HOOK_NAVIGATOR_NODES, HOOK_ONCE_ROUTE, Route } from '@c8y/ngx-components';
+import { CoreModule, HOOK_NAVIGATOR_NODES } from '@c8y/ngx-components';
 import { FirmwareStatisticsComponent } from './firmware-statistics/firmware-statistics.component';
 import { StatisticsNavigatorNodeFactory } from './statistics-navigator-node.factory';
 import { InventoryStatisticsComponent } from './inventory-statistics/inventory-statistics.component';
@@ -9,36 +9,42 @@ import { PopoverModule } from 'ngx-bootstrap/popover';
 import { SharedModule } from '@modules/shared/shared.module';
 import { PieChartComponent } from './pie-chart/pie-chart.component';
 import { ChartsModule } from 'ng2-charts';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
-  imports: [CommonModule, CoreModule, PopoverModule, SharedModule, ChartsModule],
+  imports: [
+    CommonModule,
+    CoreModule,
+    PopoverModule,
+    SharedModule,
+    ChartsModule,
+    RouterModule.forChild([
+      {
+        path: 'statistics',
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'firmware'
+          },
+          {
+            path: 'firmware',
+            component: FirmwareStatisticsComponent
+          },
+          {
+            path: 'inventory',
+            component: InventoryStatisticsComponent
+          }
+        ]
+      }
+    ])
+  ],
   declarations: [FirmwareStatisticsComponent, InventoryStatisticsComponent, PieChartComponent],
   entryComponents: [FirmwareStatisticsComponent, InventoryStatisticsComponent],
   providers: [
     {
       provide: HOOK_MICROSERVICE_ROLE,
       useValue: ['ROLE_INVENTORY_READ'],
-      multi: true
-    },
-    {
-      provide: HOOK_ONCE_ROUTE,
-      useValue: [
-        {
-          path: 'statistics',
-          redirectTo: 'statistics/firmware'
-          // canActivate: [DeviceDashboardGuard],
-        },
-        {
-          path: 'statistics/firmware',
-          component: FirmwareStatisticsComponent
-          // canActivate: [DeviceDashboardGuard],
-        },
-        {
-          path: 'statistics/inventory',
-          component: InventoryStatisticsComponent
-          // canActivate: [DeviceDashboardGuard],
-        }
-      ] as Route[],
       multi: true
     },
     StatisticsNavigatorNodeFactory,

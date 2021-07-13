@@ -1,7 +1,8 @@
 import { NgModule, OnDestroy } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule as ngRouterModule } from '@angular/router';
-import { CoreModule, BootstrapComponent, RouterModule, AlertService, AppStateService } from '@c8y/ngx-components';
+import { UpgradeModule as NgUpgradeModule } from '@angular/upgrade/static';
+import { CoreModule, RouterModule, AlertService, AppStateService } from '@c8y/ngx-components';
 import { ProvisioningModule } from '@modules/provisioning/provisioning.module';
 import { LookupModule } from '@modules/lookup/lookup.module';
 import { StatisticsModule } from '@modules/statistics/statistics.module';
@@ -16,13 +17,16 @@ import { ApiService } from '@c8y/ngx-components/api';
 import { filter, map } from 'rxjs/operators';
 import { IUser, UserService } from '@c8y/client';
 import { Subscription } from 'rxjs';
+import { HybridAppModule, UpgradeModule, UPGRADE_ROUTES } from '@c8y/ngx-components/upgrade';
 
 @NgModule({
   imports: [
+    UpgradeModule,
     BrowserAnimationsModule,
     RouterModule.forRoot(),
-    ngRouterModule.forRoot([], { enableTracing: false, useHash: true }),
+    ngRouterModule.forRoot([...UPGRADE_ROUTES], { enableTracing: true, useHash: true }),
     CoreModule.forRoot(),
+    NgUpgradeModule,
     HomeModule,
     CleanupModule,
     StatisticsModule,
@@ -39,10 +43,9 @@ import { Subscription } from 'rxjs';
       provide: ApiService,
       useExisting: CustomApiService
     }
-  ],
-  bootstrap: [BootstrapComponent]
+  ]
 })
-export class AppModule implements OnDestroy {
+export class AppModule extends HybridAppModule implements OnDestroy {
   private roleSubscription: Subscription;
   private roles = [
     'ROLE_APPLICATION_MANAGEMENT_ADMIN',
@@ -51,7 +54,13 @@ export class AppModule implements OnDestroy {
   ];
   private rolesTenantUpdate = ['ROLE_TENANT_MANAGEMENT_UPDATE', 'ROLE_TENANT_MANAGEMENT_ADMIN'];
 
-  constructor(private appState: AppStateService, private alertService: AlertService, private userService: UserService) {
+  constructor(
+    protected upgrade: NgUpgradeModule,
+    private appState: AppStateService,
+    private alertService: AlertService,
+    private userService: UserService
+  ) {
+    super();
     this.roleSubscription = this.appState.currentUser
       .pipe(
         filter((user) => !!user),

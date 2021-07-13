@@ -25,9 +25,10 @@
     "@angular/platform-browser-dynamic": "8.2.13",
     "@angular/router": "8.2.13",
     "@angular/upgrade": "8.2.13",
-    "@c8y/client": "^1009.0.5",
-    "@c8y/ngx-components": "1009.0.5",
-    "@c8y/style": "1009.0.5",
+    "@c8y/client": "^1009.0.12",
+    "@c8y/ng1-modules": "1009.0.12",
+    "@c8y/ngx-components": "1009.0.12",
+    "@c8y/style": "1009.0.12",
     "chart.js": "^2.9.4",
     "chartjs-plugin-datalabels": "^0.7.0",
     "chartjs-plugin-zoom": "^0.7.7",
@@ -43,7 +44,7 @@
     "@angular-devkit/build-angular": "0.803.23",
     "@angular/compiler-cli": "8.2.13",
     "@angular/language-service": "8.2.13",
-    "@c8y/cli": "1009.0.5",
+    "@c8y/cli": "1009.0.12",
     "@types/lodash-es": "^4.17.4",
     "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^4.23.0",
@@ -58,10 +59,12 @@
       "name": "Subtenant Management",
       "contextPath": "subtenant-management",
       "key": "subtenant-management-application-key",
+      "upgrade": true,
       "dynamicOptionsUrl": "/apps/public/public-options/options.json",
       "icon": {
         "class": "c8y-icon-sub-tenants"
-      }
+      },
+      "contentSecurityPolicy": "base-uri 'none'; default-src 'self' 'unsafe-inline' http: https: ws: wss:; connect-src 'self' *.billwerk.com http: https: ws: wss:;  script-src 'self' open.mapquestapi.com *.twitter.com *.twimg.com *.aptrinsic.com  *.billwerk.com 'unsafe-inline' 'unsafe-eval' data:; style-src * 'unsafe-inline' blob:; img-src * data:; font-src * data:; frame-src *;"
     },
     "cli": {}
   }

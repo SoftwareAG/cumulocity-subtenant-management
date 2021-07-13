@@ -71,7 +71,7 @@ export class FirmwareUpdateHistoryTableDatasourceService {
     const result: ServerSideDataResult = {
       size: undefined,
       filteredSize: filteredOperations.length,
-      ...resList
+      ...(resList as any)
     };
 
     return result;

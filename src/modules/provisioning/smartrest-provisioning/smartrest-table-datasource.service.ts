@@ -39,7 +39,7 @@ export class SmartrestTableDatasourceService {
     const result: ServerSideDataResult = {
       size,
       filteredSize,
-      ...devicesResponse
+      ...(devicesResponse as any)
     };
 
     return result;

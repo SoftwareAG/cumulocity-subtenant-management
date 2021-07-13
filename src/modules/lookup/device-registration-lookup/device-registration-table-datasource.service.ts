@@ -82,7 +82,7 @@ export class DeviceRegistrationTableDatasourceService {
     const result: ServerSideDataResult = {
       size: deviceRegistrations.length,
       filteredSize: filtereddeviceRegistrations.length,
-      ...resList
+      ...(resList as any)
     };
 
     return result;

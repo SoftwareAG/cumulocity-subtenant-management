@@ -72,7 +72,7 @@ export class RetentionRuleTableDatasourceService {
     const result: ServerSideDataResult = {
       size: undefined,
       filteredSize: filteredRules.length,
-      ...resList
+      ...(resList as any)
     };
 
     return result;

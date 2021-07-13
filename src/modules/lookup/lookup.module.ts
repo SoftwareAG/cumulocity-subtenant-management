@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CoreModule, HOOK_NAVIGATOR_NODES, HOOK_ONCE_ROUTE, Route } from '@c8y/ngx-components';
+import { CoreModule, HOOK_NAVIGATOR_NODES } from '@c8y/ngx-components';
 import { DeviceLookupComponent } from './device-lookup/device-lookup.component';
 import { LookupNavigatorNodeFactory } from './lookup-navigator-node.factory';
 import { UserLookupComponent } from './user-lookup/user-lookup.component';
@@ -17,9 +17,43 @@ import { DeviceRegistrationLookupComponent } from './device-registration-lookup/
 import { AddDeviceRegistrationModalComponent } from './modals/add-device-registration-modal/add-device-registration-modal.component';
 import { CustomFirmwareUpdateModalComponent } from './modals/custom-firmware-update-modal/custom-firmware-update-modal.component';
 import { FirmwareUpdateHistoryComponent } from './firmware-update-history/firmware-update-history.component';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
-  imports: [CommonModule, CoreModule, ModalModule.forChild(), SharedModule],
+  imports: [
+    CommonModule,
+    CoreModule,
+    ModalModule.forChild(),
+    SharedModule,
+    RouterModule.forChild([
+      {
+        path: 'lookup',
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            redirectTo: 'device'
+          },
+          {
+            path: 'device',
+            component: DeviceLookupComponent
+          },
+          {
+            path: 'device-registration',
+            component: DeviceRegistrationLookupComponent
+          },
+          {
+            path: 'user',
+            component: UserLookupComponent
+          },
+          {
+            path: 'firmware-history',
+            component: FirmwareUpdateHistoryComponent
+          }
+        ]
+      }
+    ])
+  ],
   declarations: [
     DeviceLookupComponent,
     UserLookupComponent,
@@ -58,32 +92,6 @@ import { FirmwareUpdateHistoryComponent } from './firmware-update-history/firmwa
         'ROLE_DEVICE_CONTROL_READ',
         'ROLE_DEVICE_CONTROL_ADMIN'
       ],
-      multi: true
-    },
-    {
-      provide: HOOK_ONCE_ROUTE,
-      useValue: [
-        {
-          path: 'lookup',
-          redirectTo: 'lookup/device'
-        },
-        {
-          path: 'lookup/device',
-          component: DeviceLookupComponent
-        },
-        {
-          path: 'lookup/device-registration',
-          component: DeviceRegistrationLookupComponent
-        },
-        {
-          path: 'lookup/user',
-          component: UserLookupComponent
-        },
-        {
-          path: 'lookup/firmware-history',
-          component: FirmwareUpdateHistoryComponent
-        }
-      ] as Route[],
       multi: true
     },
     LookupNavigatorNodeFactory,

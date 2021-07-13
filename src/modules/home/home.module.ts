@@ -10,6 +10,7 @@ const translations = new NavigatorNode({
   label: gettext('Home'),
   icon: 'home',
   path: '/home',
+  priority: 10000,
   routerLinkExact: false
 });
 
