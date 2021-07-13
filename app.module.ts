@@ -24,7 +24,7 @@ import { HybridAppModule, UpgradeModule, UPGRADE_ROUTES } from '@c8y/ngx-compone
     UpgradeModule,
     BrowserAnimationsModule,
     RouterModule.forRoot(),
-    ngRouterModule.forRoot([...UPGRADE_ROUTES], { enableTracing: true, useHash: true }),
+    ngRouterModule.forRoot([...UPGRADE_ROUTES], { enableTracing: false, useHash: true }),
     CoreModule.forRoot(),
     NgUpgradeModule,
     HomeModule,
