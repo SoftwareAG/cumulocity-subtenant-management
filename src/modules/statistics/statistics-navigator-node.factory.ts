@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NavigatorNode, NavigatorNodeFactory } from '@c8y/ngx-components';
-import { Observable } from 'rxjs';
 
 @Injectable()
 export class StatisticsNavigatorNodeFactory implements NavigatorNodeFactory {
@@ -9,7 +8,8 @@ export class StatisticsNavigatorNodeFactory implements NavigatorNodeFactory {
   constructor() {
     this.statisticsNode = new NavigatorNode({
       label: 'Statistics',
-      path: 'statistics'
+      path: 'statistics',
+      icon: 'line-chart'
     });
     const firmwareNode = new NavigatorNode({
       label: 'Firmware',
