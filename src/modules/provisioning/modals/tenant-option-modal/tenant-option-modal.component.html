@@ -1,0 +1,39 @@
+<div class="modal-header dialog-header">
+  <i class="c8y-icon c8y-icon-firmware"></i>
+  <h4 translate>Tenant Option</h4>
+</div>
+<div class="modal-body dialog-body">
+  <div class="form-group">
+    <label for="category">Tenant Option Category</label>
+    <input id="category" type="text" class="form-control" [(ngModel)]="tenantOption.category">
+  </div>
+  <div class="form-group">
+    <label for="key">Tenant Option Key</label>
+    <input id="key" type="text" class="form-control" [(ngModel)]="tenantOption.key">
+  </div>
+  <div class="form-group">
+    <label for="value">Tenant Option Value</label>
+    <input id="value" type="text" class="form-control" [(ngModel)]="tenantOption.value">
+  </div>
+</div>
+<div class="modal-footer">
+  <button
+    class="btn btn-default"
+    translate
+    type="button"
+    title="{{ 'Cancel' | translate }}"
+    (click)="onDismiss($event)"
+  >
+    Cancel
+  </button>
+  <button
+    class="btn btn-primary"
+    translate
+    type="submit"
+    title="{{ 'Provision Tenant Option' | translate }}"
+    [disabled]="!tenantOption.category || !tenantOption.key || !tenantOption.value"
+    (click)="onSave($event)"
+  >
+    Provision Tenant Option
+  </button>
+</div>

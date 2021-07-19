@@ -1,0 +1,39 @@
+<div class="modal-header dialog-header">
+  <i class="c8y-icon c8y-icon-firmware"></i>
+  <h4 translate>Firmware Update</h4>
+</div>
+<div class="modal-body dialog-body">
+  <div class="form-group">
+    <label for="name">Firmware Name</label>
+    <input id="name" type="text" class="form-control" [(ngModel)]="firmware.name">
+  </div>
+  <div class="form-group">
+    <label for="version">Firmware Version</label>
+    <input id="version" type="text" class="form-control" [(ngModel)]="firmware.version">
+  </div>
+  <div class="form-group">
+    <label for="url">Firmware URL</label>
+    <input id="url" type="text" class="form-control" [(ngModel)]="firmware.url">
+  </div>
+</div>
+<div class="modal-footer">
+  <button
+    class="btn btn-default"
+    translate
+    type="button"
+    title="{{ 'Cancel' | translate }}"
+    (click)="onDismiss($event)"
+  >
+    Cancel
+  </button>
+  <button
+    class="btn btn-primary"
+    translate
+    type="submit"
+    title="{{ 'Perform Firmware Upgrades' | translate }}"
+    [disabled]="!firmware.name || !firmware.version || !firmware.url"
+    (click)="onSave($event)"
+  >
+    Perform Firmware Upgrades
+  </button>
+</div>

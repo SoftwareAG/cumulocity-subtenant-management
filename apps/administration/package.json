@@ -1,0 +1,19 @@
+{
+  "name": "administration",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "c8y": {
+    "application": {
+      "name": "administration",
+      "contextPath": "administration",
+      "key": "administration-application-key",
+      "upgrade": true,
+      "rightDrawer": true,
+      "tabsHorizontal": true,
+      "dynamicOptionsUrl": "/apps/public/public-options/options.json",
+      "contentSecurityPolicy": "base-uri 'none'; default-src 'self' 'unsafe-inline' http: https: ws: wss:; connect-src 'self' *.billwerk.com http: https: ws: wss:;  script-src 'self' open.mapquestapi.com *.twitter.com *.twimg.com *.aptrinsic.com  *.billwerk.com 'unsafe-inline' 'unsafe-eval' data:; style-src * 'unsafe-inline' blob:; img-src * data:; font-src * data:; frame-src *;"
+    },
+    "cli": {}
+  }
+}

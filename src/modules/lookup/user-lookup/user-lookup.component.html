@@ -1,0 +1,62 @@
+<c8y-title>User Lookup</c8y-title>
+
+<c8y-action-bar-item [placement]="'right'">
+  <button class="btn btn-link" (click)="createNewUser()">
+    <i c8yIcon="c8y-add-user"></i>
+    Create User
+  </button>
+</c8y-action-bar-item>
+<div class="split-scroll">
+  <c8y-data-grid
+    [title]="'Users' | translate"
+    class="scroll-column sort-fix"
+    [noMatchingItemsLabel]="'No matching Template.'"
+    [columns]="columns"
+    [pagination]="datasource.pagination"
+    [selectable]="false"
+    [actionControls]="[]"
+    [bulkActionControls]="[]"
+    [serverSideDataCallback]="datasource.serverSideDataCallback"
+    [itemsSelectLimit]="10"
+    [refresh]="refresh"
+  >
+    <c8y-column name="tenant">
+      <ng-container *c8yCellRendererDef="let context">
+        <ps-tenant-details [tenantId]="context.value"></ps-tenant-details>
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="activated">
+      <ng-container *c8yCellRendererDef="let context">
+        <i [class]="context.value ? 'fa fa-check text-success': 'fa fa-ban text-danger'"></i>
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="tfaEnabled">
+      <ng-container *c8yCellRendererDef="let context">
+        <i [class]="context.value ? 'fa fa-check text-success': 'fa fa-close text-danger'"></i>
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="lastPasswordChange">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value | date: "medium" }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="actions1">
+      <ng-container *c8yCellRendererDef="let context">
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-default" [title]="context.item.data.enabled ? 'Disable User' : 'Enable User'" (click)="toggleUserActivation(context.item)">
+            <i [class]="!context.item.data.enabled ? 'fa fa-check text-success': 'fa fa-ban text-danger'"></i>
+          </button>
+          <button class="btn btn-default" title="Delete User" (click)="deleteUser(context.item)">
+            <i class="fa fw fa-trash"></i>
+          </button>
+          <button class="btn btn-default" title="Change Password" (click)="changePassword(context.item)">
+            <i class="fa fw fa-pencil"></i>
+          </button>
+          <button class="btn btn-default" title="Send Password reset Mail" (click)="sendPasswordResetMail(context.item)" [disabled]="!context.item.data.enabled || !context.item.data.email">
+            <i class="fa fw fa-envelope"></i>
+          </button>
+        </div>
+      </ng-container>
+    </c8y-column>
+  </c8y-data-grid>
+</div>

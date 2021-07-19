@@ -1,0 +1,75 @@
+<div class="modal-header dialog-header">
+  <i class="c8y-icon c8y-icon-add-user"></i>
+  <h4 translate>Create new User</h4>
+</div>
+<div class="modal-body dialog-body">
+  <div class="form-group">
+    <label for="tenantSelection">Tenant</label>
+    <div class="c8y-select-wrapper">
+      <select id="tenantSelection" class="form-control" [(ngModel)]="selectedTenant" (change)="onTenantSelect()">
+        <option *ngFor="let item of clients" [value]="item.core.tenant">{{item.core.tenant}}</option>
+      </select>
+      <span></span>
+    </div>
+  </div>
+
+  <label>Assign Groups</label>
+  <c8y-select [items]="availableGroups" [selected]="selectedGroups" (onChange)="selectedGroups = $event"></c8y-select>
+
+  <div class="form-group">
+    <label for="example1">Username</label>
+    <input id="example1" type="text" class="form-control" [(ngModel)]="user.userName">
+  </div>
+
+  <div class="form-group">
+    <label for="example1">Alias</label>
+    <input id="example1" type="text" class="form-control" [(ngModel)]="user.displayName">
+  </div>
+  
+  <div class="form-group">
+    <label for="exampleInputEmail1">Email address</label>
+    <input
+      type="email"
+      class="form-control"
+      id="exampleInputEmail1"
+      [(ngModel)]="user.email"
+      placeholder="e.g. jane.doe@mail.com"
+    />
+  </div>
+
+  <div class="form-group">
+    <label for="exampleInputPassword1">Password</label>
+    <input type="password" class="form-control" id="exampleInputPassword1" [(ngModel)]="user.password" placeholder="Password" />
+  </div>
+
+  <div class="form-group">
+    <label for="example1">First Name</label>
+    <input id="example1" type="text" class="form-control" [(ngModel)]="user.firstName">
+  </div>
+
+  <div class="form-group">
+    <label for="example1">Last Name</label>
+    <input id="example1" type="text" class="form-control" [(ngModel)]="user.lastName">
+  </div>
+</div>
+<div class="modal-footer">
+  <button
+    class="btn btn-default"
+    translate
+    type="button"
+    title="{{ 'Cancel' | translate }}"
+    (click)="onDismiss($event)"
+  >
+    Cancel
+  </button>
+  <button
+    class="btn btn-primary"
+    [disabled]="!selectedClient || !selectedTenant"
+    translate
+    type="submit"
+    title="{{ 'Create User' | translate }}"
+    (click)="onSave($event)"
+  >
+    Create User
+  </button>
+</div>

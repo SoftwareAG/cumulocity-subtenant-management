@@ -1,0 +1,53 @@
+<c8y-title>{{ 'SmartREST templates' | translate }}</c8y-title>
+<div class="split-scroll">
+  <c8y-data-grid
+    [title]="'SmartREST templates' | translate"
+    class="scroll-column sort-fix"
+    [noMatchingItemsLabel]="'No matching Template.'"
+    [columns]="columns"
+    [pagination]="datasource.pagination"
+    [selectable]="true"
+    [actionControls]="actionControls"
+    [bulkActionControls]="bulkActionControls"
+    [serverSideDataCallback]="datasource.serverSideDataCallback"
+    [itemsSelectLimit]="50"
+  >
+    <c8y-column name="id">
+      <ng-container *c8yCellRendererDef="let context">
+        <a *ngIf="context.item?.com_cumulocity_model_smartrest_csv_CsvSmartRestTemplate" [href]="'/apps/devicemanagement/index.html#/smart-rest-templates/' + context.value">{{ context.value }}</a>
+        <a *ngIf="!context.item?.com_cumulocity_model_smartrest_csv_CsvSmartRestTemplate">{{ context.value }}</a>
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="requestTemplates">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ (context.item?.com_cumulocity_model_smartrest_csv_CsvSmartRestTemplate || context.item?.com_cumulocity_model_smartrest_SmartRestTemplate)?.requestTemplates?.length || '0' }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="responseTemplates">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ (context.item?.com_cumulocity_model_smartrest_csv_CsvSmartRestTemplate || context.item?.com_cumulocity_model_smartrest_SmartRestTemplate)?.responseTemplates?.length || '0' }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="version">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ (context.item?.com_cumulocity_model_smartrest_csv_CsvSmartRestTemplate) ? 'v2' : 'v1'  }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="lastUpdated">
+      <ng-container *c8yCellRendererDef="let context">
+        {{ context.value | date: "dd MMM yyyy, HH:mm:ss" }}
+      </ng-container>
+    </c8y-column>
+    <c8y-column name="actions1">
+      <ng-container *c8yCellRendererDef="let context">
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-default" title="(Re-)Provision to specific subtenants" (click)="provisioningItemToTenantSelection([context.item.id])" [disabled]="provisioningOngoing">
+            <i class="fa fw fa-refresh" *ngIf="!provisioningOngoing"></i>
+            <i class="fa fa-spinner fa-spin" *ngIf="provisioningOngoing"></i>
+            (Re-)Provision
+          </button>
+        </div>
+      </ng-container>
+    </c8y-column>
+  </c8y-data-grid>
+</div>

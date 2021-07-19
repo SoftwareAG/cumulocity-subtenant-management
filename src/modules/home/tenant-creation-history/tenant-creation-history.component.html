@@ -1,0 +1,21 @@
+<div class="card d-flex d-col" style="min-height: 50vh; max-height: 90vh;">
+  <div class="card-header separator">
+    <h4 class="card-title">Tenant Creation History</h4>
+  </div>
+  <div class="card-block flex-grow">
+    <div class="flex-col flex-evenly" style="width: 100%; height: 100%;" *ngIf="isLoading">
+      <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
+    </div>
+    <canvas baseChart *ngIf="!isLoading"
+      [datasets]="lineChartData"
+      [labels]="lineChartLabels"
+      [options]="lineChartOptions"
+      [plugins]="lineChartPlugins"
+      [legend]="lineChartLegend"
+      [chartType]="lineChartType"
+      [colors]="lineChartColors"
+      (dblclick)="resetZoom()">
+    </canvas>
+  </div>
+  
+</div>

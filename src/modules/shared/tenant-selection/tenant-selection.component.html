@@ -1,0 +1,38 @@
+<div class="modal-header dialog-header">
+  <i class="c8y-icon c8y-icon-sub-tenants"></i>
+  <h4>{{ title | translate }}</h4>
+</div>
+<div class="modal-body dialog-body">
+  <br>
+  <div class="form-group">
+    <label translate>{{ label | translate }}</label>
+    <c8y-select
+      [items]="tenants"
+      [selected]="selectedTenants"
+      [placeholder]="'Select options'"
+      (onChange)="selectedTenants = $event"
+    >
+    </c8y-select>
+  </div>
+</div>
+<div class="modal-footer">
+  <button
+    class="btn btn-default"
+    translate
+    type="button"
+    title="{{ 'Cancel' | translate }}"
+    (click)="onDismiss($event)"
+  >
+    Cancel
+  </button>
+  <button
+    class="btn btn-primary"
+    [disabled]="!selectedTenants || !selectedTenants.length"
+    translate
+    type="submit"
+    title="{{ 'Select Tenants' | translate }}"
+    (click)="onSave($event)"
+  >
+    Select Tenants
+  </button>
+</div>
