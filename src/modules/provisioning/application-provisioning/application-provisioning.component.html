@@ -1,0 +1,44 @@
+<c8y-title>Applications</c8y-title>
+
+<div class="split-scroll">
+  <c8y-data-grid
+    [title]="'Applications' | translate"
+    class="scroll-column sort-fix"
+    [noMatchingItemsLabel]="'No matching Applications.'"
+    [columns]="columns"
+    [pagination]="datasource.pagination"
+    [selectable]="false"
+    [actionControls]="[]"
+    [bulkActionControls]="[]"
+    [serverSideDataCallback]="datasource.serverSideDataCallback"
+    [itemsSelectLimit]="50"
+  >
+    <c8y-column name="id">
+      <ng-container *c8yCellRendererDef="let context">
+        <a *ngIf="context.item?.owner?.tenant?.id === currentTenantId" target="_blank" [href]="'/apps/administration/index.html#/applications/' + context.value">{{ context.value }}</a>
+        <a *ngIf="context.item?.owner?.tenant?.id !== currentTenantId" target="_blank" [href]="'/apps/administration/index.html#/subscribedApplications/' + context.value">{{ context.value }}</a>
+      </ng-container>
+    </c8y-column>
+
+    <c8y-column name="name">
+      <ng-container *c8yCellRendererDef="let context">
+        <c8y-app-icon class="icon-36" [app]="context.item" [name]="context.item?.name" [contextPath]="context.item?.contextPath"></c8y-app-icon>
+        <span class="p-l-4 text-16 text-medium" [title]="context.value | humanizeAppName | async">{{ context.value | humanizeAppName | async }}</span>
+      </ng-container>
+    </c8y-column>
+
+    <c8y-column name="actions1">
+      <ng-container *c8yCellRendererDef="let context">
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-default" title="Subscribe to specific subtenants" (click)="subscribeApplication(context.item)">
+            <i class="fa fw fa-refresh"></i>
+            Subscribe
+          </button>
+          <button class="btn btn-danger" title="Unsubscribe from specific subtenants" (click)="unsubscribeApplication(context.item)">
+            <i class="fa fw fa-trash"></i>
+          </button>
+        </div>
+      </ng-container>
+    </c8y-column>
+  </c8y-data-grid>
+</div>

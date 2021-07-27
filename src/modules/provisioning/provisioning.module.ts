@@ -15,6 +15,7 @@ import { GlobalRolesProvisioningComponent } from './global-roles-provisioning/gl
 import { SmartGroupsProvisioningComponent } from './smart-group-provisioning/smart-group-provisioning.component';
 import { AlarmMappingProvisioningComponent } from './alarm-mapping-provisioning/alarm-mapping-provisioning.component';
 import { RouterModule } from '@angular/router';
+import { ApplicationProvisioningComponent } from './application-provisioning/application-provisioning.component';
 
 @NgModule({
   imports: [
@@ -30,6 +31,10 @@ import { RouterModule } from '@angular/router';
             path: '',
             redirectTo: 'firmware',
             pathMatch: 'full'
+          },
+          {
+            path: 'applications',
+            component: ApplicationProvisioningComponent
           },
           {
             path: 'firmware',
@@ -64,6 +69,7 @@ import { RouterModule } from '@angular/router';
     ])
   ],
   declarations: [
+    ApplicationProvisioningComponent,
     FirmwareProvisioningComponent,
     SmartrestProvisioningComponent,
     TenantOptionsProvisioningComponent,
@@ -75,6 +81,7 @@ import { RouterModule } from '@angular/router';
     AlarmMappingProvisioningComponent
   ],
   entryComponents: [
+    ApplicationProvisioningComponent,
     FirmwareProvisioningComponent,
     SmartrestProvisioningComponent,
     TenantOptionsProvisioningComponent,
