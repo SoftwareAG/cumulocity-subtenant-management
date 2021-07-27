@@ -7,8 +7,7 @@ import {
   FetchClient,
   IApplication,
   ICredentials,
-  ITenant,
-  TenantStatus
+  ITenant
 } from '@c8y/client';
 import { ModalService, Status } from '@c8y/ngx-components';
 import { TenantSelectionComponent } from '@modules/shared/tenant-selection/tenant-selection.component';
@@ -18,6 +17,7 @@ import { take } from 'rxjs/operators';
 import { CustomApiService } from './custom-api.service';
 import { SubtenantDetailsService } from './subtenant-details.service';
 import { BsModalService } from 'ngx-bootstrap/modal';
+import { ApplicationSubscriptionService } from './application-subscription.service';
 
 export const HOOK_MICROSERVICE_ROLE = new InjectionToken('MicroserviceRole');
 
@@ -37,7 +37,8 @@ export class FakeMicroserviceService {
     private modalService: ModalService,
     private customApiService: CustomApiService,
     private subtenantDetails: SubtenantDetailsService,
-    private bsModalService: BsModalService
+    private bsModalService: BsModalService,
+    private applicationSubscription: ApplicationSubscriptionService
   ) {
     if (factories) {
       const roles = flatMap(factories);
@@ -119,7 +120,7 @@ export class FakeMicroserviceService {
     const app = await this.createDummyMicroserviceIfNotExisting();
     const tenants = await tenantPromise;
     const filteredTenants = await this.subsetOfTenantsSelected(tenants);
-    await this.subscribeAppToAppAllTenants(app, filteredTenants);
+    await this.applicationSubscription.subscribeAppToAllTenants(app, filteredTenants);
     const bootstrapCredentials = await this.getBootstrapUser(app);
     const subscriptions = await this.getMicroserviceSubscriptions(bootstrapCredentials, baseUrl);
     const filteredTenantIds = filteredTenants.map((tmp) => tmp.id);
@@ -133,7 +134,7 @@ export class FakeMicroserviceService {
       return;
     }
     const tenants = await this.subtenantDetails.getTenants();
-    await this.unsubscribeAppsFromAllTenants(app, tenants);
+    await this.applicationSubscription.unsubscribeAppFromAllTenants(app, tenants);
     await this.deleteApp(app);
     this.credentialsCache = null;
   }
@@ -150,71 +151,6 @@ export class FakeMicroserviceService {
     baseUrl?: string
   ): Promise<ICredentials[]> {
     return Client.getMicroserviceSubscriptions(bootstrapCredentials, baseUrl);
-  }
-
-  private async performStepForEveryTenant<T>(
-    tenants: ITenant[],
-    app: IApplication,
-    step: (app: IApplication, tenant: ITenant) => Promise<T>,
-    subscribedOnesOnly: boolean,
-    unsubscribedOnesOnly: boolean
-  ): Promise<T[]> {
-    const responseArr = new Array<T>();
-    let filteredtenants = tenants.filter((tmp) => tmp.status === TenantStatus.ACTIVE);
-    if (unsubscribedOnesOnly) {
-      filteredtenants = filteredtenants.filter((tenant) => {
-        // @ts-ignore
-        const appReferences: { application: IApplication }[] = tenant.applications.references;
-        return !appReferences.some((tmp) => tmp.application.id === app.id);
-      });
-    }
-    if (subscribedOnesOnly) {
-      filteredtenants = filteredtenants.filter((tenant) => {
-        // @ts-ignore
-        const appReferences: { application: IApplication }[] = tenant.applications.references;
-        return appReferences.some((tmp) => tmp.application.id === app.id);
-      });
-    }
-    const promArray = filteredtenants.map((tenant) => step(app, tenant));
-    await Promise.all(promArray).then((result) => {
-      responseArr.push(...result);
-    });
-    return responseArr;
-  }
-
-  private async subscribeAppToAppAllTenants(app: IApplication, tenants: ITenant[]) {
-    const subscribeFunc = (tmpApp: IApplication, tenant: ITenant) => {
-      return this.subscribeApp(tmpApp as any, tenant);
-    };
-    await this.performStepForEveryTenant(tenants, app, subscribeFunc, false, true);
-  }
-
-  private async unsubscribeAppsFromAllTenants(app: IApplication, tenants: ITenant[]) {
-    const unsubscribeFunc = (tmpApp: IApplication, tenant: ITenant) => {
-      return this.unsubscribeApp(tmpApp as any, tenant);
-    };
-    await this.performStepForEveryTenant(tenants, app, unsubscribeFunc, true, false);
-  }
-
-  private subscribeApp(app: IApplication & { self: string }, tenant: ITenant) {
-    const url = `/tenant/tenants/${tenant.id}/applications`;
-    const options: RequestInit = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/vnd.com.nsn.cumulocity.applicationReference+json',
-        Accept: 'application/vnd.com.nsn.cumulocity.applicationReference+json'
-      },
-      body: JSON.stringify({ application: { id: app.id, self: app.self } })
-    };
-    return this.fetchClient.fetch(url, options);
-  }
-
-  private unsubscribeApp(app: IApplication, tenant: ITenant) {
-    const url = `/tenant/tenants/${tenant.id}/applications/${app.id}`;
-    const options: RequestInit = {
-      method: 'DELETE'
-    };
-    return this.fetchClient.fetch(url, options);
   }
 
   private async createDummyMicroserviceIfNotExisting() {

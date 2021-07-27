@@ -10,6 +10,14 @@ export class ProvisioningNavigatorNodeFactory implements NavigatorNodeFactory {
       label: 'Provisioning',
       path: 'provisioning'
     });
+
+    const applicationsNode = new NavigatorNode({
+      label: 'Applications',
+      path: 'provisioning/applications',
+      icon: 'c8y-modules'
+    });
+    this.provisioningNode.add(applicationsNode);
+
     const firmwareNode = new NavigatorNode({
       label: 'Firmware',
       path: 'provisioning/firmware',
