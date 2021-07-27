@@ -1,6 +1,11 @@
 # Cumulocity Subtenant Management
 Tool for managing subtenants from a c8y management or enterprise tenant
 
+## Applications
+
+The subtenant management functionality is available in two different flavours.
+You can get it as an extension of the default Cumulocity `Administration` app, or as a seperate `Subtenant Management` app.
+
 ## Installation
 
 1. Download the [latest release of the Subtenant Management App](https://github.com/SoftwareAG/cumulocity-subtenant-management/releases/latest)
