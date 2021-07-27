@@ -218,7 +218,6 @@ export class ApplicationProvisioningComponent {
           if (failedToSubscribe.length) {
             this.alertService.warning(`Failed to subscribe Application(s) to ${failedToSubscribe.length} subtenants.`);
           }
-          console.log(tenants.length, apps.length, flatResult);
           const diffInResponses = tenants.length * apps.length - flatResult.length;
           if (diffInResponses) {
             this.alertService.info(`${diffInResponses} application subscriptions were already in place.`);
