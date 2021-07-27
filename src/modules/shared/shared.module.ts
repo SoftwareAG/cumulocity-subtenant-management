@@ -6,12 +6,13 @@ import { TenantDetailsComponent } from './tenant-details/tenant-details.componen
 import { TenantSelectionComponent } from './tenant-selection/tenant-selection.component';
 import { ChartsModule, ThemeService } from 'ng2-charts';
 import { BarChartComponent } from './bar-chart/bar-chart.component';
+import { TenantSelectionService } from './tenant-selection/tenant-selection.service';
 
 @NgModule({
   imports: [CommonModule, CoreModule, PopoverModule, ChartsModule],
   declarations: [TenantDetailsComponent, TenantSelectionComponent, BarChartComponent],
   entryComponents: [TenantSelectionComponent],
   exports: [TenantDetailsComponent, TenantSelectionComponent, BarChartComponent],
-  providers: [ThemeService]
+  providers: [ThemeService, TenantSelectionService]
 })
 export class SharedModule {}

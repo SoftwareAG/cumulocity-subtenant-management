@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Client, ICredentials } from '@c8y/client';
+import { Client } from '@c8y/client';
 import { ActionFactory, Action, AlertService } from '@c8y/ngx-components';
-import { TenantSelectionComponent } from '@modules/shared/tenant-selection/tenant-selection.component';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
-import { Subject } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
-import { BsModalService } from 'ngx-bootstrap/modal';
+import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
 
 @Injectable()
 export class RestartApamaActionFactory implements ActionFactory {
@@ -13,7 +10,7 @@ export class RestartApamaActionFactory implements ActionFactory {
   constructor(
     private credService: FakeMicroserviceService,
     private alertService: AlertService,
-    private modalService: BsModalService
+    private tenantSelectionService: TenantSelectionService
   ) {
     this.action = {
       label: 'Restart Apama',
@@ -31,9 +28,14 @@ export class RestartApamaActionFactory implements ActionFactory {
 
   async restartApamaOnTenants(): Promise<void> {
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    const tenants = await this.getTenantSelection(credentials);
-    const tenantIds = tenants.map((tmp) => tmp.name);
-    const filteredCredentials = credentials.filter((tmp) => tenantIds.includes(tmp.tenant));
+    const tenantIds = credentials.map((tmp) => tmp.tenant);
+    let selectedTenantIds: string[] = [];
+    try {
+      selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenantIds);
+    } catch (e) {
+      return;
+    }
+    const filteredCredentials = credentials.filter((tmp) => selectedTenantIds.includes(tmp.tenant));
     const clients = this.credService.createClients(filteredCredentials);
     const promArray = clients.map((tmp) => this.restartApama(tmp));
     Promise.all(promArray).then(
@@ -55,29 +57,5 @@ export class RestartApamaActionFactory implements ActionFactory {
         return Promise.reject(result.status);
       }
     });
-  }
-
-  getTenantSelection(credentials: ICredentials[]): Promise<
-    {
-      name: string;
-    }[]
-  > {
-    const tenantIds = credentials.map((tmp) => ({ name: tmp.tenant }));
-    const response = new Subject<{ name: string }[]>();
-    const promise = response
-      .asObservable()
-      .pipe(take(1))
-      .toPromise()
-      .then((res) => {
-        if (!res) {
-          throw '';
-        }
-        return res;
-      });
-    this.modalService.show(TenantSelectionComponent, {
-      initialState: { response, tenants: tenantIds } as Partial<TenantSelectionComponent>,
-      ignoreBackdropClick: true
-    });
-    return promise;
   }
 }

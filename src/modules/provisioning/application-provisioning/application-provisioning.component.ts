@@ -8,15 +8,12 @@ import {
   ModalService
 } from '@c8y/ngx-components';
 import { ApplicationTableDatasourceService } from './application-table-datasource.service';
-import { BsModalService } from 'ngx-bootstrap/modal';
 import { IApplication, ITenant } from '@c8y/client';
-import { Subject } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
-import { TenantSelectionComponent } from '@modules/shared/tenant-selection/tenant-selection.component';
 import { ApplicationSubscriptionService } from '@services/application-subscription.service';
 import { SubtenantDetailsService } from '@services/subtenant-details.service';
 import { flatMap } from 'lodash-es';
 import { ApplicationService } from '@c8y/ngx-components/api';
+import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
 
 @Component({
   providers: [ApplicationTableDatasourceService],
@@ -52,10 +49,10 @@ export class ApplicationProvisioningComponent {
     private appState: AppStateService,
     private subtenantService: SubtenantDetailsService,
     private c8yModalService: ModalService,
-    private modalService: BsModalService,
     private alertService: AlertService,
     private applicationSubService: ApplicationSubscriptionService,
-    private applicationService: ApplicationService
+    private applicationService: ApplicationService,
+    private tenantSelectionService: TenantSelectionService
   ) {
     this.columns = this.getDefaultColumns();
     this.currentTenantId = this.appState.currentTenant.value.name;
@@ -146,53 +143,31 @@ export class ApplicationProvisioningComponent {
   }
 
   async subscribeApplications(apps: IApplication[]): Promise<void> {
+    let selectedTenantIds: string[] = [];
     const tenants = await this.subtenantService.getTenants();
-    const tenantIds = tenants.map((tmp) => ({ name: tmp.id }));
-    const response = new Subject<{ name: string }[]>();
-    response
-      .asObservable()
-      .pipe(
-        take(1),
-        filter((tmp) => !!tmp)
-      )
-      .subscribe(async (res) => {
-        const tenantsIds = res.map((tmp) => tmp.name);
-        const filteredTenants = tenants.filter((tmp) => tenantsIds.includes(tmp.id));
-        if (filteredTenants.length) {
-          await this.subscribeAppsToTenants(apps, filteredTenants);
-        } else {
-          this.alertService.info('No Tenant selected.');
-        }
-      });
-    this.modalService.show(TenantSelectionComponent, {
-      initialState: { response, tenants: tenantIds },
-      ignoreBackdropClick: true
-    });
+
+    try {
+      selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenants);
+    } catch (e) {
+      return;
+    }
+
+    const filteredTenants = tenants.filter((tmp) => selectedTenantIds.includes(tmp.id));
+    await this.subscribeAppsToTenants(apps, filteredTenants);
   }
 
   async unsubscribeApplications(apps: IApplication[]): Promise<void> {
+    let selectedTenantIds: string[] = [];
     const tenants = await this.subtenantService.getTenants();
-    const tenantIds = tenants.map((tmp) => ({ name: tmp.id }));
-    const response = new Subject<{ name: string }[]>();
-    response
-      .asObservable()
-      .pipe(
-        take(1),
-        filter((tmp) => !!tmp)
-      )
-      .subscribe(async (res) => {
-        const tenantsIds = res.map((tmp) => tmp.name);
-        const filteredTenants = tenants.filter((tmp) => tenantsIds.includes(tmp.id));
-        if (filteredTenants.length) {
-          await this.unsubscribeAppsToTenants(apps, filteredTenants);
-        } else {
-          this.alertService.info('No Tenant selected.');
-        }
-      });
-    this.modalService.show(TenantSelectionComponent, {
-      initialState: { response, tenants: tenantIds },
-      ignoreBackdropClick: true
-    });
+
+    try {
+      selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenants);
+    } catch (e) {
+      return;
+    }
+
+    const filteredTenants = tenants.filter((tmp) => selectedTenantIds.includes(tmp.id));
+    await this.unsubscribeAppsToTenants(apps, filteredTenants);
   }
 
   private async subscribeAppsToTenants(apps: IApplication[], tenants: ITenant[]) {
@@ -204,7 +179,7 @@ export class ApplicationProvisioningComponent {
       );
       this.subscriptionOngoing = true;
       const promArray = apps.map((app) => this.applicationSubService.subscribeAppToAllTenants(app, tenants));
-      Promise.all(promArray).then(
+      await Promise.all(promArray).then(
         (result) => {
           const flatResult = flatMap(result);
           this.subscriptionOngoing = false;
@@ -243,7 +218,7 @@ export class ApplicationProvisioningComponent {
       );
       this.subscriptionOngoing = true;
       const promArray = apps.map((app) => this.applicationSubService.unsubscribeAppFromAllTenants(app, tenants));
-      Promise.all(promArray).then(
+      await Promise.all(promArray).then(
         (result) => {
           const flatResult = flatMap(result);
           this.subscriptionOngoing = false;

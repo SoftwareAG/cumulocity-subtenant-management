@@ -10,14 +10,11 @@ import {
   ITenant
 } from '@c8y/client';
 import { ModalService, Status } from '@c8y/ngx-components';
-import { TenantSelectionComponent } from '@modules/shared/tenant-selection/tenant-selection.component';
 import { flatMap, uniq } from 'lodash-es';
-import { Subject } from 'rxjs';
-import { take } from 'rxjs/operators';
 import { CustomApiService } from './custom-api.service';
 import { SubtenantDetailsService } from './subtenant-details.service';
-import { BsModalService } from 'ngx-bootstrap/modal';
 import { ApplicationSubscriptionService } from './application-subscription.service';
+import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
 
 export const HOOK_MICROSERVICE_ROLE = new InjectionToken('MicroserviceRole');
 
@@ -37,8 +34,8 @@ export class FakeMicroserviceService {
     private modalService: ModalService,
     private customApiService: CustomApiService,
     private subtenantDetails: SubtenantDetailsService,
-    private bsModalService: BsModalService,
-    private applicationSubscription: ApplicationSubscriptionService
+    private applicationSubscription: ApplicationSubscriptionService,
+    private tenantSelectionService: TenantSelectionService
   ) {
     if (factories) {
       const roles = flatMap(factories);
@@ -68,27 +65,12 @@ export class FakeMicroserviceService {
   }
 
   private async subsetOfTenantsSelected(tenants: ITenant[]) {
-    const tenantIds = tenants.map((tmp) => ({ name: tmp.id }));
-    const response = new Subject<{ name: string }[]>();
-    const promise = response.asObservable().pipe(take(1)).toPromise();
+    const selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenants, {
+      label: 'Select subset of tenants to be accessed',
+      title: 'Select tenant subset'
+    });
 
-    this.bsModalService.show(TenantSelectionComponent, {
-      initialState: {
-        response,
-        tenants: tenantIds,
-        label: 'Select subset of tenants to be accessed',
-        title: 'Select tenant subset'
-      } as Partial<TenantSelectionComponent>,
-      ignoreBackdropClick: true
-    });
-    return promise.then((result) => {
-      if (result) {
-        const filteredTenantsIds = result.map((tmp) => tmp.name);
-        return tenants.filter((tmp) => filteredTenantsIds.includes(tmp.id));
-      } else {
-        throw 'Tenant selection canceled';
-      }
-    });
+    return tenants.filter((tmp) => selectedTenantIds.includes(tmp.id));
   }
 
   public createClients(credentials: ICredentials[]): Client[] {
