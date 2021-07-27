@@ -120,7 +120,7 @@ export class FakeMicroserviceService {
     const app = await this.createDummyMicroserviceIfNotExisting();
     const tenants = await tenantPromise;
     const filteredTenants = await this.subsetOfTenantsSelected(tenants);
-    await this.applicationSubscription.subscribeAppToAppAllTenants(app, filteredTenants);
+    await this.applicationSubscription.subscribeAppToAllTenants(app, filteredTenants);
     const bootstrapCredentials = await this.getBootstrapUser(app);
     const subscriptions = await this.getMicroserviceSubscriptions(bootstrapCredentials, baseUrl);
     const filteredTenantIds = filteredTenants.map((tmp) => tmp.id);
@@ -134,7 +134,7 @@ export class FakeMicroserviceService {
       return;
     }
     const tenants = await this.subtenantDetails.getTenants();
-    await this.applicationSubscription.unsubscribeAppsFromAllTenants(app, tenants);
+    await this.applicationSubscription.unsubscribeAppFromAllTenants(app, tenants);
     await this.deleteApp(app);
     this.credentialsCache = null;
   }

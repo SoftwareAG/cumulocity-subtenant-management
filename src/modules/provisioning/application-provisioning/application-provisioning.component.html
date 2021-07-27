@@ -7,11 +7,10 @@
     [noMatchingItemsLabel]="'No matching Applications.'"
     [columns]="columns"
     [pagination]="datasource.pagination"
-    [selectable]="false"
+    [selectable]="true"
     [actionControls]="[]"
-    [bulkActionControls]="[]"
+    [bulkActionControls]="bulkActionControls"
     [serverSideDataCallback]="datasource.serverSideDataCallback"
-    [itemsSelectLimit]="50"
   >
     <c8y-column name="id">
       <ng-container *c8yCellRendererDef="let context">
@@ -30,11 +29,11 @@
     <c8y-column name="actions1">
       <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
-          <button class="btn btn-default" title="Subscribe to specific subtenants" (click)="subscribeApplication(context.item)">
+          <button class="btn btn-default" title="Subscribe to specific subtenants" (click)="subscribeApplications([context.item])">
             <i class="fa fw fa-refresh"></i>
             Subscribe
           </button>
-          <button class="btn btn-danger" title="Unsubscribe from specific subtenants" (click)="unsubscribeApplication(context.item)">
+          <button class="btn btn-danger" title="Unsubscribe from specific subtenants" (click)="unsubscribeApplications([context.item])">
             <i class="fa fw fa-trash"></i>
           </button>
         </div>

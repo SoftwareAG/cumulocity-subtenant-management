@@ -41,28 +41,28 @@ export class ApplicationSubscriptionService {
     return responseArr;
   }
 
-  public async subscribeAppToAppAllTenants(app: IApplication, tenants: ITenant[]): Promise<IFetchResponse[]> {
+  public async subscribeAppToAllTenants(app: IApplication, tenants: ITenant[]): Promise<IFetchResponse[]> {
     const subscribeFunc = (tmpApp: IApplication, tenantId: string) => {
       return this.subscribeApp(tmpApp as any, tenantId);
     };
     return await this.performStepForEveryTenant(tenants, app, subscribeFunc, false, true);
   }
 
-  public async unsubscribeAppsFromAllTenants(app: IApplication, tenants: ITenant[]): Promise<IFetchResponse[]> {
+  public async unsubscribeAppFromAllTenants(app: IApplication, tenants: ITenant[]): Promise<IFetchResponse[]> {
     const unsubscribeFunc = (tmpApp: IApplication, tenantId: string) => {
       return this.unsubscribeApp(tmpApp as any, tenantId);
     };
     return await this.performStepForEveryTenant(tenants, app, unsubscribeFunc, true, false);
   }
 
-  public async subscribeAppToAppAllTenantsById(app: IApplication, tenantIds: string[]): Promise<IFetchResponse[]> {
+  public async subscribeAppToAllTenantsById(app: IApplication, tenantIds: string[]): Promise<IFetchResponse[]> {
     const subscribeFunc = (tmpApp: IApplication, tenantId: string) => {
       return this.subscribeApp(tmpApp as any, tenantId);
     };
     return await this.performStepForEveryTenant(tenantIds, app, subscribeFunc, false, true);
   }
 
-  public async unsubscribeAppsFromAllTenantsById(app: IApplication, tenantIds: string[]): Promise<IFetchResponse[]> {
+  public async unsubscribeAppFromAllTenantsById(app: IApplication, tenantIds: string[]): Promise<IFetchResponse[]> {
     const unsubscribeFunc = (tmpApp: IApplication, tenantId: string) => {
       return this.unsubscribeApp(tmpApp as any, tenantId);
     };
