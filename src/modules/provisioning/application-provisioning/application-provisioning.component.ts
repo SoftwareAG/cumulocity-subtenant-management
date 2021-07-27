@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import {
   AlertService,
   AppStateService,
   BulkActionControl,
   Column,
   ColumnDataType,
+  DataGridComponent,
   ModalService
 } from '@c8y/ngx-components';
 import { ApplicationTableDatasourceService } from './application-table-datasource.service';
@@ -21,22 +22,39 @@ import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-
   templateUrl: './application-provisioning.component.html'
 })
 export class ApplicationProvisioningComponent {
+  @ViewChild(DataGridComponent, { static: true }) dataGrid: DataGridComponent;
   columns: Column[];
   bulkActionControls: BulkActionControl[] = [
     {
       type: 'Subscribe',
       icon: 'refresh',
       text: 'Subscribe',
-      callback: (selectedItemIds: string[]): void => {
-        this.subscribeMultipleApps(selectedItemIds);
+      callback: (selectedItemIds: string[], reload: () => void): void => {
+        this.subscribeMultipleApps(selectedItemIds).then(
+          () => {
+            this.dataGrid.setAllItemsInCurrentPageSelected(false);
+            reload();
+          },
+          () => {
+            reload();
+          }
+        );
       }
     },
     {
       type: 'Unsubscribe',
       icon: 'trash',
       text: 'Unsubscribe',
-      callback: (selectedItemIds: string[]): void => {
-        this.unsubscribeMultipleApps(selectedItemIds);
+      callback: (selectedItemIds: string[], reload: () => void): void => {
+        this.unsubscribeMultipleApps(selectedItemIds).then(
+          () => {
+            this.dataGrid.setAllItemsInCurrentPageSelected(false);
+            reload();
+          },
+          () => {
+            reload();
+          }
+        );
       }
     }
   ];
@@ -116,6 +134,14 @@ export class ApplicationProvisioningComponent {
         name: 'owner',
         header: 'Owner',
         path: 'owner.tenant.id',
+        dataType: ColumnDataType.TextShort,
+        sortable: false,
+        filterable: false
+      },
+      {
+        name: 'numberOfTenantsHavingTheApp',
+        header: 'Tenants having the app',
+        path: 'numberOfTenantsHavingTheApp',
         dataType: ColumnDataType.TextShort,
         sortable: false,
         filterable: false
@@ -206,6 +232,7 @@ export class ApplicationProvisioningComponent {
           );
         }
       );
+      this.dataGrid.reload();
     } catch (e) {}
   }
 
@@ -247,6 +274,7 @@ export class ApplicationProvisioningComponent {
           );
         }
       );
+      this.dataGrid.reload();
     } catch (e) {}
   }
 }
