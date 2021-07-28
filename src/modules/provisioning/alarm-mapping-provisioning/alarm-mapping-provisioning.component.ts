@@ -3,11 +3,8 @@ import { Client } from '@c8y/client';
 import { IAlarmMappingBuffer } from '@models/AlarmMappingBuffer';
 import { AlarmMapperService } from '@services/alarm-mapper.service';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
-import { Subject } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
-import { BsModalService } from 'ngx-bootstrap/modal';
-import { TenantSelectionComponent } from '@modules/shared/tenant-selection/tenant-selection.component';
 import { AlertService } from '@c8y/ngx-components';
+import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
 
 @Component({
   providers: [AlarmMapperService],
@@ -32,8 +29,8 @@ export class AlarmMappingProvisioningComponent implements OnInit {
   constructor(
     private credService: FakeMicroserviceService,
     private alarmMapper: AlarmMapperService,
-    private modalService: BsModalService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private tenantSelectionService: TenantSelectionService
   ) {}
 
   ngOnInit(): void {
@@ -89,68 +86,51 @@ export class AlarmMappingProvisioningComponent implements OnInit {
   async applyAlarmMapping(): Promise<void> {
     this.applyingAlarmSettings = true;
     this.loadingSomething = true;
-    const tenantIds = this.clients.map((tmp) => ({ name: tmp.core.tenant }));
-    const response = new Subject<{ name: string }[]>();
-    response
-      .asObservable()
-      .pipe(
-        take(1),
-        filter((tmp) => !!tmp)
-      )
-      .subscribe(async (res) => {
-        const selectedTenantsIds = res.map((tmp) => tmp.name);
-        const filteredClients = this.clients.filter((client) => selectedTenantsIds.includes(client.core.tenant));
-        this.alarmMapper.storeAlarmMappingOnTenants(this.alarms, filteredClients).then(
-          () => {
-            this.applyingAlarmSettings = false;
-            this.loadingSomething = false;
-            this.alertService.success(`Applied alarm mappings to ${res.length} tenants.`);
-          },
-          (error) => {
-            console.log(error);
-            this.applyingAlarmSettings = false;
-            this.loadingSomething = false;
-            this.alertService.success(`Failed to apply alarm mappings to all selected tenants.`);
-          }
-        );
-      });
-    this.modalService.show(TenantSelectionComponent, {
-      initialState: { response, tenants: tenantIds } as Partial<TenantSelectionComponent>,
-      ignoreBackdropClick: true
-    });
+    let selectedTenantIds: string[] = [];
+    const tenantIds = this.clients.map((tmp) => tmp.core.tenant);
+    try {
+      selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenantIds);
+    } catch (e) {
+      return;
+    }
+
+    const filteredClients = this.clients.filter((client) => selectedTenantIds.includes(client.core.tenant));
+    await this.alarmMapper.storeAlarmMappingOnTenants(this.alarms, filteredClients).then(
+      () => {
+        this.applyingAlarmSettings = false;
+        this.loadingSomething = false;
+        this.alertService.success(`Applied alarm mappings to ${selectedTenantIds.length} tenants.`);
+      },
+      () => {
+        this.applyingAlarmSettings = false;
+        this.loadingSomething = false;
+        this.alertService.warning(`Failed to apply alarm mappings to all selected tenants.`);
+      }
+    );
   }
 
-  removeExistingMappings(): void {
+  async removeExistingMappings(): Promise<void> {
     this.removingExistingMappings = true;
     this.loadingSomething = true;
-    const tenantIds = this.clients.map((tmp) => ({ name: tmp.core.tenant }));
-    const response = new Subject<{ name: string }[]>();
-    response
-      .asObservable()
-      .pipe(
-        take(1),
-        filter((tmp) => !!tmp)
-      )
-      .subscribe(async (res) => {
-        const selectedTenantsIds = res.map((tmp) => tmp.name);
-        const filteredClients = this.clients.filter((client) => selectedTenantsIds.includes(client.core.tenant));
-        this.alarmMapper.removeExitsingAlarmMappingFromAllTenants(filteredClients).then(
-          (res) => {
-            this.removingExistingMappings = false;
-            this.loadingSomething = false;
-            this.alertService.success(`Removed all alarm mappings from ${res.length} tenants.`);
-          },
-          (error) => {
-            console.log(error);
-            this.removingExistingMappings = false;
-            this.loadingSomething = false;
-            this.alertService.success(`Failed to remove all alarm mappings from selected tenants.`);
-          }
-        );
-      });
-    this.modalService.show(TenantSelectionComponent, {
-      initialState: { response, tenants: tenantIds } as Partial<TenantSelectionComponent>,
-      ignoreBackdropClick: true
-    });
+    let selectedTenantIds: string[] = [];
+    const tenantIds = this.clients.map((tmp) => tmp.core.tenant);
+    try {
+      selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenantIds);
+    } catch (e) {
+      return;
+    }
+    const filteredClients = this.clients.filter((client) => selectedTenantIds.includes(client.core.tenant));
+    await this.alarmMapper.removeExitsingAlarmMappingFromAllTenants(filteredClients).then(
+      (res) => {
+        this.removingExistingMappings = false;
+        this.loadingSomething = false;
+        this.alertService.success(`Removed all alarm mappings from ${res.length} tenants.`);
+      },
+      () => {
+        this.removingExistingMappings = false;
+        this.loadingSomething = false;
+        this.alertService.warning(`Failed to remove all alarm mappings from selected tenants.`);
+      }
+    );
   }
 }

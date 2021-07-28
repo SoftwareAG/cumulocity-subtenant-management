@@ -1,13 +1,10 @@
 import { Component } from '@angular/core';
 import { IManagedObject } from '@c8y/client';
 import { AlertService, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
-import { TenantSelectionComponent } from '@modules/shared/tenant-selection/tenant-selection.component';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
-import { Subject } from 'rxjs';
-import { BsModalService } from 'ngx-bootstrap/modal';
 import { SmartGroupTableDatasourceService } from './smart-group-table-datasource.service';
-import { filter, take } from 'rxjs/operators';
 import { ProvisioningService } from '@services/provisioning.service';
+import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
 
 @Component({
   providers: [SmartGroupTableDatasourceService],
@@ -20,9 +17,9 @@ export class SmartGroupsProvisioningComponent {
     public datasource: SmartGroupTableDatasourceService,
     private credService: FakeMicroserviceService,
     private c8yModalService: ModalService,
-    private modalService: BsModalService,
     private alertService: AlertService,
-    private provisioning: ProvisioningService
+    private provisioning: ProvisioningService,
+    private tenantSelectionService: TenantSelectionService
   ) {
     this.columns = this.getDefaultColumns();
   }
@@ -59,45 +56,34 @@ export class SmartGroupsProvisioningComponent {
   async provisionSmartGroup(group: IManagedObject): Promise<void> {
     try {
       const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-      const tenantIds = credentials.map((tmp) => ({ name: tmp.tenant }));
-      const response = new Subject<{ name: string }[]>();
-      response
-        .asObservable()
-        .pipe(
-          take(1),
-          filter((tmp) => !!tmp)
-        )
-        .subscribe(async (res) => {
-          const tenantsIds = res.map((tmp) => tmp.name);
-          const filteredCredentials = credentials.filter((cred) => tenantsIds.includes(cred.tenant));
-          if (filteredCredentials.length) {
-            try {
-              await this.c8yModalService.confirm(
-                `Provisioning Smart Group`,
-                `Are you sure that you want to provision the Global Role (${group.name}) to all selected ${filteredCredentials.length} subtenants? This will create a new Smart Group on tenants where it did not exist previously. If the same Smart Group was already provisioned previously, it's properties will be overwritten.`,
-                'warning'
-              );
-              const clients = this.credService.createClients(filteredCredentials);
-              this.provisioning.provisionSmartGroupToTenants(clients, group).then(
-                () => {
-                  this.alertService.success(`Provisioned Smart Group to ${clients.length} subtenants.`);
-                },
-                (error) => {
-                  this.alertService.danger(
-                    'Failed to provision Smart Group to all selected subtenants.',
-                    JSON.stringify(error)
-                  );
-                }
-              );
-            } catch (e) {}
-          } else {
-            this.alertService.info('No Tenant selected.');
+      const tenantIds = credentials.map((tmp) => tmp.tenant);
+      let selectedTenantIds: string[] = [];
+
+      try {
+        selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenantIds);
+      } catch (e) {
+        return;
+      }
+      const filteredCredentials = credentials.filter((cred) => selectedTenantIds.includes(cred.tenant));
+      try {
+        await this.c8yModalService.confirm(
+          `Provisioning Smart Group`,
+          `Are you sure that you want to provision the Global Role (${group.name}) to all selected ${filteredCredentials.length} subtenants? This will create a new Smart Group on tenants where it did not exist previously. If the same Smart Group was already provisioned previously, it's properties will be overwritten.`,
+          'warning'
+        );
+        const clients = this.credService.createClients(filteredCredentials);
+        await this.provisioning.provisionSmartGroupToTenants(clients, group).then(
+          () => {
+            this.alertService.success(`Provisioned Smart Group to ${clients.length} subtenants.`);
+          },
+          (error) => {
+            this.alertService.danger(
+              'Failed to provision Smart Group to all selected subtenants.',
+              JSON.stringify(error)
+            );
           }
-        });
-      this.modalService.show(TenantSelectionComponent, {
-        initialState: { response, tenants: tenantIds } as Partial<TenantSelectionComponent>,
-        ignoreBackdropClick: true
-      });
+        );
+      } catch (e) {}
     } catch (e) {
       return;
     }
@@ -106,45 +92,34 @@ export class SmartGroupsProvisioningComponent {
   async deleteSmartGroup(group: IManagedObject): Promise<void> {
     try {
       const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-      const tenantIds = credentials.map((tmp) => ({ name: tmp.tenant }));
-      const response = new Subject<{ name: string }[]>();
-      response
-        .asObservable()
-        .pipe(
-          take(1),
-          filter((tmp) => !!tmp)
-        )
-        .subscribe(async (res) => {
-          const tenantsIds = res.map((tmp) => tmp.name);
-          const filteredCredentials = credentials.filter((cred) => tenantsIds.includes(cred.tenant));
-          if (filteredCredentials.length) {
-            try {
-              await this.c8yModalService.confirm(
-                `Delete Smart Group`,
-                `Are you sure that you want to delete the Smart Group (${group.name}) from all selected ${filteredCredentials.length} subtenants?`,
-                'danger'
-              );
-              const clients = this.credService.createClients(filteredCredentials);
-              this.provisioning.removeSmartGroupFromTenants(clients, group).then(
-                () => {
-                  this.alertService.success(`Deleted Smart Group from ${clients.length} subtenants.`);
-                },
-                (error) => {
-                  this.alertService.danger(
-                    'Failed to delete Smart Group from all selected subtenants.',
-                    JSON.stringify(error)
-                  );
-                }
-              );
-            } catch (e) {}
-          } else {
-            this.alertService.info('No Tenant selected.');
+      const tenantIds = credentials.map((tmp) => tmp.tenant);
+      let selectedTenantIds: string[] = [];
+
+      try {
+        selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenantIds);
+      } catch (e) {
+        return;
+      }
+      const filteredCredentials = credentials.filter((cred) => selectedTenantIds.includes(cred.tenant));
+      try {
+        await this.c8yModalService.confirm(
+          `Delete Smart Group`,
+          `Are you sure that you want to delete the Smart Group (${group.name}) from all selected ${filteredCredentials.length} subtenants?`,
+          'danger'
+        );
+        const clients = this.credService.createClients(filteredCredentials);
+        await this.provisioning.removeSmartGroupFromTenants(clients, group).then(
+          () => {
+            this.alertService.success(`Deleted Smart Group from ${clients.length} subtenants.`);
+          },
+          (error) => {
+            this.alertService.danger(
+              'Failed to delete Smart Group from all selected subtenants.',
+              JSON.stringify(error)
+            );
           }
-        });
-      this.modalService.show(TenantSelectionComponent, {
-        initialState: { response, tenants: tenantIds } as Partial<TenantSelectionComponent>,
-        ignoreBackdropClick: true
-      });
+        );
+      } catch (e) {}
     } catch (e) {
       return;
     }

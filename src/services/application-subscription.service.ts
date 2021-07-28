@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FetchClient, IApplication, IFetchResponse, ITenant, TenantStatus } from '@c8y/client';
+import { FetchClient, IApplication, IFetchResponse, IIdentified, ITenant, TenantStatus } from '@c8y/client';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +8,7 @@ export class ApplicationSubscriptionService {
   constructor(private fetchClient: FetchClient) {}
 
   private async performStepForEveryTenant<T>(
-    tenants: (ITenant | string)[],
+    tenants: ITenant[],
     app: IApplication,
     step: (app: IApplication, tenant: string) => Promise<T>,
     subscribedOnesOnly: boolean,
@@ -17,22 +17,14 @@ export class ApplicationSubscriptionService {
     const responseArr = new Array<T>();
     let filteredtenants = tenants.filter((tmp) => typeof tmp === 'string' || tmp.status === TenantStatus.ACTIVE);
     if (unsubscribedOnesOnly) {
-      filteredtenants = filteredtenants.filter((tenant) => {
-        // @ts-ignore
-        const appReferences: { application: IApplication }[] =
-          // @ts-ignore
-          typeof tenant === 'string' ? [] : tenant.applications.references;
-        return !appReferences.some((tmp) => tmp.application.id === app.id);
-      });
+      filteredtenants = filteredtenants.filter((tenant) =>
+        typeof tenant === 'string' ? true : !this.hasApp(tenant, app)
+      );
     }
     if (subscribedOnesOnly) {
-      filteredtenants = filteredtenants.filter((tenant) => {
-        // @ts-ignore
-        const appReferences: { application: IApplication }[] =
-          // @ts-ignore
-          typeof tenant === 'string' ? [] : tenant.applications.references;
-        return appReferences.some((tmp) => tmp.application.id === app.id);
-      });
+      filteredtenants = filteredtenants.filter((tenant) =>
+        typeof tenant === 'string' ? true : this.hasApp(tenant, app)
+      );
     }
     const promArray = filteredtenants.map((tenant) => step(app, typeof tenant === 'string' ? tenant : tenant.id));
     await Promise.all(promArray).then((result) => {
@@ -55,20 +47,6 @@ export class ApplicationSubscriptionService {
     return await this.performStepForEveryTenant(tenants, app, unsubscribeFunc, true, false);
   }
 
-  public async subscribeAppToAllTenantsById(app: IApplication, tenantIds: string[]): Promise<IFetchResponse[]> {
-    const subscribeFunc = (tmpApp: IApplication, tenantId: string) => {
-      return this.subscribeApp(tmpApp as any, tenantId);
-    };
-    return await this.performStepForEveryTenant(tenantIds, app, subscribeFunc, false, true);
-  }
-
-  public async unsubscribeAppFromAllTenantsById(app: IApplication, tenantIds: string[]): Promise<IFetchResponse[]> {
-    const unsubscribeFunc = (tmpApp: IApplication, tenantId: string) => {
-      return this.unsubscribeApp(tmpApp as any, tenantId);
-    };
-    return await this.performStepForEveryTenant(tenantIds, app, unsubscribeFunc, false, false);
-  }
-
   private subscribeApp(app: IApplication & { self: string }, tenantId: string) {
     const url = `/tenant/tenants/${tenantId}/applications`;
     const options: RequestInit = {
@@ -88,5 +66,11 @@ export class ApplicationSubscriptionService {
       method: 'DELETE'
     };
     return this.fetchClient.fetch(url, options);
+  }
+
+  hasApp(tenant: ITenant, app: IApplication | IIdentified): boolean {
+    // @ts-ignore
+    const appReferences: { application: IApplication | IIdentified }[] = tenant.applications.references;
+    return appReferences.some((tmp) => tmp.application.id === app.id);
   }
 }

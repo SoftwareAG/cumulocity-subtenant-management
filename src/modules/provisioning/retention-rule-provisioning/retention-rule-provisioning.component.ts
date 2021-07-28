@@ -8,8 +8,8 @@ import { RetentionRuleTableDatasourceService } from './retention-rule-table-data
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { CreateOrEditRetentionRuleModalComponent } from '../modals/create-or-edit-retention-rule/create-or-edit-retention-rule-modal.component';
 import { Subject } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
-import { TenantSelectionComponent } from '@modules/shared/tenant-selection/tenant-selection.component';
+import { take } from 'rxjs/operators';
+import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
 
 @Component({
   providers: [RetentionRuleTableDatasourceService],
@@ -25,7 +25,8 @@ export class RetentionRuleProvisioningComponent {
     private credService: FakeMicroserviceService,
     private c8yModal: ModalService,
     private alertService: AlertService,
-    private modalService: BsModalService
+    private modalService: BsModalService,
+    private tenantSelectionService: TenantSelectionService
   ) {
     this.columns = this.getDefaultColumns();
   }
@@ -191,25 +192,12 @@ export class RetentionRuleProvisioningComponent {
 
   async openTenantSelectionModal(): Promise<Client[]> {
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    const tenantIds = credentials.map((tmp) => ({ name: tmp.tenant }));
-    const response = new Subject<{ name: string }[]>();
-    const promise = response
-      .asObservable()
-      .pipe(take(1))
-      .toPromise()
-      .then((result) => {
-        if (!result) {
-          throw 'modal canceled';
-        }
-        const tenantIdsSelected = result.map((tmp) => tmp.name);
-        const filteredCredentials = credentials.filter((cred) => tenantIdsSelected.includes(cred.tenant));
-        return this.credService.createClients(filteredCredentials);
-      });
-    this.modalService.show(TenantSelectionComponent, {
-      initialState: { response, tenants: tenantIds } as Partial<TenantSelectionComponent>,
-      ignoreBackdropClick: true
-    });
-    return promise;
+    const tenantIds = credentials.map((tmp) => tmp.tenant);
+
+    const selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenantIds);
+
+    const filteredCredentials = credentials.filter((cred) => selectedTenantIds.includes(cred.tenant));
+    return this.credService.createClients(filteredCredentials);
   }
 
   openUpdateRetentionRuleModal(rule: Partial<IRetention>): Promise<IRetention> {
