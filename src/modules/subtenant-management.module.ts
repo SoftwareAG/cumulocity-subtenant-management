@@ -18,11 +18,13 @@ import { filter, map } from 'rxjs/operators';
 import { HOOK_SUBTENANT_MANAGEMENT_CONFIG, ISubtenantManagementConfig } from '@models/subtenant-management-config';
 import { SubtenantManagementConfigService } from '@services/subtenant-management-config.service';
 import { TenantStatisticsModule } from './tenant-statistics/tenant-statistics.module';
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({
   imports: [
     CommonModule,
     CoreModule,
+    SharedModule.forRoot(),
     HomeModule,
     CleanupModule,
     StatisticsModule,

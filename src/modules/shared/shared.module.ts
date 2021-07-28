@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { ModuleWithProviders, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PopoverModule } from 'ngx-bootstrap/popover';
 import { CoreModule } from '@c8y/ngx-components';
@@ -12,7 +12,13 @@ import { TenantSelectionService } from './tenant-selection/tenant-selection.serv
   imports: [CommonModule, CoreModule, PopoverModule, ChartsModule],
   declarations: [TenantDetailsComponent, TenantSelectionComponent, BarChartComponent],
   entryComponents: [TenantSelectionComponent],
-  exports: [TenantDetailsComponent, TenantSelectionComponent, BarChartComponent],
-  providers: [ThemeService, TenantSelectionService]
+  exports: [TenantDetailsComponent, TenantSelectionComponent, BarChartComponent]
 })
-export class SharedModule {}
+export class SharedModule {
+  static forRoot(): ModuleWithProviders {
+    return {
+      ngModule: SharedModule,
+      providers: [ThemeService, TenantSelectionService]
+    };
+  }
+}
