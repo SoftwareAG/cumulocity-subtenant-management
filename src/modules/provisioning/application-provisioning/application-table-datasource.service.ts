@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IResultList, IApplication, ApplicationService } from '@c8y/client';
+import { IResultList, IApplication, ApplicationService, TenantStatus } from '@c8y/client';
 import { ServerSideDataResult, Column, Pagination, DataSourceModifier } from '@c8y/ngx-components';
 import { ApplicationSubscriptionService } from '@services/application-subscription.service';
 import { SubtenantDetailsService } from '@services/subtenant-details.service';
@@ -30,8 +30,9 @@ export class ApplicationTableDatasourceService {
       this.fetchCount(),
       this.subtenantService.getTenants()
     ]);
+    const activeTenants = tenants.filter((tenant) => tenant.status === TenantStatus.ACTIVE);
     resList.data.forEach((app) => {
-      const numberOfTenantsHavingTheApp = tenants
+      const numberOfTenantsHavingTheApp = activeTenants
         .map((tenant) => this.applicationSubService.hasApp(tenant, app))
         .filter((tmp) => !!tmp).length;
 

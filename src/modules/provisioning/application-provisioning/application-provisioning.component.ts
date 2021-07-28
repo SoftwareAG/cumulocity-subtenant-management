@@ -140,7 +140,7 @@ export class ApplicationProvisioningComponent {
       },
       {
         name: 'numberOfTenantsHavingTheApp',
-        header: 'Tenants having the app',
+        header: 'Active tenants having the app',
         path: 'numberOfTenantsHavingTheApp',
         dataType: ColumnDataType.TextShort,
         sortable: false,
