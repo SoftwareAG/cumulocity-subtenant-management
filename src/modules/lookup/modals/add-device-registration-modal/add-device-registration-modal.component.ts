@@ -16,6 +16,8 @@ export class AddDeviceRegistrationModalComponent {
   selectedTenant: string;
   selectedClient: Client;
 
+  autoAccept = false;
+
   constructor(
     private bsModalRef: BsModalRef,
     private alertService: AlertService,
@@ -37,7 +39,7 @@ export class AddDeviceRegistrationModalComponent {
 
   onSave(): void {
     this.deviceRegistrationDetailsService
-      .createRegistrationRequest(this.selectedClient, this.registration as IDeviceRegistrationCreate)
+      .createRegistrationRequest(this.selectedClient, this.registration as IDeviceRegistrationCreate, this.autoAccept)
       .then(
         () => {
           this.alertService.success('Device Registration Created.');

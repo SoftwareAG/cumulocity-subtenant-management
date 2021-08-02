@@ -3,6 +3,7 @@
   <h4 translate>Create Device Registration Request</h4>
 </div>
 <div class="modal-body dialog-body">
+  <br>
   <div class="form-group">
     <label for="tenantSelection">Tenant</label>
     <div class="c8y-select-wrapper">
@@ -16,6 +17,15 @@
   <div class="form-group">
     <label for="example1">ID</label>
     <input id="example1" type="text" class="form-control" [(ngModel)]="registration.id">
+  </div>
+
+  <div class="form-group">
+    <label class="c8y-checkbox">
+      <input type="checkbox" [(ngModel)]="autoAccept" />
+      <span></span>
+      <span>Auto-Accept Registration Request</span>
+    </label>
+    <p class="help-block">Accepts the device, so the device does directly receive its credentials when initially connecting, without a user needing to accept it.<br><b class="text-danger">CAUTION: THIS COULD BE A POTENTIAL SECURITY ISSUE.</b></p>
   </div>
 </div>
 <div class="modal-footer">

@@ -6,11 +6,20 @@ import { TenantSpecificDetails } from '@models/tenant-specific-details';
   providedIn: 'root'
 })
 export class DeviceRegistrationDetailsService {
-  public createRegistrationRequest(
+  public async createRegistrationRequest(
     client: Client,
-    registration: IDeviceRegistrationCreate
+    registration: IDeviceRegistrationCreate,
+    autoAccept = false
   ): Promise<IResult<IDeviceRegistration>> {
-    return client.deviceRegistration.create(registration);
+    const request = await client.deviceRegistration.create(registration);
+    if (autoAccept) {
+      try {
+        return await this.acceptRegistrationRequest(client, registration.id);
+      } catch (e) {
+        throw Error('Failed to auto-accept registration request.');
+      }
+    }
+    return request;
   }
 
   public acceptRegistrationRequest(client: Client, id: string): Promise<IResult<IDeviceRegistration>> {
