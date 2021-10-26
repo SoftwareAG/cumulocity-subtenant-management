@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IApplication } from '@c8y/ngx-components/node_modules/@c8y/client';
+import { IApplication } from '@c8y/client';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 
 @Injectable({
