@@ -9,7 +9,7 @@
   </div>
 </ng-template>
 <ng-template #loadingSpinner>
-  <i class="fa fa-spinner fa-spin"></i>
+  <c8y-loading></c8y-loading>
 </ng-template>
 
 <button class="btn btn-link" [popover]="popTemplate" [container]="'body'" [outsideClick]="true">{{ tenantId }} {{ tenantDomain ? '(' + tenantDomain + ')' : '' }}</button>

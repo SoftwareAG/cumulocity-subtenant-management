@@ -3,8 +3,7 @@
 <div class="split-scroll">
   <c8y-data-grid
     [title]="'Devices' | translate"
-    class="scroll-column sort-fix"
-    [noMatchingItemsLabel]="'No matching Template.'"
+    class="scroll-column sort-fix fit-w"
     [columns]="columns"
     [pagination]="datasource.pagination"
     [selectable]="true"
@@ -20,10 +19,10 @@
     </c8y-column>
     <c8y-column name="alarms">
       <ng-container *c8yCellRendererDef="let context">
-        <i class="status fa fw fa-warning" [ngClass]="context.value?.critical ? 'critical' : ''" [title]="'Critical Alarms: ' + (context.value?.critical || 0)"></i>
-        <i class="status fa fw fa-exclamation-circle" [ngClass]="context.value?.major ? 'major' : ''" [title]="'Major Alarms: ' + (context.value?.major || 0)"></i>
-        <i class="status fa fw fa-exclamation-circle" [ngClass]="context.value?.minor ? 'minor' : ''" [title]="'Minor Alarms: ' + (context.value?.minor || 0)"></i>
-        <i class="status fa fw fa-circle" [ngClass]="context.value?.warning ? 'warning' : ''" [title]="'Warning Alarms: ' + (context.value?.warning || 0)"></i>
+        <i c8yIcon="warning" class="status" [ngClass]="context.value?.critical ? 'critical' : ''" [title]="'Critical Alarms: ' + (context.value?.critical || 0)"></i>
+        <i c8yIcon="exclamation-circle" class="status" [ngClass]="context.value?.major ? 'major' : ''" [title]="'Major Alarms: ' + (context.value?.major || 0)"></i>
+        <i c8yIcon="exclamation-circle" class="status" [ngClass]="context.value?.minor ? 'minor' : ''" [title]="'Minor Alarms: ' + (context.value?.minor || 0)"></i>
+        <i c8yIcon="circle" class="status" [ngClass]="context.value?.warning ? 'warning' : ''" [title]="'Warning Alarms: ' + (context.value?.warning || 0)"></i>
       </ng-container>
     </c8y-column>
 
@@ -47,16 +46,16 @@
       <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
           <button class="btn btn-default" title="Restart Device" *ngIf="context.item.operations?.c8y_Restart" (click)="restartDevice(context.item)">
-            <i class="fa fw fa-refresh"></i>
+            <i c8yIcon="refresh"></i>
           </button>
           <button class="btn btn-default" title="Firmware Update" *ngIf="context.item.operations?.c8y_Firmware" (click)="firmwareUpdate(context.item)">
-            <i class="fa fw fa-floppy-o"></i>
+            <i c8yIcon="floppy-o"></i>
           </button>
           <button class="btn btn-default" title="Configuration Update" *ngIf="context.item.operations?.c8y_Configuration" (click)="configurationUpdate(context.item)">
-            <i class="fa fw fa-gears"></i>
+            <i c8yIcon="gears"></i>
           </button>
           <button *ngFor="let action of context.item.actions" [ngClass]="action.buttonClasses || 'btn btn-default'" [title]="action.title || 'Unknown'" (click)="performCustomAction(action, context.item)">
-            <i [ngClass]="action.iconClasses || 'fa fw fa-gears'"></i>
+            <i [c8yIcon]="action.iconClasses || 'gears'"></i>
           </button>
         </div>
       </ng-container>

@@ -1,19 +1,19 @@
 <c8y-title>Alarm Mapping</c8y-title>
 <c8y-action-bar-item [placement]="'right'">
   <button class="btn btn-link" [class.btn-pending]="savingAlarmSettings" (click)="saveAlarmMapping()" [disabled]="savingAlarmSettings || loadingSomething || !alarms.length">
-    <i class="fa fw fa-floppy-o"></i>
+    <i c8yIcon="floppy-o"></i>
     Save Mapping
   </button>
 </c8y-action-bar-item>
 <c8y-action-bar-item [placement]="'right'">
   <button class="btn btn-link" [class.btn-pending]="applyingAlarmSettings" (click)="applyAlarmMapping()" [disabled]="applyingAlarmSettings || loadingSomething || !alarms.length">
-    <i class="fa fw fa-bolt"></i>
+    <i c8yIcon="bolt"></i>
     Apply Mapping
   </button>
 </c8y-action-bar-item>
 <c8y-action-bar-item [placement]="'right'">
   <button class="btn btn-link" [class.btn-pending]="removingExistingMappings"  (click)="removeExistingMappings()" [disabled]="removingExistingMappings || loadingSomething || !clients.length">
-    <i class="fa fw fa-trash"></i>
+    <i c8yIcon="trash"></i>
     Remove Existing Mappings
   </button>
 </c8y-action-bar-item>
@@ -22,7 +22,7 @@
 <div class="card" *ngFor="let alarm of alarms; let i = index">
   <div class="card-header text-truncate separator">
     <div class="card-icon">
-      <i class="fa fw fa-bell"></i>
+      <i c8yIcon="bell"></i>
     </div>
     <div class="card-title">
       {{i + 1}}. AlarmType: <code >{{alarm.type}}</code>, Source: <code>{{alarm?.alarm?.source && alarm.alarm.source['name']}}</code>

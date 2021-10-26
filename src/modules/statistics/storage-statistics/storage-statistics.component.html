@@ -3,8 +3,7 @@
 <div class="split-scroll">
   <c8y-data-grid
     [title]="'Storage statistics' | translate"
-    class="scroll-column sort-fix"
-    [noMatchingItemsLabel]="'No matching Tenant.'"
+    class="scroll-column sort-fix fit-w"
     [columns]="columns"
     [pagination]="datasource.pagination"
     [selectable]="false"
@@ -22,7 +21,7 @@
       <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
           <button class="btn btn-danger" title="Remove all reports older than 14 Days" (click)="cleanupReports(context.item)">
-            <i class="fa fw fa-refresh"></i>
+            <i c8yIcon="refresh"></i>
             Cleanup Reports
           </button>
         </div>
