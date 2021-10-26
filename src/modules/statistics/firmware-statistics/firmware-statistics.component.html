@@ -1,6 +1,6 @@
 <c8y-title>Firmware Statistics</c8y-title>
 
-<div class="row split-scroll" *ngIf="!isLoading">
+<div class="row split-scroll" *ngIf="!isLoading; else loadingIndicator">
   <div class="col-md-4 scroll-column">
     <ul class="c8y-nav-stacked inner-scroll">
       <li class="c8y-stacked-item removable" *ngFor="let chart of charts" (click)="selectChart(chart)" [ngClass]="{'active': currentChart === chart}">
@@ -36,3 +36,11 @@
     </div>
   </div>
 </div>
+
+<ng-template #loadingIndicator>
+  <div class="content-fullpage">
+    <div class="fit-h fit-v d-flex j-c-center a-i-center">
+      <c8y-loading></c8y-loading>
+    </div>
+  </div>
+</ng-template>

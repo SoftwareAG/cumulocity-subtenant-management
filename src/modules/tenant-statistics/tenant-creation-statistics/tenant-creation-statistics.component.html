@@ -15,10 +15,13 @@
     <h4 class="card-title">{{ api }} API Creation (total: {{ total !== null ? total : '-' }})</h4>
   </div>
   <div class="card-block flex-grow">
-    <div class="flex-col flex-evenly" style="width: 100%; height: 100%;" *ngIf="isLoading">
-      <h1><i class="fa fa-circle-o-notch fa-spin"></i></h1>
-    </div>
-    <ps-bar-chart *ngIf="!isLoading" [barChartData]="chartData" [barChartLabels]="labels" [timeUnit]="timeUnit"></ps-bar-chart>
+    <ps-bar-chart *ngIf="!isLoading; else loadingIndicator" [barChartData]="chartData" [barChartLabels]="labels" [timeUnit]="timeUnit"></ps-bar-chart>
   </div>
 </div>
+
+<ng-template #loadingIndicator>
+  <div class="flex-col flex-evenly fit-h fit-v">
+    <c8y-loading></c8y-loading>
+  </div>
+</ng-template>
 

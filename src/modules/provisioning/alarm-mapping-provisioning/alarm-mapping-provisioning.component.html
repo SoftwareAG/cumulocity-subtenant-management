@@ -18,6 +18,7 @@
   </button>
 </c8y-action-bar-item>
 
+<ng-container *ngIf="!loadingSomething && !loadingAlarms; else loadingIndicator"></ng-container>
 <div class="card" *ngFor="let alarm of alarms; let i = index">
   <div class="card-header text-truncate separator">
     <div class="card-icon">
@@ -60,3 +61,11 @@
     </div>
   </div>
 </div>
+
+<ng-template #loadingIndicator>
+  <div class="content-fullpage">
+    <div class="fit-h fit-v d-flex j-c-center a-i-center">
+      <c8y-loading></c8y-loading>
+    </div>
+  </div>
+</ng-template>

@@ -26,7 +26,7 @@
 </c8y-action-bar-item>
 
 <c8y-title>Inventory Statistics</c8y-title>
-<table class="table">
+<table class="table" *ngIf="!isLoading; else loadingIndicator">
   <caption>Count inventory items matching query</caption>
   <colgroup>
     <col width="20px">
@@ -48,3 +48,11 @@
     </tr>
   </tbody>
 </table>
+
+<ng-template #loadingIndicator>
+  <div class="content-fullpage">
+    <div class="flex-col flex-evenly fit-h fit-v">
+      <c8y-loading></c8y-loading>
+    </div>
+  </div>
+</ng-template>

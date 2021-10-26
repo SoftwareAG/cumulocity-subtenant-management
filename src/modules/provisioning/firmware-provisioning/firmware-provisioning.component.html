@@ -1,8 +1,8 @@
 <c8y-title>Firmware</c8y-title>
 
-<ng-container *ngIf="firmwares | async as firm; else loading">
+<ng-container *ngIf="firmwares | async as firm; else loadingIndicator">
   <c8y-list-group *ngIf="firm.length">
-    <c8y-li *ngFor="let firmware of firmwares | async">
+    <c8y-li *ngFor="let firmware of firm">
       <c8y-li-icon [icon]="'c8y-firmware'"></c8y-li-icon>
       <c8y-li-body>{{ firmware.name }}</c8y-li-body>
       <c8y-li-footer>
@@ -19,17 +19,10 @@
   </c8y-list-group>
 </ng-container>
 
-
-<ng-template #loading>
-  <div class="c8y-empty-state text-center">
-    <div class="spinner p-relative">
-      <div class="rect1"></div>
-      <div class="rect2"></div>
-      <div class="rect3"></div>
-      <div class="rect4"></div>
-      <div class="rect5"></div>
+<ng-template #loadingIndicator>
+  <div class="content-fullpage">
+    <div class="fit-h fit-v d-flex j-c-center a-i-center">
+      <c8y-loading></c8y-loading>
     </div>
-    <h1 class="c8y-icon c8y-icon-report c8y-icon-duocolor"></h1>
-    <h3>{{('Loading devices') | translate}}</h3>
   </div>
 </ng-template>
