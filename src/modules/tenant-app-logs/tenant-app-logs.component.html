@@ -8,7 +8,7 @@
 </c8y-action-bar-item>
 
 <div *ngIf="!loading; else loadingIndicator" class="card content-fullpage">
-  <div class="d-flex d-col fit-h fit-v">
+  <div class="d-flex d-col fit-h fit-w">
     <div class="card-block overflow-visible">
       <div class="flex-row">
         <div class="form-group">
@@ -26,7 +26,7 @@
           class="card-block fit-h flex-grow"
         >
           <textarea
-            class="fit-h fit-v"
+            class="fit-h fit-w"
             autocorrect="off"
             autocapitalize="off"
             spellcheck="false"
@@ -39,7 +39,7 @@
 
 <ng-template #loadingIndicator>
   <div class="content-fullpage">
-    <div class="fit-h fit-v d-flex j-c-center a-i-center">
+    <div class="fit-h fit-w d-flex j-c-center a-i-center">
       <c8y-loading></c8y-loading>
     </div>
   </div>
