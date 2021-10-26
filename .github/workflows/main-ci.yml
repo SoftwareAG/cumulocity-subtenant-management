@@ -23,9 +23,6 @@ jobs:
       - name: Set RELEASE_VERSION env variable
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
-      - name: Set C8Y_VERSION env variable
-        run: echo "C8Y_VERSION=$(node -p -e "require('./package.json').dependencies['@c8y/ngx-components']")" >> $GITHUB_ENV
-      
       - name: Check out Git repository
         uses: actions/checkout@v2
 
@@ -33,6 +30,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - name: Set C8Y_VERSION env variable
+        run: echo "C8Y_VERSION=$(node -p -e "require('./package.json').dependencies['@c8y/ngx-components']")" >> $GITHUB_ENV
 
       - name: Cache node modules
         uses: actions/cache@v2
