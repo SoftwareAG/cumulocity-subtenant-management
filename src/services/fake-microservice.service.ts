@@ -181,4 +181,14 @@ export class FakeMicroserviceService {
   private deleteApp(app: IApplication) {
     return this.appService.delete(app.id);
   }
+
+  public async getClientForTenant(tenantId: string): Promise<Client> {
+    const creds = await this.prepareCachedDummyMicroserviceForAllSubtenants();
+    const tenantCred = creds.find((tmp) => tmp.tenant === tenantId);
+    const [client] = await this.createClients([tenantCred]);
+    if (!client) {
+      throw Error(`No Client available for tenant: ${tenantId}`);
+    }
+    return client;
+  }
 }

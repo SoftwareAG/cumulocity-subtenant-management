@@ -19,6 +19,7 @@ import { HOOK_SUBTENANT_MANAGEMENT_CONFIG, ISubtenantManagementConfig } from '@m
 import { SubtenantManagementConfigService } from '@services/subtenant-management-config.service';
 import { TenantStatisticsModule } from './tenant-statistics/tenant-statistics.module';
 import { SharedModule } from './shared/shared.module';
+import { TenantAppLogsModule } from './tenant-app-logs/tenant-app-logs.module';
 
 @NgModule({
   imports: [
@@ -31,7 +32,8 @@ import { SharedModule } from './shared/shared.module';
     LookupModule,
     ProvisioningModule,
     RestartApamaActionModule,
-    TenantStatisticsModule
+    TenantStatisticsModule,
+    TenantAppLogsModule
   ],
   providers: [
     SubtenantManagementConfigService,
