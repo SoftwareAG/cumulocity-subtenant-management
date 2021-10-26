@@ -10,8 +10,7 @@
 <div class="split-scroll">
   <c8y-data-grid
     [title]="'Device Registrations' | translate"
-    class="scroll-column sort-fix"
-    [noMatchingItemsLabel]="'No matching Device Registration.'"
+    class="scroll-column sort-fix fit-w"
     [columns]="columns"
     [pagination]="datasource.pagination"
     [selectable]="false"
@@ -35,16 +34,11 @@
       <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
           <button class="btn btn-primary" *ngIf="context.item.data.status === 'PENDING_ACCEPTANCE'" title="Accept Request" (click)="acceptRequest(context.item)">
-            <!-- <i [class]="!context.item.data.enabled ? 'fa fa-check text-success': 'fa fa-ban text-danger'"></i> -->
             ACCEPT
           </button>
           <button class="btn btn-danger" title="Cancel Request" (click)="cancelRequest(context.item)">
-            <!-- <i class="fa fw fa-trash"></i> -->
             CANCEL
           </button>
-          <!-- <button class="btn btn-default" title="Change Password" (click)="changePassword(context.item)">
-            <i class="fa fw fa-pencil"></i>
-          </button> -->
         </div>
       </ng-container>
     </c8y-column>

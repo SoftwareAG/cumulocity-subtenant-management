@@ -3,8 +3,7 @@
 <div class="split-scroll">
   <c8y-data-grid
     [title]="'Smart Groups' | translate"
-    class="scroll-column sort-fix"
-    [noMatchingItemsLabel]="'No matching Smart Groups.'"
+    class="scroll-column sort-fix fit-w"
     [columns]="columns"
     [pagination]="datasource.pagination"
     [selectable]="false"
@@ -18,11 +17,11 @@
       <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
           <button class="btn btn-default" title="(Re-)Provision to specific subtenants" (click)="provisionSmartGroup(context.item)">
-            <i class="fa fw fa-refresh"></i>
+            <i c8yIcon="refresh"></i>
             (Re-)Provision
           </button>
           <button class="btn btn-danger" title="Delete from specific subtenants" (click)="deleteSmartGroup(context.item)">
-            <i class="fa fw fa-trash"></i>
+            <i c8yIcon="trash"></i>
           </button>
         </div>
       </ng-container>

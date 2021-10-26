@@ -2,7 +2,7 @@
 
 <c8y-action-bar-item [placement]="'right'">
   <button class="btn btn-link" (click)="createNewRetentionRule()">
-    <i class="fa fw fa-plus"></i>
+    <i c8yIcon="plus"></i>
     Create Retention Rule
   </button>
 </c8y-action-bar-item>
@@ -10,8 +10,7 @@
 <div class="split-scroll">
   <c8y-data-grid
     [title]="'Retention Rules' | translate"
-    class="scroll-column sort-fix"
-    [noMatchingItemsLabel]="'No matching Retention Rules.'"
+    class="scroll-column sort-fix fit-w"
     [columns]="columns"
     [pagination]="datasource.pagination"
     [selectable]="false"
@@ -31,37 +30,37 @@
       <ng-container *c8yCellRendererDef="let context">
         <ng-container [ngSwitch]="context.value">
           <div title="Alarm" *ngSwitchCase="'ALARM'">
-            <i c8y-icon="bell" class="fa fw fa-bell"></i>
+            <i c8yIcon="bell"></i>
             <span ng-bind="dt.label | translate">Alarm</span>
           </div>
 
           <div title="Event" *ngSwitchCase="'EVENT'">
-            <i c8y-icon="rss" class="fa fw fa-rss"></i>
+            <i c8yIcon="rss"></i>
             <span ng-bind="dt.label | translate">Event</span>
           </div>
 
           <div title="Measurement" *ngSwitchCase="'MEASUREMENT'">
-            <i c8y-icon="bar-chart" class="fa fw fa-bar-chart"></i>
+            <i c8yIcon="bar-chart"></i>
             <span ng-bind="dt.label | translate">Measurement</span>
           </div>
 
           <div title="Operation" *ngSwitchCase="'OPERATION'">
-            <i c8y-icon="c8y-energy" class="c8y-icon c8y-icon-energy"></i>
+            <i c8yIcon="c8y-energy"></i>
             <span ng-bind="dt.label | translate">Operation</span>
           </div>
 
           <div title="Bulk-Operation" *ngSwitchCase="'BULK_OPERATION'">
-            <i c8y-icon="c8y-energy" class="c8y-icon c8y-icon-energy"></i>
+            <i c8yIcon="c8y-energy"></i>
             <span ng-bind="dt.label | translate">Bulk-Operation</span>
           </div>
 
           <div title="Audit" *ngSwitchCase="'AUDIT'">
-            <i c8y-icon="calendar-check-o" class="fa fw fa-calendar-check-o"></i>
+            <i c8yIcon="calendar-check-o"></i>
             <span ng-bind="dt.label | translate">Audit</span>
           </div>
 
           <div title="All" *ngSwitchCase="'*'">
-            <i c8y-icon="asterisk" class="fa fw fa-asterisk"></i>
+            <i c8yIcon="asterisk"></i>
             <span ng-bind="dt.label | translate">All</span>
           </div>
         </ng-container>
@@ -72,10 +71,10 @@
       <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
           <button class="btn btn-default" title="Edit Rule" [disabled]="!context.item.data.editable" (click)="editRule(context.item)">
-            <i class="fa fw fa-pencil"></i>
+            <i c8yIcon="pencil"></i>
           </button>
           <button class="btn btn-danger" title="Delete Rule" [disabled]="!context.item.data.editable" (click)="deleteRule(context.item)">
-            <i class="fa fw fa-trash"></i>
+            <i c8yIcon="trash"></i>
           </button>
         </div>
       </ng-container>

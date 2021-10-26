@@ -3,8 +3,7 @@
 <div class="split-scroll">
   <c8y-data-grid
     [title]="'Firmware Update History (last 50 Operations per Tenant)' | translate"
-    class="scroll-column sort-fix"
-    [noMatchingItemsLabel]="'No matching Operations.'"
+    class="scroll-column sort-fix fit-w"
     [columns]="columns"
     [pagination]="datasource.pagination"
     [selectable]="false"
@@ -28,10 +27,10 @@
     <c8y-column name="status">
       <ng-container *c8yCellRendererDef="let context">
         <ng-container [ngSwitch]="context.value">
-          <i class="fa fw fa-clock-o" *ngSwitchCase="'PENDING'" [title]="'Status: ' + context.value"></i>
-          <i class="fa fw fa-refresh text-info" *ngSwitchCase="'EXECUTING'" [title]="'Status: ' + context.value"></i>
-          <i class="fa fw fa-check text-success" *ngSwitchCase="'SUCCESSFUL'" [title]="'Status: ' + context.value"></i>
-          <i class="fa fw fa-exclamation-circle text-danger" *ngSwitchCase="'FAILED'" [title]="'Status: ' + context.value"></i>
+          <i c8yIcon="clock-o" *ngSwitchCase="'PENDING'" [title]="'Status: ' + context.value"></i>
+          <i c8yIcon="refresh" class="text-info" *ngSwitchCase="'EXECUTING'" [title]="'Status: ' + context.value"></i>
+          <i c8yIcon="check" class="text-success" *ngSwitchCase="'SUCCESSFUL'" [title]="'Status: ' + context.value"></i>
+          <i c8yIcon="exclamation-circle" class="text-danger" *ngSwitchCase="'FAILED'" [title]="'Status: ' + context.value"></i>
         </ng-container>
       </ng-container>
     </c8y-column>
@@ -41,15 +40,5 @@
         {{ context.value | date: "medium" }}
       </ng-container>
     </c8y-column>
-
-    <!-- <c8y-column name="actions1">
-      <ng-container *c8yCellRendererDef="let context">
-        <div class="btn-group btn-group-sm" role="group">
-          <button class="btn btn-default" title="Restart Device" *ngIf="context.item.operations?.c8y_Restart" (click)="restartDevice(context.item)">
-            <i class="fa fw fa-refresh"></i>
-          </button>
-        </div>
-      </ng-container>
-    </c8y-column> -->
   </c8y-data-grid>
 </div>

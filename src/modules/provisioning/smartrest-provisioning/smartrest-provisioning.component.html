@@ -2,8 +2,7 @@
 <div class="split-scroll">
   <c8y-data-grid
     [title]="'SmartREST templates' | translate"
-    class="scroll-column sort-fix"
-    [noMatchingItemsLabel]="'No matching Template.'"
+    class="scroll-column sort-fix fit-w"
     [columns]="columns"
     [pagination]="datasource.pagination"
     [selectable]="true"
@@ -42,8 +41,8 @@
       <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
           <button class="btn btn-default" title="(Re-)Provision to specific subtenants" (click)="provisioningItemToTenantSelection([context.item.id])" [disabled]="provisioningOngoing">
-            <i class="fa fw fa-refresh" *ngIf="!provisioningOngoing"></i>
-            <i class="fa fa-spinner fa-spin" *ngIf="provisioningOngoing"></i>
+            <i c8yIcon="refresh" *ngIf="!provisioningOngoing"></i>
+            <i c8yIcon="spinner spin" *ngIf="provisioningOngoing"></i>
             (Re-)Provision
           </button>
         </div>
