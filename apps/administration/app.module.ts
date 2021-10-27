@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule as NgRouterModule } from '@angular/router';
 import { UpgradeModule as NgUpgradeModule } from '@angular/upgrade/static';
-import { CoreModule, RouterModule } from '@c8y/ngx-components';
+import { CoreModule, RouterModule, PluginsModule } from '@c8y/ngx-components';
 import { AppLogsAutoRefreshModule } from '@c8y/ngx-components/app-logs';
 import { ConnectivityModule, SimModule } from '@c8y/ngx-components/connectivity';
 import { SmsGatewayModule } from '@c8y/ngx-components/sms-gateway';
@@ -28,6 +28,7 @@ import { SubtenantManagementModule } from '@modules/subtenant-management.module'
     BinaryFileDownloadModule,
     DefaultSubscriptionsModule,
     EcosystemModule,
+    PluginsModule,
     SubtenantManagementModule.forRoot()
   ]
 })

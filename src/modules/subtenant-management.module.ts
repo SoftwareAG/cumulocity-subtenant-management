@@ -80,7 +80,7 @@ export class SubtenantManagementModule implements OnDestroy {
     return this.userService.hasAllRoles(user, this.roles) && this.userService.hasAnyRole(user, this.rolesTenantUpdate);
   }
 
-  static forRoot(config: ISubtenantManagementConfig = {}): ModuleWithProviders {
+  static forRoot(config: ISubtenantManagementConfig = {}): ModuleWithProviders<SubtenantManagementModule> {
     return {
       ngModule: SubtenantManagementModule,
       providers: [
