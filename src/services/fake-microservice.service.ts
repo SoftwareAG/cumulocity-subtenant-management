@@ -9,7 +9,7 @@ import {
   ICredentials,
   ITenant
 } from '@c8y/client';
-import { ModalService, Status } from '@c8y/ngx-components';
+import { ModalService, OptionsService, Status } from '@c8y/ngx-components';
 import { flatMap, uniq } from 'lodash-es';
 import { CustomApiService } from './custom-api.service';
 import { SubtenantDetailsService } from './subtenant-details.service';
@@ -17,6 +17,8 @@ import { ApplicationSubscriptionService } from './application-subscription.servi
 import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
 
 export const HOOK_MICROSERVICE_ROLE = new InjectionToken('MicroserviceRole');
+
+declare const __MODE__: string;
 
 @Injectable()
 export class FakeMicroserviceService {
@@ -35,7 +37,8 @@ export class FakeMicroserviceService {
     private customApiService: CustomApiService,
     private subtenantDetails: SubtenantDetailsService,
     private applicationSubscription: ApplicationSubscriptionService,
-    private tenantSelectionService: TenantSelectionService
+    private tenantSelectionService: TenantSelectionService,
+    private options: OptionsService
   ) {
     if (factories) {
       const roles = flatMap(factories);
@@ -98,10 +101,16 @@ export class FakeMicroserviceService {
 
   public async prepareDummyMicroserviceForAllSubtenants(baseUrl?: string): Promise<ICredentials[]> {
     const tenantPromise = this.subtenantDetails.getTenants();
-    await this.checkDataUsageConfirmed();
+    if (this.showWarnings()) {
+      await this.checkDataUsageConfirmed();
+    }
     const app = await this.createDummyMicroserviceIfNotExisting();
     const tenants = await tenantPromise;
-    const filteredTenants = await this.subsetOfTenantsSelected(tenants);
+    let filteredTenants = tenants;
+    if (this.showWarnings()) {
+      filteredTenants = await this.subsetOfTenantsSelected(tenants);
+    }
+
     await this.applicationSubscription.subscribeAppToAllTenants(app, filteredTenants);
     const bootstrapCredentials = await this.getBootstrapUser(app);
     const subscriptions = await this.getMicroserviceSubscriptions(bootstrapCredentials, baseUrl);
@@ -190,5 +199,15 @@ export class FakeMicroserviceService {
       throw Error(`No Client available for tenant: ${tenantId}`);
     }
     return client;
+  }
+
+  private showWarnings(): boolean {
+    if (this.options.hideWarnings === 'always') {
+      return false;
+    }
+    if (this.options.hideWarnings === 'duringDevelopment' && __MODE__ !== 'production') {
+      return false;
+    }
+    return true;
   }
 }

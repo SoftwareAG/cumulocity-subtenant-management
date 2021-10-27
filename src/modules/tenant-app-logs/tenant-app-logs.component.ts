@@ -14,30 +14,28 @@ import { MicroserviceLogsService } from './microservice-logs.service';
 export class TenantAppLogsComponent implements OnDestroy {
   loading = true;
   appId: string;
+  instanceName: string;
   tenantId: string;
 
   app: IApplication;
-
-  logs: IMicroserviceLog[] = [];
   selectedLog: IMicroserviceLog;
   client: Client;
 
   private paramSubs = new Subscription();
 
   constructor(private route: ActivatedRoute, private msLogs: MicroserviceLogsService, private alert: AlertService) {
-    const appId$ = this.route.params.pipe(
-      filter((tmp) => tmp.appId),
-      map((tmp) => tmp.appId)
-    );
+    const currentRouteParams$ = this.route.params.pipe(filter((tmp) => tmp.appId && tmp.instanceName));
     const tenantId$ = this.route.parent.params.pipe(
       filter((tmp) => tmp.id),
       map((tmp) => tmp.id)
     );
-    this.paramSubs = combineLatest([appId$, tenantId$]).subscribe(([appId, tenantId]) => {
-      this.appId = appId;
-      this.tenantId = tenantId;
-      this.loadLog(appId, tenantId);
-    });
+    this.paramSubs = combineLatest([currentRouteParams$, tenantId$]).subscribe(
+      ([{ appId, instanceName }, tenantId]) => {
+        this.appId = appId;
+        this.tenantId = tenantId;
+        this.loadLog(tenantId, appId, instanceName);
+      }
+    );
   }
 
   ngOnDestroy(): void {
@@ -46,20 +44,14 @@ export class TenantAppLogsComponent implements OnDestroy {
     }
   }
 
-  async loadLog(appId: string, tenantId: string): Promise<void> {
+  async loadLog(tenantId: string, appId: string, instanceName: string): Promise<void> {
     this.loading = true;
     try {
-      const { app, logs } = await this.msLogs.loadLog(appId, tenantId);
+      const { app, log } = await this.msLogs.loadLogsAndAppForSpecificInstance(tenantId, appId, instanceName);
       this.app = app;
-      this.logs = logs;
-      if (logs.length) {
-        this.selectedLog = this.logs[0];
-      } else {
-        this.alert.warning(`No logs found for app ${appId}`);
-      }
+      this.selectedLog = log;
     } catch (e) {
       this.app = undefined;
-      this.logs = [];
       this.selectedLog = undefined;
       this.alert.danger(`Failed to load logs for app: ${appId}`);
     }
