@@ -9,31 +9,21 @@
 
 <div *ngIf="!loading; else loadingIndicator" class="card content-fullpage">
   <div class="d-flex d-col fit-h fit-w">
-    <div class="card-block overflow-visible">
-      <div class="flex-row">
-        <div class="form-group">
-          <label for="exampleSelect">Instance name</label>
-          <div class="c8y-select-wrapper">
-            <select id="exampleSelect" class="form-control">
-              <option *ngFor="let log of logs" [selected]="log.instanceName === selectedLog.instanceName">{{ log.instanceName }}</option>
-            </select>
-            <span></span>
-          </div>
-        </div>
-      </div>
+    <div class="card-header separator">
+      <h4 class="card-title">{{selectedLog?.instanceName}}</h4>
     </div>
-        <div
-          class="card-block fit-h flex-grow"
-        >
-          <textarea
-            class="fit-h fit-w"
-            autocorrect="off"
-            autocapitalize="off"
-            spellcheck="false"
-            [ngModel]="selectedLog?.logs"
-            readonly
-          ></textarea>
-    </div>
+    <div
+      class="card-block fit-h flex-grow"
+    >
+      <textarea
+        class="fit-h fit-w"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        [ngModel]="selectedLog?.logs"
+        readonly
+      ></textarea>
+</div>
   </div>
 </div>
 
