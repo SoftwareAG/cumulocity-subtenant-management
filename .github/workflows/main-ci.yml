@@ -62,13 +62,13 @@ jobs:
       - name: Upload Subtenant Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: subtenant-management-${{ env.C8Y_VERSION }}-${{ github.run_id }}
+          name: subtenant-management-${{ env.C8Y_VERSION }}-${{ github.event.number }}-${{ github.run_id }}
           path: dist/apps/subtenant-management/
 
       - name: Upload Administration Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: administration-${{ env.C8Y_VERSION }}-${{ github.run_id }}
+          name: administration-${{ env.C8Y_VERSION }}-${{ github.event.number }}-${{ github.run_id }}
           path: dist/apps/administration/
 
       - name: 🎁 Zip Subtenant Management
