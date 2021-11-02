@@ -13,7 +13,7 @@ import { HOOK_MICROSERVICE_ROLE } from '@services/fake-microservice.service';
     {
       provide: HOOK_ONCE_ROUTE,
       useValue: {
-        path: 'app-log/:appId',
+        path: 'app-log/:appId/:instanceName',
         context: ViewContext.Tenant,
         component: TenantAppLogsComponent,
         tabs: []
