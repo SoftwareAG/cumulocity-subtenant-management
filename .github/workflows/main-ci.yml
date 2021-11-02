@@ -59,6 +59,18 @@ jobs:
       - name: 🚧  Build
         run: npm run build --if-present
 
+      - name: Upload Subtenant Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: subtenant-management-${{ env.C8Y_VERSION }}-${{ github.event.number }}-${{ github.run_id }}
+          path: dist/apps/subtenant-management/
+
+      - name: Upload Administration Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: administration-${{ env.C8Y_VERSION }}-${{ github.event.number }}-${{ github.run_id }}
+          path: dist/apps/administration/
+
       - name: 🎁 Zip Subtenant Management
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         run: |
