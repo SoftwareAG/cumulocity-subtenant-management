@@ -21,7 +21,14 @@
     <c8y-column name="name">
       <ng-container *c8yCellRendererDef="let context">
         <c8y-app-icon class="icon-36" [app]="context.item" [name]="context.item?.name" [contextPath]="context.item?.contextPath"></c8y-app-icon>
-        <span class="p-l-4 text-16 text-medium" [title]="context.value | humanizeAppName | async">{{ context.value | humanizeAppName | async }}</span>
+        <span class="p-l-4" [title]="context.value | humanizeAppName | async">{{ context.value | humanizeAppName | async }}</span>
+      </ng-container>
+    </c8y-column>
+
+    <c8y-column name="tenantsHavingTheApp">
+      <ng-container *c8yCellRendererDef="let context">
+        <span>{{ context.value?.length }}</span>
+        <button *ngIf="context.value?.length" class="btn btn-link" (click)="openTenantsHavingAppModal(context.value, context.item)">(list)</button>
       </ng-container>
     </c8y-column>
 

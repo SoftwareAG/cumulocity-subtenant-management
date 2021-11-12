@@ -1,0 +1,46 @@
+<div class="modal-header dialog-header">
+  <i c8yIcon="c8y-modules"></i>
+  <h4 translate>Subscribed Tenants of {{ subscribedApp?.name | humanizeAppName | async }}</h4>
+</div>
+<div class="modal-inner-scroll">
+  <div class="modal-body dialog-body">
+    <ul class="list-group">
+      <li class="list-group-item flex-row" *ngFor="let tenant of subscribedTenants; let i = index">
+        <div class="list-item-checkbox">
+          <label class="c8y-checkbox">
+            <input type="checkbox" [id]="'groupcheckbox-' + i" [(ngModel)]="tenant.unsubscribeApp" (change)="onCheckboxToggle()" />
+            <span></span>
+          </label>
+        </div>
+        <label [for]="'groupcheckbox-' + i">
+          {{ tenant.company || 'Unknown Company' }}
+          <br />
+          <small class="text-muted">Domain: {{ tenant.domain }}; TenantId: {{ tenant.id }}</small>
+          <br />
+          <small class="text-muted">Contact person: {{ tenant.contactName || '-' }}, Admin name: {{ tenant.adminName || '-' }}, Admin E-Mail: {{ tenant.adminEmail || '-' }}</small>
+        </label>
+      </li>
+    </ul>
+  </div>
+</div>
+<div class="modal-footer">
+  <button
+    class="btn btn-default"
+    translate
+    type="button"
+    title="{{ 'Close' | translate }}"
+    (click)="onDismiss($event)"
+  >
+    Close
+  </button>
+  <button
+    class="btn btn-danger"
+    translate
+    type="submit"
+    title="{{ 'Unsubscribe selected tenants' | translate }}"
+    [disabled]="!selectedTenants || selectedTenants.length === 0"
+    (click)="onUnsubscribe($event)"
+  >
+    Unsubscribe selected tenants
+  </button>
+</div>

@@ -16,6 +16,7 @@ import { SmartGroupsProvisioningComponent } from './smart-group-provisioning/sma
 import { AlarmMappingProvisioningComponent } from './alarm-mapping-provisioning/alarm-mapping-provisioning.component';
 import { RouterModule } from '@angular/router';
 import { ApplicationProvisioningComponent } from './application-provisioning/application-provisioning.component';
+import { TenantsHavingAppModalComponent } from './application-provisioning/tenants-having-app-modal/tenants-having-app-modal.component';
 
 @NgModule({
   imports: [
@@ -70,6 +71,7 @@ import { ApplicationProvisioningComponent } from './application-provisioning/app
   ],
   declarations: [
     ApplicationProvisioningComponent,
+    TenantsHavingAppModalComponent,
     FirmwareProvisioningComponent,
     SmartrestProvisioningComponent,
     TenantOptionsProvisioningComponent,
@@ -82,6 +84,7 @@ import { ApplicationProvisioningComponent } from './application-provisioning/app
   ],
   entryComponents: [
     ApplicationProvisioningComponent,
+    TenantsHavingAppModalComponent,
     FirmwareProvisioningComponent,
     SmartrestProvisioningComponent,
     TenantOptionsProvisioningComponent,
