@@ -20,6 +20,7 @@ import { SubtenantManagementConfigService } from '@services/subtenant-management
 import { TenantStatisticsModule } from './tenant-statistics/tenant-statistics.module';
 import { SharedModule } from './shared/shared.module';
 import { TenantAppLogsModule } from './tenant-app-logs/tenant-app-logs.module';
+import { OauthTfaSwitchModule } from './oauth-tfa-switch/oauth-tfa-switch.module';
 
 @NgModule({
   imports: [
@@ -33,7 +34,8 @@ import { TenantAppLogsModule } from './tenant-app-logs/tenant-app-logs.module';
     ProvisioningModule,
     RestartApamaActionModule,
     TenantStatisticsModule,
-    TenantAppLogsModule
+    TenantAppLogsModule,
+    OauthTfaSwitchModule
   ],
   providers: [
     SubtenantManagementConfigService,
