@@ -2,17 +2,53 @@
   <i class="c8y-icon c8y-icon-sub-tenants"></i>
   <h4>{{ title | translate }}</h4>
 </div>
-<div class="modal-body dialog-body">
-  <br>
-  <div class="form-group">
-    <label translate>{{ label | translate }}</label>
-    <c8y-select
-      [items]="tenants"
-      [selected]="selectedTenants"
-      [placeholder]="'Select options'"
-      (onChange)="selectedTenants = $event"
-    >
-    </c8y-select>
+<div class="modal-inner-scroll" *ngIf="!loading; else loadingIndicator">
+  <div id="filter" class="input-group input-group-search sticky-top">
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Filter…"
+      [(ngModel)]="searchString"
+    />
+    <span class="input-group-addon">
+      <i c8yIcon="filter" *ngIf="!searchString || searchString.length === 0"></i>
+      <i
+        c8yIcon="times"
+        class="text-muted"
+        *ngIf="searchString && searchString.length > 0"
+        (click)="searchString = ''"
+      ></i>
+    </span>
+  </div>
+  <div class="modal-body dialog-body">
+    <ul class="list-group">
+      <li class="list-group-item flex-row" *ngIf="!searchString">
+        <div class="list-item-checkbox">
+          <label class="c8y-checkbox">
+            <input type="checkbox" [id]="'groupcheckbox-all'" [(ngModel)]="allSelected" (change)="onAllCheckboxToggle()" />
+            <span></span>
+          </label>
+        </div>
+        <label [for]="'groupcheckbox-all'">
+          <b>All</b>
+        </label>
+      </li>
+      <li class="list-group-item flex-row" *ngFor="let tenant of tenantDetails | tenantFilter:searchString; let i = index">
+        <div class="list-item-checkbox">
+          <label class="c8y-checkbox">
+            <input type="checkbox" [id]="'groupcheckbox-' + i" [(ngModel)]="tenant.selected" (change)="onCheckboxToggle()" />
+            <span></span>
+          </label>
+        </div>
+        <label [for]="'groupcheckbox-' + i">
+          {{ tenant.company || 'Unknown Company' }}
+          <br />
+          <small class="text-muted">Domain: {{ tenant.domain }}; TenantId: {{ tenant.id }}</small>
+          <br />
+          <small class="text-muted">Contact person: {{ tenant.contactName || '-' }}, Admin name: {{ tenant.adminName || '-' }}, Admin E-Mail: {{ tenant.adminEmail || '-' }}</small>
+        </label>
+      </li>
+    </ul>
   </div>
 </div>
 <div class="modal-footer">
@@ -36,3 +72,11 @@
     Select Tenants
   </button>
 </div>
+
+<ng-template #loadingIndicator>
+  <div class="modal-body dialog-body">
+    <div class="fit-h fit-w d-flex j-c-center a-i-center">
+      <c8y-loading></c8y-loading>
+    </div>
+  </div>
+</ng-template>

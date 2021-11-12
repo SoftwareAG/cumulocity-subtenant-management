@@ -13,8 +13,8 @@ export class TenantSelectionService {
     tenants: (string | ITenant)[],
     initialState?: Partial<TenantSelectionComponent>
   ): Promise<string[]> {
-    const mappedTenants = tenants.map((tmp) => ({ name: typeof tmp === 'string' ? tmp : tmp.id }));
-    const responseSubject = new Subject<{ name: string }[]>();
+    const mappedTenants = tenants.map((tmp) => (typeof tmp === 'string' ? tmp : tmp.id));
+    const responseSubject = new Subject<string[]>();
     const response = responseSubject
       .asObservable()
       .pipe(take(1))
@@ -24,10 +24,13 @@ export class TenantSelectionService {
           throw Error('Tenant Selection canceled or not tenant selected');
         }
 
-        return res.map((tmp) => tmp.name);
+        return res;
       });
 
-    const finalInitialState: Partial<TenantSelectionComponent> = { response: responseSubject, tenants: mappedTenants };
+    const finalInitialState: Partial<TenantSelectionComponent> = {
+      response: responseSubject,
+      tenantsIds: mappedTenants
+    };
     if (initialState) {
       Object.assign(finalInitialState, initialState);
     }
