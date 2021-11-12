@@ -57,7 +57,7 @@ jobs:
         run: npm test --if-present
 
       - name: 🚧  Build
-        run: npm run build --if-present
+        run: npm run build:ci --if-present
 
       - name: Upload Subtenant Artifact
         uses: actions/upload-artifact@v2

@@ -15,7 +15,7 @@ import { TenantSelectionService } from './tenant-selection/tenant-selection.serv
   exports: [TenantDetailsComponent, TenantSelectionComponent, BarChartComponent]
 })
 export class SharedModule {
-  static forRoot(): ModuleWithProviders {
+  static forRoot(): ModuleWithProviders<SharedModule> {
     return {
       ngModule: SharedModule,
       providers: [ThemeService, TenantSelectionService]

@@ -18,9 +18,6 @@
  * BROWSER POLYFILLS
  */
 
-/** IE9, IE10, IE11, Evergreen browsers require the following polyfills. */
-import '@angular-devkit/build-angular/src/angular-cli-files/models/jit-polyfills.js';
-
 /**
  * By default, zone.js will patch all possible macroTask and DomEvents
  * user can disable parts of macroTask/DomEvents patch by setting following flags
@@ -37,7 +34,6 @@ import '@angular-devkit/build-angular/src/angular-cli-files/models/jit-polyfills
   'mouseenter',
   'mouseleave'
 ]; // disable patch specified eventNames
-
 /***************************************************************************************************
  * Zone JS is required by default for Angular itself.
  */
