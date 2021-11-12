@@ -12,13 +12,17 @@ import { ApplicationTableDatasourceService } from './application-table-datasourc
 import { IApplication, ITenant } from '@c8y/client';
 import { ApplicationSubscriptionService } from '@services/application-subscription.service';
 import { SubtenantDetailsService } from '@services/subtenant-details.service';
-import { flatMap } from 'lodash-es';
+import { cloneDeep, flatMap } from 'lodash-es';
 import { ApplicationService } from '@c8y/ngx-components/api';
 import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
+import { BsModalService } from 'ngx-bootstrap/modal';
+import { TenantsHavingAppModalComponent } from './tenants-having-app-modal/tenants-having-app-modal.component';
+import { Subject } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 @Component({
   providers: [ApplicationTableDatasourceService],
-  selector: 'eos-application-provisioning',
+  selector: 'ps-application-provisioning',
   templateUrl: './application-provisioning.component.html'
 })
 export class ApplicationProvisioningComponent {
@@ -67,6 +71,7 @@ export class ApplicationProvisioningComponent {
     private appState: AppStateService,
     private subtenantService: SubtenantDetailsService,
     private c8yModalService: ModalService,
+    private modalService: BsModalService,
     private alertService: AlertService,
     private applicationSubService: ApplicationSubscriptionService,
     private applicationService: ApplicationService,
@@ -139,9 +144,9 @@ export class ApplicationProvisioningComponent {
         filterable: false
       },
       {
-        name: 'numberOfTenantsHavingTheApp',
+        name: 'tenantsHavingTheApp',
         header: 'Active tenants having the app',
-        path: 'numberOfTenantsHavingTheApp',
+        path: 'tenantsHavingTheApp',
         dataType: ColumnDataType.TextShort,
         sortable: false,
         filterable: false
@@ -276,5 +281,27 @@ export class ApplicationProvisioningComponent {
       );
       this.dataGrid.reload();
     } catch (e) {}
+  }
+
+  openTenantsHavingAppModal(tenants: ITenant[], app: IApplication): void {
+    const response = new Subject<ITenant[]>();
+    const initialState: Partial<TenantsHavingAppModalComponent> = {
+      subscribedTenants: cloneDeep(tenants),
+      subscribedApp: app,
+      response
+    };
+    response
+      .asObservable()
+      .pipe(take(1))
+      .toPromise()
+      .then((result) => {
+        if (result && result.length) {
+          this.unsubscribeAppsToTenants([app], result);
+        }
+      });
+    this.modalService.show(TenantsHavingAppModalComponent, {
+      initialState,
+      ignoreBackdropClick: true
+    });
   }
 }

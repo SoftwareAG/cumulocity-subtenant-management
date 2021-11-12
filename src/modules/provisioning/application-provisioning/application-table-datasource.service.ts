@@ -32,11 +32,8 @@ export class ApplicationTableDatasourceService {
     ]);
     const activeTenants = tenants.filter((tenant) => tenant.status === TenantStatus.ACTIVE);
     resList.data.forEach((app) => {
-      const numberOfTenantsHavingTheApp = activeTenants
-        .map((tenant) => this.applicationSubService.hasApp(tenant, app))
-        .filter((tmp) => !!tmp).length;
-
-      app['numberOfTenantsHavingTheApp'] = numberOfTenantsHavingTheApp;
+      const tenantsHavingTheApp = activeTenants.filter((tenant) => this.applicationSubService.hasApp(tenant, app));
+      app['tenantsHavingTheApp'] = tenantsHavingTheApp;
     });
 
     const result: ServerSideDataResult = {
