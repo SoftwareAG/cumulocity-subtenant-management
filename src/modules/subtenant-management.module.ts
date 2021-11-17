@@ -20,6 +20,7 @@ import { SubtenantManagementConfigService } from '@services/subtenant-management
 import { TenantStatisticsModule } from './tenant-statistics/tenant-statistics.module';
 import { SharedModule } from './shared/shared.module';
 import { TenantAppLogsModule } from './tenant-app-logs/tenant-app-logs.module';
+import { DisableGainsightActionModule } from './disable-gainsight/disable-gainsight.module';
 
 @NgModule({
   imports: [
@@ -32,6 +33,7 @@ import { TenantAppLogsModule } from './tenant-app-logs/tenant-app-logs.module';
     LookupModule,
     ProvisioningModule,
     RestartApamaActionModule,
+    DisableGainsightActionModule,
     TenantStatisticsModule,
     TenantAppLogsModule
   ],
