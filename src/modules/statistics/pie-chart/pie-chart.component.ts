@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ChartOptions, ChartType } from 'chart.js';
 import { Color, Label } from 'ng2-charts';
 import * as pluginDataLabels from 'chartjs-plugin-datalabels';
@@ -10,6 +10,7 @@ import * as pluginDataLabels from 'chartjs-plugin-datalabels';
 })
 export class PieChartComponent {
   @Input() pieChartData: number[];
+  @Output() indexClicked = new EventEmitter<number>();
   public pieChartOptions: ChartOptions = {
     responsive: true,
     // legend: {
@@ -94,5 +95,11 @@ export class PieChartComponent {
 
   constructor() {
     this.pieChartColors = [];
+  }
+
+  onChartClick(event: any): void {
+    if (event && event.active && event.active.length) {
+      this.indexClicked.emit(event.active[0]._index);
+    }
   }
 }
