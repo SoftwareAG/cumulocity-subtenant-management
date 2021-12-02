@@ -6,8 +6,8 @@ import { TenantSpecificDetails } from '@models/tenant-specific-details';
   providedIn: 'root'
 })
 export class DeviceDetailsService {
-  public async getFirmwareStatistics(client: Client): Promise<Map<string, Map<string, number>>> {
-    const firmwareCounterMap = new Map<string, Map<string, number>>();
+  public async getFirmwareStatistics(client: Client): Promise<Map<string, Map<string, Map<string, number>>>> {
+    const firmwareCounterMap = new Map<string, Map<string, Map<string, number>>>();
     const filter = {
       q: '$filter=(has(c8y_Firmware))',
       pageSize: 2000
@@ -21,18 +21,24 @@ export class DeviceDetailsService {
             const version = mo.c8y_Firmware.version;
             const firmwareIdent = `${version}`;
             const type = mo.type;
-            const deviceIdent = `${type} - ${name}`;
-            let currentDeviceType = firmwareCounterMap.get(deviceIdent);
+            let currentDeviceType = firmwareCounterMap.get(type);
             if (!currentDeviceType) {
-              currentDeviceType = new Map<string, number>();
-              currentDeviceType.set(firmwareIdent, 1);
-              firmwareCounterMap.set(deviceIdent, currentDeviceType);
+              currentDeviceType = new Map<string, Map<string, number>>();
+              const currentFirmwareName = new Map<string, number>();
+              currentFirmwareName.set(firmwareIdent, 1);
+              currentDeviceType.set(name, currentFirmwareName);
+              firmwareCounterMap.set(type, currentDeviceType);
             } else {
-              const currentCount = currentDeviceType.get(firmwareIdent);
+              let currentFirmwareName = currentDeviceType.get(name);
+              if (!currentFirmwareName) {
+                currentFirmwareName = new Map<string, number>();
+                currentDeviceType.set(name, currentFirmwareName);
+              }
+              const currentCount = currentFirmwareName.get(firmwareIdent);
               if (!currentCount) {
-                currentDeviceType.set(firmwareIdent, 1);
+                currentFirmwareName.set(firmwareIdent, 1);
               } else {
-                currentDeviceType.set(firmwareIdent, currentCount + 1);
+                currentFirmwareName.set(firmwareIdent, currentCount + 1);
               }
             }
           }
@@ -47,25 +53,35 @@ export class DeviceDetailsService {
     return firmwareCounterMap;
   }
 
-  public async getFirmwareStatisticsOfTenants(clients: Client[]): Promise<Map<string, Map<string, number>>> {
-    const firmwareCounterMap = new Map<string, Map<string, number>>();
+  public async getFirmwareStatisticsOfTenants(
+    clients: Client[]
+  ): Promise<Map<string, Map<string, Map<string, number>>>> {
+    const firmwareCounterMap = new Map<string, Map<string, Map<string, number>>>();
     const promArray = clients.map((client) => this.getFirmwareStatistics(client));
     await Promise.all(promArray).then((resArr) => {
       resArr.forEach((tmp) => {
         tmp.forEach((value, key) => {
           let currentDeviceType = firmwareCounterMap.get(key);
           if (!currentDeviceType) {
-            currentDeviceType = new Map<string, number>();
+            currentDeviceType = new Map<string, Map<string, number>>();
             firmwareCounterMap.set(key, currentDeviceType);
           }
-          value.forEach((entry, key2) => {
-            let currentCount = currentDeviceType.get(key2);
-            if (currentCount) {
-              currentCount = currentCount + entry;
-            } else {
-              currentCount = entry;
+          value.forEach((value2, key2) => {
+            let currentFirmwareName = currentDeviceType.get(key2);
+            if (!currentFirmwareName) {
+              currentFirmwareName = new Map<string, number>();
+              currentDeviceType.set(key2, currentFirmwareName);
             }
-            currentDeviceType.set(key2, currentCount);
+
+            value2.forEach((value3, key3) => {
+              let currentCount = currentFirmwareName.get(key3);
+              if (currentCount) {
+                currentCount = currentCount + value3;
+              } else {
+                currentCount = value3;
+              }
+              currentFirmwareName.set(key3, currentCount);
+            });
           });
         });
       });

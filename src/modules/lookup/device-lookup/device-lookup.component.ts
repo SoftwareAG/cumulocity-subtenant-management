@@ -1,11 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, ViewChild } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { IManagedObject } from '@c8y/client';
-import { AlertService, BulkActionControl, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
+import {
+  AlertService,
+  BulkActionControl,
+  Column,
+  ColumnDataType,
+  DataGridComponent,
+  ModalService
+} from '@c8y/ngx-components';
 import { DeviceAction } from '@models/extensions';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { BsModalService } from 'ngx-bootstrap/modal';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { ConfigurationUpdateModalComponent } from '../modals/configuration-update-modal/configuration-update-modal.component';
 import { CustomFirmwareUpdateModalComponent } from '../modals/custom-firmware-update-modal/custom-firmware-update-modal.component';
@@ -17,7 +25,8 @@ import { DeviceTableDatasourceService } from './device-table-datasource.service'
   selector: 'ps-device-lookup',
   templateUrl: './device-lookup.component.html'
 })
-export class DeviceLookupComponent {
+export class DeviceLookupComponent implements OnDestroy {
+  @ViewChild(DataGridComponent, { static: true }) dataGrid: DataGridComponent;
   columns: Column[];
   bulkActionControls: BulkActionControl[] = [
     {
@@ -35,15 +44,46 @@ export class DeviceLookupComponent {
         this.updateFirmware(selectedItemIds as any as { tenant: string; id: string }[])
     }
   ];
+  private queryParamSub: Subscription;
 
   constructor(
     private credService: FakeMicroserviceService,
     private c8yModalService: ModalService,
     private modalService: BsModalService,
     private alertService: AlertService,
-    public datasource: DeviceTableDatasourceService
+    public datasource: DeviceTableDatasourceService,
+    private route: ActivatedRoute
   ) {
     this.columns = this.getDefaultColumns();
+    this.queryParamSub = this.route.queryParams.subscribe((params) => {
+      const columns = this.dataGrid ? this.dataGrid.columns : this.columns;
+      if (params && this.columns && this.columns.length) {
+        const paramKeys = Object.keys(params);
+        let paramChanged = false;
+        columns.forEach((col) => {
+          if (paramKeys.includes(col.name)) {
+            if (col.filterPredicate !== params[col.name]) {
+              paramChanged = true;
+              col.filterPredicate = params[col.name];
+            }
+          } else {
+            if (col.filterPredicate) {
+              paramChanged = true;
+              col.filterPredicate = undefined;
+            }
+          }
+        });
+        if (paramChanged && this.dataGrid) {
+          this.dataGrid.reload();
+        }
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.queryParamSub) {
+      this.queryParamSub.unsubscribe();
+    }
   }
 
   getDefaultColumns(): Column[] {
@@ -92,7 +132,7 @@ export class DeviceLookupComponent {
         visible: false
       },
       {
-        name: 'firmware_name',
+        name: 'firmwareName',
         header: 'Firmware Name',
         path: 'data.c8y_Firmware.name',
         dataType: ColumnDataType.TextShort,
@@ -101,7 +141,7 @@ export class DeviceLookupComponent {
         visible: false
       },
       {
-        name: 'firmware_version',
+        name: 'firmwareVersion',
         header: 'Firmware Version',
         path: 'data.c8y_Firmware.version',
         dataType: ColumnDataType.TextShort,
