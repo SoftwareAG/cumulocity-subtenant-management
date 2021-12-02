@@ -65,6 +65,7 @@ export class DeviceLookupComponent implements OnDestroy {
             if (col.filterPredicate !== params[col.name]) {
               paramChanged = true;
               col.filterPredicate = params[col.name];
+              col.visible = true;
             }
           } else {
             if (col.filterPredicate) {
