@@ -89,7 +89,7 @@ export class TenantCreationStatisticsComponent implements OnInit {
       const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
       const tenantCredentials = credentials.find((tmp) => tmp.tenant === this.tenant.id);
       if (tenantCredentials) {
-        const client = this.credService.createClients([tenantCredentials])[0];
+        const client = await this.credService.createClients([tenantCredentials])[0];
         this.getTotal(client, this.api);
         const filters = this.getDates(timeframe);
         const promArray = filters.map((tmp) => this.getChartPoint(client, this.api, tmp));

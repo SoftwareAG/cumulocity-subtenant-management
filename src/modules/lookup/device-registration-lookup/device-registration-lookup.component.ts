@@ -182,7 +182,7 @@ export class DeviceRegistrationLookupComponent {
         this.refresh.emit();
       });
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    const clients = this.credService.createClients(credentials);
+    const clients = await this.credService.createClients(credentials);
     this.modalService.show(AddDeviceRegistrationModalComponent, {
       initialState: { clients, response },
       ignoreBackdropClick: true

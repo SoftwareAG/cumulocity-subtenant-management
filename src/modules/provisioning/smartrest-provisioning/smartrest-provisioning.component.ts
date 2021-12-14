@@ -124,7 +124,7 @@ export class SmartrestProvisioningComponent {
         `Are you sure that you want to provision the selected SmartREST template(s) to all selected ${filteredCredentials.length} subtenants? This will create a new template on tenants where it did not exist previously. If a Template with the same id already exists, it will be overwritten.`,
         'warning'
       );
-      const clients = this.credService.createClients(filteredCredentials);
+      const clients = await this.credService.createClients(filteredCredentials);
       this.provisioningOngoing = true;
       await this.provisioning.provisionSmartRESTTemplates(clients, items).then(
         () => {

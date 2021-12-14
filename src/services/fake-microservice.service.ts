@@ -1,4 +1,4 @@
-import { Inject, Injectable, InjectionToken, Optional } from '@angular/core';
+import { Inject, Injectable, InjectionToken, OnDestroy, Optional } from '@angular/core';
 import {
   ApplicationService,
   ApplicationType,
@@ -7,7 +7,9 @@ import {
   FetchClient,
   IApplication,
   ICredentials,
-  ITenant
+  IFetchResponse,
+  ITenant,
+  ITenantLoginOption
 } from '@c8y/client';
 import { ModalService, OptionsService, Status } from '@c8y/ngx-components';
 import { flatMap, uniq } from 'lodash-es';
@@ -15,19 +17,26 @@ import { CustomApiService } from './custom-api.service';
 import { SubtenantDetailsService } from './subtenant-details.service';
 import { ApplicationSubscriptionService } from './application-subscription.service';
 import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
+import { BearerAuth } from '@models/BearerAuth';
+import { interval, Subscription } from 'rxjs';
 
 export const HOOK_MICROSERVICE_ROLE = new InjectionToken('MicroserviceRole');
 
 declare const __MODE__: string;
 
 @Injectable()
-export class FakeMicroserviceService {
+export class FakeMicroserviceService implements OnDestroy {
   public static appkey = 'subtenant-management-ms-key';
   public static appName = 'subtenant-management-ms';
   private requiredRoles: string[] = [];
 
   private credentialsCache: Promise<ICredentials[]>;
   private cachedModal: Promise<unknown>;
+  private clientsPromiseCache = new Map<string, Promise<Client>>();
+  private clientsAuthCache = new Map<string, BasicAuth | BearerAuth>();
+  private clientsCredentialsCache = new Map<string, ICredentials>();
+
+  private oauthTokenExpirySub: Subscription;
 
   constructor(
     @Optional() @Inject(HOOK_MICROSERVICE_ROLE) factories: (string | string[])[],
@@ -44,6 +53,29 @@ export class FakeMicroserviceService {
       const roles = flatMap(factories);
       const uniqRoles = uniq(roles);
       this.requiredRoles = uniqRoles;
+    }
+
+    this.oauthTokenExpirySub = interval(60000).subscribe(() => {
+      this.clientsAuthCache.forEach((auth, key) => {
+        if (auth instanceof BearerAuth) {
+          if (auth.millisecondsUtilTokenExpires() < 120000) {
+            this.getAccessToken(this.clientsCredentialsCache.get(key)).then(
+              (token) => {
+                auth.updateCredentials({ token });
+              },
+              () => {
+                console.error('failed to refresh token for tenant: ' + key);
+              }
+            );
+          }
+        }
+      });
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.oauthTokenExpirySub) {
+      this.oauthTokenExpirySub.unsubscribe();
     }
   }
 
@@ -76,15 +108,91 @@ export class FakeMicroserviceService {
     return tenants.filter((tmp) => selectedTenantIds.includes(tmp.id));
   }
 
-  public createClients(credentials: ICredentials[]): Client[] {
-    return credentials.map((cred) => {
-      const client = new Client(new BasicAuth(cred));
-      client.core.tenant = cred.tenant;
-      const header = { 'X-Cumulocity-Application-Key': FakeMicroserviceService.appkey };
-      client.core.defaultHeaders = Object.assign(header, client.core.defaultHeaders);
-      this.customApiService.hookIntoCustomClientFetch(client);
-      return client;
+  public async createClients(credentials: ICredentials[]): Promise<Client[]> {
+    return Promise.all(
+      credentials.map((cred) => {
+        let promise = this.clientsPromiseCache.get(cred.tenant);
+        if (!promise) {
+          promise = this.createClient(cred);
+          this.clientsPromiseCache.set(cred.tenant, promise);
+        }
+        return promise;
+      })
+    );
+  }
+
+  private async allowsOAuth(credentials: ICredentials): Promise<boolean> {
+    const client = new FetchClient(new BasicAuth(credentials));
+    // it seems like this endpoint has some pretty strict rate limiting..
+    for (let i = 0; i < 10; i++) {
+      const response = await client.fetch(`/tenant/loginOptions?tenantId=${credentials.tenant}`, {
+        headers: { 'X-Cumulocity-Application-Key': FakeMicroserviceService.appkey }
+      });
+      // in case of to many request: try again..
+      if (response.status === 429) {
+        continue;
+      }
+      if (response.status !== 200) {
+        throw new Error('');
+      }
+      const { loginOptions }: { loginOptions: ITenantLoginOption[] } = await response.json();
+      if (loginOptions && loginOptions.findIndex((tmp) => tmp.type === 'OAUTH2_INTERNAL') >= 0) {
+        return true;
+      }
+      return false;
+    }
+    throw new Error('Too many retries');
+  }
+
+  private async createClient(credentials: ICredentials): Promise<Client> {
+    this.clientsCredentialsCache.set(credentials.tenant, credentials);
+    let auth: BasicAuth | BearerAuth;
+    if (await this.allowsOAuth(credentials)) {
+      const accessToken = await this.getAccessToken(credentials);
+      auth = new BearerAuth({ token: accessToken });
+    } else {
+      auth = new BasicAuth(credentials);
+    }
+    this.clientsAuthCache.set(credentials.tenant, auth);
+    const client = new Client(auth);
+    client.core.tenant = credentials.tenant;
+    const header = { 'X-Cumulocity-Application-Key': FakeMicroserviceService.appkey };
+    client.core.defaultHeaders = Object.assign(header, client.core.defaultHeaders);
+    this.customApiService.hookIntoCustomClientFetch(client);
+    return client;
+  }
+
+  private async getAccessToken(credentials: ICredentials): Promise<string> {
+    const params = new URLSearchParams({
+      grant_type: 'PASSWORD',
+      username: credentials.user,
+      password: credentials.password,
+      tfa_code: credentials.tfa
     });
+    const fetchClient = new FetchClient();
+    let response: IFetchResponse;
+    for (let i = 0; i < 10; i++) {
+      response = await fetchClient.fetch(`/tenant/oauth/token?tenant_id=${credentials.tenant}`, {
+        method: 'POST',
+        body: params.toString(),
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        }
+      });
+      // in case of to many request: try again..
+      if (response.status === 429) {
+        continue;
+      }
+
+      if (response.status !== 200) {
+        throw new Error('');
+      } else {
+        break;
+      }
+    }
+
+    const json: { access_token: string } = await response.json();
+    return json.access_token;
   }
 
   public async prepareCachedDummyMicroserviceForAllSubtenants(baseUrl?: string): Promise<ICredentials[]> {

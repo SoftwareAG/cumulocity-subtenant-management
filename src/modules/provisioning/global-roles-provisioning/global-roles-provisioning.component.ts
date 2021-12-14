@@ -96,7 +96,7 @@ export class GlobalRolesProvisioningComponent {
           `Are you sure that you want to provision the Global Role (${role.name}) to all selected ${filteredCredentials.length} subtenants? This will create a new Global Role on tenants where it did not exist previously. If a same Global Role was already provisioned previously, it's properties will be overwritten.`,
           'warning'
         );
-        const clients = this.credService.createClients(filteredCredentials);
+        const clients = await this.credService.createClients(filteredCredentials);
         await this.provisioning.provisionUserGroupToTenants(clients, role).then(
           () => {
             this.alertService.success(`Provisioned Global Role to ${clients.length} subtenants.`);
@@ -132,7 +132,7 @@ export class GlobalRolesProvisioningComponent {
           `Are you sure that you want to delete the Global Role (${role.name}) from all selected ${filteredCredentials.length} subtenants?`,
           'danger'
         );
-        const clients = this.credService.createClients(filteredCredentials);
+        const clients = await this.credService.createClients(filteredCredentials);
         await this.provisioning.removeUserGroupFromTenants(clients, role).then(
           () => {
             this.alertService.success(`Deleted Global Role from ${clients.length} subtenants.`);

@@ -83,7 +83,7 @@ export class TenantOptionsProvisioningComponent {
           `Are you sure that you want to provision the Tenant Option to all selected ${filteredCredentials.length} subtenants? This will create a new tenant option on tenants where it did not exist previously. If a Tenant Option with the same category and key already exists, it's value will be overwritten.`,
           'warning'
         );
-        const clients = this.credService.createClients(filteredCredentials);
+        const clients = await this.credService.createClients(filteredCredentials);
         await this.provisioning.provisionTenantOptionToTenants(clients, tenantOption).then(
           () => {
             this.alertService.success(`Provisioned Tenant Option to ${clients.length} subtenants.`);

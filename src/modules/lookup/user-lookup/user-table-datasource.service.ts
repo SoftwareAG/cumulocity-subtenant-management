@@ -33,7 +33,7 @@ export class UserTableDatasourceService {
 
     // const filterQuery = this.createQueryFilter(dataSourceModifier.columns);
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    const clients = this.credService.createClients(credentials);
+    const clients = await this.credService.createClients(credentials);
 
     const users = await this.fetchForPage(clients);
     let filteredUsers = users;
