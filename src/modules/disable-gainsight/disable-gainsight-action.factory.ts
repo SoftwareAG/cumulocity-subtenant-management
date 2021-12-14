@@ -37,7 +37,7 @@ export class DisableGainsightActionFactory implements ActionFactory {
       return;
     }
     const filteredCredentials = credentials.filter((tmp) => selectedTenantIds.includes(tmp.tenant));
-    const clients = this.credService.createClients(filteredCredentials);
+    const clients = await this.credService.createClients(filteredCredentials);
     const promArray = clients.map((tmp) => this.disableGainsightIfNotAlreadyDone(tmp));
     Promise.all(promArray).then(
       (disabledTenants) => {

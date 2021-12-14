@@ -71,7 +71,7 @@ export class SmartGroupsProvisioningComponent {
           `Are you sure that you want to provision the Global Role (${group.name}) to all selected ${filteredCredentials.length} subtenants? This will create a new Smart Group on tenants where it did not exist previously. If the same Smart Group was already provisioned previously, it's properties will be overwritten.`,
           'warning'
         );
-        const clients = this.credService.createClients(filteredCredentials);
+        const clients = await this.credService.createClients(filteredCredentials);
         await this.provisioning.provisionSmartGroupToTenants(clients, group).then(
           () => {
             this.alertService.success(`Provisioned Smart Group to ${clients.length} subtenants.`);
@@ -107,7 +107,7 @@ export class SmartGroupsProvisioningComponent {
           `Are you sure that you want to delete the Smart Group (${group.name}) from all selected ${filteredCredentials.length} subtenants?`,
           'danger'
         );
-        const clients = this.credService.createClients(filteredCredentials);
+        const clients = await this.credService.createClients(filteredCredentials);
         await this.provisioning.removeSmartGroupFromTenants(clients, group).then(
           () => {
             this.alertService.success(`Deleted Smart Group from ${clients.length} subtenants.`);

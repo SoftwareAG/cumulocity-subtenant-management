@@ -27,7 +27,7 @@ export class FirmwareUpdateHistoryTableDatasourceService {
 
     const filteredColumns = dataSourceModifier.columns.filter((tmp) => !!tmp.filterPredicate);
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    let clients = this.credService.createClients(credentials);
+    let clients = await this.credService.createClients(credentials);
     const tenantIdCol = dataSourceModifier.columns.find((tmp) => tmp.path === 'tenantId');
 
     if (tenantIdCol) {

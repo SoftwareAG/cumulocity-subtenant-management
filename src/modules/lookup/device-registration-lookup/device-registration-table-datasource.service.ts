@@ -36,7 +36,7 @@ export class DeviceRegistrationTableDatasourceService {
 
     // const filterQuery = this.createQueryFilter(dataSourceModifier.columns);
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    const clients = this.credService.createClients(credentials);
+    const clients = await this.credService.createClients(credentials);
 
     const deviceRegistrations = await this.fetchForPage(clients);
     let filtereddeviceRegistrations = deviceRegistrations;

@@ -36,8 +36,8 @@ export class AlarmMappingProvisioningComponent implements OnInit {
   ngOnInit(): void {
     this.loadingSomething = true;
     this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(
-      (result) => {
-        this.clients = this.credService.createClients(result);
+      async (result) => {
+        this.clients = await this.credService.createClients(result);
         this.loadingSomething = false;
         this.retrieveAlarms();
       },

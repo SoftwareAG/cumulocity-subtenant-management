@@ -36,7 +36,7 @@ export class RestartApamaActionFactory implements ActionFactory {
       return;
     }
     const filteredCredentials = credentials.filter((tmp) => selectedTenantIds.includes(tmp.tenant));
-    const clients = this.credService.createClients(filteredCredentials);
+    const clients = await this.credService.createClients(filteredCredentials);
     const promArray = clients.map((tmp) => this.restartApama(tmp));
     Promise.all(promArray).then(
       () => {

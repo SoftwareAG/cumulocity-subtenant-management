@@ -28,15 +28,15 @@ export class FirmwareProvisioningComponent {
   }
 
   provisionFirmware(firmware: IManagedObject): void {
-    this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then((creds) => {
-      const clients = this.credService.createClients(creds);
+    this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(async (creds) => {
+      const clients = await this.credService.createClients(creds);
       return this.provisioning.provisionLegacyFirmwareToTenants(clients, firmware);
     });
   }
 
   deprovisioningFirmware(firmware: IManagedObject): void {
-    this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then((creds) => {
-      const clients = this.credService.createClients(creds);
+    this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(async (creds) => {
+      const clients = await this.credService.createClients(creds);
       return this.provisioning.deprovisionLegacyFirmwareFromTenants(clients, firmware);
     });
   }

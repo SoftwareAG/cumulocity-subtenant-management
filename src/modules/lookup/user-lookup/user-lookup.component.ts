@@ -118,7 +118,7 @@ export class UserLookupComponent {
         async () => {
           // modal confirmed
           const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-          const clients = this.credService.createClients(credentials);
+          const clients = await this.credService.createClients(credentials);
           const client = clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
           if (!client) {
             this.alertService.warning('No credentials found.');
@@ -155,7 +155,7 @@ export class UserLookupComponent {
         async () => {
           // modal confirmed
           const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-          const clients = this.credService.createClients(credentials);
+          const clients = await this.credService.createClients(credentials);
           const client = clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
           if (!client) {
             this.alertService.warning('No credentials found.');
@@ -218,7 +218,7 @@ export class UserLookupComponent {
 
   async changePassword(user: TenantSpecificDetails<IUser>): Promise<void> {
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    const clients = this.credService.createClients(credentials);
+    const clients = await this.credService.createClients(credentials);
     const client = clients.find((tmpClient) => tmpClient.core.tenant === user.tenantId);
     if (!client) {
       this.alertService.warning('No credentials found.');
@@ -239,7 +239,7 @@ export class UserLookupComponent {
         this.refresh.emit();
       });
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    const clients = this.credService.createClients(credentials);
+    const clients = await this.credService.createClients(credentials);
     this.modalService.show(AddUserModalComponent, {
       initialState: { clients, response },
       ignoreBackdropClick: true
