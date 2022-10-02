@@ -54,7 +54,7 @@
     "start:subtenant": "c8ycli server apps/subtenant-management",
     "start:admin": "c8ycli server apps/administration",
     "build": "rimraf dist && c8ycli build apps/{subtenant-management,administration}",
-    "build:ci": "rimraf dist && c8ycli build --fast true apps/{subtenant-management,administration}",
+    "build:ci": "rimraf dist && c8ycli build --ci true apps/{subtenant-management,administration}",
     "build:subtenant": "rimraf dist/apps/subtenant-management && c8ycli build apps/subtenant-management",
     "build:admin": "rimraf dist/apps/administration && c8ycli build apps/administration",
     "deploy": "c8ycli deploy",
