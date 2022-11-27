@@ -57,7 +57,7 @@ export class DeviceTableDatasourceService {
       queryParams
     });
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    let clients = this.credService.createClients(credentials);
+    let clients = await this.credService.createClients(credentials);
     const columnsCopy = dataSourceModifier.columns.map((tmp) => Object.assign({}, tmp));
     let tenantFilter = '';
     const tenantIdCol = columnsCopy.find((tmp) => tmp.path === 'tenantId');

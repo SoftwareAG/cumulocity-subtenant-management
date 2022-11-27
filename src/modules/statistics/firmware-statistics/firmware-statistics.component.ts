@@ -81,7 +81,7 @@ export class FirmwareStatisticsComponent {
     }[]
   > {
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    const clients = this.credService.createClients(credentials);
+    const clients = await this.credService.createClients(credentials);
     const result = await this.deviceDetailsService.getFirmwareStatisticsOfTenants(clients);
     const mappedResult = Array.from(result.entries()).map(([type, value]) => {
       return Array.from(value.entries()).map(([firmwareName, value2]) => {

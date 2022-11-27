@@ -22,7 +22,8 @@ export class LoadQueryModalComponent implements OnInit {
     private bsModalRef: BsModalRef,
     private alertService: AlertService,
     private tenantOptions: TenantOptionsService,
-    private fetchClient: FetchClient
+    private fetchClient: FetchClient,
+    private fakeMicroService: FakeMicroserviceService
   ) {}
 
   ngOnInit(): void {
@@ -44,14 +45,15 @@ export class LoadQueryModalComponent implements OnInit {
     );
   }
 
-  getTenantOptions() {
-    return this.fetchClient.fetch(`/tenant/options/${FakeMicroserviceService.appName}?pageSize=1000`).then((result) => {
+  async getTenantOptions(): Promise<ITenantOption[]> {
+    const appName = await this.fakeMicroService.getMsName();
+    return this.fetchClient.fetch(`/tenant/options/${appName}?pageSize=1000`).then((result) => {
       if (result.status === 200) {
         return result.json().then((json) => {
           const obj = json as { [key: string]: string };
           return Object.keys(obj).map((key) => {
             return {
-              category: FakeMicroserviceService.appName,
+              category: appName,
               key,
               value: obj[key]
             } as ITenantOption;

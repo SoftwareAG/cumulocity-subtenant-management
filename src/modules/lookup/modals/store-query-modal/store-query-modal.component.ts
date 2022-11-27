@@ -17,17 +17,19 @@ export class StoreQueryModalComponent {
   constructor(
     private bsModalRef: BsModalRef,
     private alertService: AlertService,
-    private tenantOptions: TenantOptionsService
+    private tenantOptions: TenantOptionsService,
+    private fakeMicroService: FakeMicroserviceService
   ) {}
 
   onDismiss(): void {
     this.bsModalRef.hide();
   }
 
-  onSave(): void {
-    this.tenantOptions
+  async onSave(): Promise<void> {
+    const appName = await this.fakeMicroService.getMsName();
+    await this.tenantOptions
       .update({
-        category: FakeMicroserviceService.appName,
+        category: appName,
         key: `${this.queryType}_${camelCase(this.queryName)}`,
         value: this.query
       })

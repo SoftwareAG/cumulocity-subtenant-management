@@ -17,7 +17,7 @@ export class InventoryStatisticsComponent {
   lookup(): void {
     this.isLoading = true;
     this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(async (credentials) => {
-      const clients = this.credService.createClients(credentials);
+      const clients = await this.credService.createClients(credentials);
       this.response = await this.deviceDetailsService.countDevicesMatchingQuery(clients, this.query);
       this.response.sort((a, b) => a.tenant.localeCompare(b.tenant));
       this.isLoading = false;

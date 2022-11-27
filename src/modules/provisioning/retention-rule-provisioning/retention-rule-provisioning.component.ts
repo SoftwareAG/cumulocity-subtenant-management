@@ -107,7 +107,7 @@ export class RetentionRuleProvisioningComponent {
       const creds = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
       const foundCred = creds.find((tmp) => tmp.tenant === context.tenantId);
       if (foundCred) {
-        const clients = this.credService.createClients([foundCred]);
+        const clients = await this.credService.createClients([foundCred]);
         const client = clients[0];
         this.c8yModal
           .confirm(`Update Retention Rule`, 'Are you sure that you want to update this retention rule?')
@@ -138,7 +138,7 @@ export class RetentionRuleProvisioningComponent {
     const creds = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
     const foundCred = creds.find((tmp) => tmp.tenant === context.tenantId);
     if (foundCred) {
-      const clients = this.credService.createClients([foundCred]);
+      const clients = await this.credService.createClients([foundCred]);
       const client = clients[0];
       this.c8yModal.confirm(`Delete Retention Rule`, 'Are you sure that you want to delete this retention rule?').then(
         () => {
@@ -197,7 +197,7 @@ export class RetentionRuleProvisioningComponent {
     const selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenantIds);
 
     const filteredCredentials = credentials.filter((cred) => selectedTenantIds.includes(cred.tenant));
-    return this.credService.createClients(filteredCredentials);
+    return await this.credService.createClients(filteredCredentials);
   }
 
   openUpdateRetentionRuleModal(rule: Partial<IRetention>): Promise<IRetention> {

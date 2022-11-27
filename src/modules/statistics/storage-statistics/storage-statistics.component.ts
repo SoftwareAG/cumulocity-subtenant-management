@@ -111,8 +111,8 @@ export class StorageStatisticsComponent {
       )
       .then(
         () => {
-          this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then((creds) => {
-            const client = this.credService.createClients(creds.filter((tmp) => tmp.tenant === tenant.id))[0];
+          this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(async (creds) => {
+            const client = await this.credService.createClients(creds.filter((tmp) => tmp.tenant === tenant.id))[0];
             this.deleteOldReports(client).then(
               (result) => {
                 this.alertService.success(`Removed ${result} old Reports.`);
