@@ -12,6 +12,7 @@ import { DefaultSubscriptionsModule } from '@c8y/ngx-components/default-subscrip
 import { EcosystemModule } from '@c8y/ngx-components/ecosystem';
 import { TenantsModule } from '@c8y/ngx-components/tenants';
 import { AuthConfigurationModule } from '@c8y/ngx-components/auth-configuration';
+import { MultipleLnsConnectorsModule } from '@c8y/ngx-components/protocol-lpwan';
 import { SubtenantManagementModule } from '@modules/subtenant-management.module';
 
 @NgModule({
@@ -32,6 +33,7 @@ import { SubtenantManagementModule } from '@modules/subtenant-management.module'
     EcosystemModule,
     AuthConfigurationModule,
     TenantsModule,
+    MultipleLnsConnectorsModule,
     SubtenantManagementModule.forRoot()
   ]
 })
