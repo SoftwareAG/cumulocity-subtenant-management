@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CoreModule, HOOK_NAVIGATOR_NODES } from '@c8y/ngx-components';
+import { CoreModule, hookNavigator } from '@c8y/ngx-components';
 import { DeviceLookupComponent } from './device-lookup/device-lookup.component';
 import { LookupNavigatorNodeFactory } from './lookup-navigator-node.factory';
 import { UserLookupComponent } from './user-lookup/user-lookup.component';
@@ -95,11 +95,7 @@ import { RouterModule } from '@angular/router';
       multi: true
     },
     LookupNavigatorNodeFactory,
-    {
-      provide: HOOK_NAVIGATOR_NODES,
-      useExisting: LookupNavigatorNodeFactory,
-      multi: true
-    }
+    hookNavigator(LookupNavigatorNodeFactory)
   ]
 })
 export class LookupModule {}

@@ -1,6 +1,6 @@
-import '../../polyfills';
+import './polyfills';
 import './ng1';
-import '../../i18n';
+import './i18n';
 
 import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
