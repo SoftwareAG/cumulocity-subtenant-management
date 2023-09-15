@@ -1,6 +1,6 @@
 {
   "name": "cumulocity-subtenant-management",
-  "version": "1.0.0",
+  "version": "0.7.0",
   "description": "Tool for managing subtenants from a c8y management or enterprise tenant",
   "scripts": {
     "start": "c8ycli server",
@@ -81,8 +81,14 @@
       "hideWarnings": "duringDevelopment",
       "contentSecurityPolicy": "base-uri 'none'; default-src 'self' 'unsafe-inline' http: https: ws: wss:; connect-src 'self' *.billwerk.com http: https: ws: wss:;  script-src 'self' open.mapquestapi.com *.twitter.com *.twimg.com *.aptrinsic.com  *.billwerk.com 'unsafe-inline' 'unsafe-eval' data:; style-src * 'unsafe-inline' blob:; img-src * data:; font-src * data:; frame-src *;",
       "copy": [
-        { "from": "README.md", "to": "README.md" },
-        { "from": "LICENSE", "to": "LICENSE.txt" }
+        {
+          "from": "README.md",
+          "to": "README.md"
+        },
+        {
+          "from": "LICENSE",
+          "to": "LICENSE.txt"
+        }
       ]
     },
     "cli": {}
