@@ -1,10 +1,6 @@
 name: Main CI
 
 on:
-  push:
-    branches: [main]
-    tags:
-    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
     branches: [main]
 
@@ -36,7 +32,7 @@ jobs:
         run: echo "C8Y_VERSION=$(node -p -e "require('./package.json').dependencies['@c8y/ngx-components']")" >> $GITHUB_ENV
 
       - name: Install Node.js dependencies
-        run: npm install
+        run: npm ci
 
       # - name: 🕵️‍♂️  Lint
       #   run: npm run lint --if-present
@@ -53,33 +49,3 @@ jobs:
           name: subtenant-management-${{ env.C8Y_VERSION }}-${{ github.event.number }}-${{ github.run_id }}
           path: dist/apps/subtenant-management/
 
-      - name: 🎁 Zip Subtenant Management
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-        run: |
-          cd dist/apps/subtenant-management
-          zip -r -q ../../../subtenant-management.zip *
-          cd ../../..
-
-      - name: Create Release
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ env.RELEASE_VERSION }} based on ${{ env.C8Y_VERSION }}
-          draft: false
-          prerelease: true
-
-      - name: Upload Release Asset Subtenant Management
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-        id: upload-release-asset-subtenant 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./subtenant-management.zip
-          asset_name: subtenant-management-${{ env.C8Y_VERSION }}-${{ env.RELEASE_VERSION }}.zip
-          asset_content_type: application/zip
