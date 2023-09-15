@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CoreModule, HOOK_NAVIGATOR_NODES } from '@c8y/ngx-components';
+import { CoreModule, hookNavigator } from '@c8y/ngx-components';
 import { ProvisioningNavigatorNodeFactory } from './provisioning-navigator-node.factory';
 import { FirmwareProvisioningComponent } from './firmware-provisioning/firmware-provisioning.component';
 import { SmartrestProvisioningComponent } from './smartrest-provisioning/smartrest-provisioning.component';
@@ -114,11 +114,7 @@ import { TenantsHavingAppModalComponent } from './application-provisioning/tenan
       multi: true
     },
     ProvisioningNavigatorNodeFactory,
-    {
-      provide: HOOK_NAVIGATOR_NODES,
-      useClass: ProvisioningNavigatorNodeFactory,
-      multi: true
-    }
+    hookNavigator(ProvisioningNavigatorNodeFactory)
   ]
 })
 export class ProvisioningModule {}

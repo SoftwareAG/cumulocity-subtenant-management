@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CoreModule, HOOK_NAVIGATOR_NODES } from '@c8y/ngx-components';
+import { CoreModule, hookNavigator } from '@c8y/ngx-components';
 import { FirmwareStatisticsComponent } from './firmware-statistics/firmware-statistics.component';
 import { StatisticsNavigatorNodeFactory } from './statistics-navigator-node.factory';
 import { InventoryStatisticsComponent } from './inventory-statistics/inventory-statistics.component';
@@ -65,11 +65,7 @@ import { StorageStatisticsComponent } from './storage-statistics/storage-statist
       multi: true
     },
     StatisticsNavigatorNodeFactory,
-    {
-      provide: HOOK_NAVIGATOR_NODES,
-      useClass: StatisticsNavigatorNodeFactory,
-      multi: true
-    }
+    hookNavigator(StatisticsNavigatorNodeFactory)
   ]
 })
 export class StatisticsModule {}

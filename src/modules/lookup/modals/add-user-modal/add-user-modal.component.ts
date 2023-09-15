@@ -22,7 +22,10 @@ export class AddUserModalComponent {
   availableGroups: IUserGroup[] = [];
   selectedGroups: IUserGroup[] = [];
 
-  constructor(private bsModalRef: BsModalRef, private alertService: AlertService) {}
+  constructor(
+    private bsModalRef: BsModalRef,
+    private alertService: AlertService
+  ) {}
 
   onTenantSelect(): void {
     if (!this.selectedClient || this.selectedTenant !== this.selectedClient.core.tenant) {
@@ -30,7 +33,7 @@ export class AddUserModalComponent {
       this.availableGroups = [];
       this.selectedGroups = [];
       if (this.selectedClient) {
-        this.selectedClient.userGroup.list().then(
+        this.selectedClient.userGroup.list({ pageSize: 2000 }).then(
           (result) => {
             this.availableGroups = result.data;
           },

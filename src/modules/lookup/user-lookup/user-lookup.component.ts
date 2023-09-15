@@ -1,12 +1,12 @@
 import { Component, EventEmitter } from '@angular/core';
-import { BasicAuth, Client, CookieAuth, IUser } from '@c8y/client';
+import { BasicAuth, Client, IUser } from '@c8y/client';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { AlertService, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
 import { UserPasswordChangeModalComponent } from '../modals/user-password-change-modal/user-password-change-modal.component';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { AddUserModalComponent } from '../modals/add-user-modal/add-user-modal.component';
-import { config, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { UserTableDatasourceService } from './user-table-datasource.service';
 import { SubtenantDetailsService } from '@services/subtenant-details.service';

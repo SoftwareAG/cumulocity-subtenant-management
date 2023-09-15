@@ -1,8 +1,8 @@
-import { Inject, Injectable, Optional } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QueriesUtil, IResultList, IManagedObject, Client } from '@c8y/client';
 import { ServerSideDataResult, Column, Pagination, DataSourceModifier } from '@c8y/ngx-components';
-import { DeviceActionsFactory, HOOK_DEVICE_ACTION_FACTORY } from '@models/extensions';
+import { DeviceActionsFactory } from '@models/extensions';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { DeviceDetailsService } from '@services/device-details.service';
 import { ExtensionsService } from '@services/extensions.service';
