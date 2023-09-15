@@ -41,11 +41,11 @@ jobs:
         run: npm test --if-present
 
       - name: 🚧  Build
-        run: npm run build:ci --if-present
+        run: npm run build:ci
 
       - name: Upload Subtenant Artifact
         uses: actions/upload-artifact@v3
         with:
           name: subtenant-management-${{ env.C8Y_VERSION }}-${{ github.event.number }}-${{ github.run_id }}
-          path: dist/apps/subtenant-management/
+          path: dist/apps/sag-pkg-subtenant-management/
 
