@@ -1,3 +1,10 @@
+## [0.7.2](https://github.com/SoftwareAG/cumulocity-subtenant-management/compare/v0.7.1...v0.7.2) (2023-12-18)
+
+
+### Bug Fixes
+
+* bump c8y Web SDK to 1018.0.191 ([4d2eb84](https://github.com/SoftwareAG/cumulocity-subtenant-management/commit/4d2eb84e40c585bfbaadbd0d0d92ca3849ea87a4))
+
 ## [0.7.1](https://github.com/SoftwareAG/cumulocity-subtenant-management/compare/v0.7.0...v0.7.1) (2023-10-09)
 
 

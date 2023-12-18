@@ -1,6 +1,6 @@
 {
   "name": "cumulocity-subtenant-management",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Tool for managing subtenants from a c8y management or enterprise tenant",
   "scripts": {
     "start": "c8ycli server",
