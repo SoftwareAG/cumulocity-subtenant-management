@@ -23,8 +23,8 @@
     "@angular/platform-browser-dynamic": "14.0.6",
     "@angular/router": "14.0.6",
     "@angular/upgrade": "14.0.6",
-    "@c8y/client": "1018.0.135",
-    "@c8y/ngx-components": "1018.0.135",
+    "@c8y/client": "1018.0.191",
+    "@c8y/ngx-components": "1018.0.191",
     "@ngx-translate/core": "14.0.0",
     "chart.js": "^2.9.4",
     "chartjs-plugin-datalabels": "^0.7.0",
@@ -35,9 +35,9 @@
     "ngx-bootstrap": "9.0.0",
     "rxjs": "~6.6.3",
     "zone.js": "~0.11.7",
-    "@c8y/ng1-modules": "1018.0.135",
+    "@c8y/ng1-modules": "1018.0.191",
     "angular": "1.6.9",
-    "@c8y/style": "1018.0.135",
+    "@c8y/style": "1018.0.191",
     "uuid": "^3.4.0"
   },
   "devDependencies": {
@@ -63,7 +63,7 @@
     "file-loader": "^6.2.0",
     "semantic-release": "^20.1.0",
     "typescript": "4.7.4",
-    "@c8y/cli": "1018.0.135"
+    "@c8y/cli": "1018.0.191"
   },
   "c8y": {
     "application": {
