@@ -7,12 +7,14 @@ import {
   IManagedObject,
   InventoryBinaryService,
   InventoryService,
+  IOperationBulk,
   IResult,
   IRole,
   ITenantOption,
   IUserGroup,
   UserGroupService
 } from '@c8y/client';
+import { IOperation } from '@modules/provisioning/firmware-provisioning/models/operation.model';
 import { cloneDeep } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -52,63 +54,12 @@ export class ProvisioningService {
     return copy;
   }
 
-  async provisionLegacyFirmwareToTenants(clients: Client[], firmware: IManagedObject): Promise<IManagedObject[]> {
-    const url = (firmware.url as string) || '';
-    if (url && url.includes('/inventory/binaries/')) {
-      const binaryMOId = this.binaryService.getIdFromUrl(url);
-      const { data: binaryMO } = await this.inventoryService.detail(binaryMOId);
-      const binaryResponse = (await this.binaryService.download(binaryMOId)) as Response;
-      const binary = await binaryResponse.blob();
-      return await Promise.all(
-        clients.map((tmp) => this.provisionLegacyFirmwareToTenant(tmp, firmware, binaryMO, binary))
-      );
-    } else {
-      return await Promise.all(clients.map((tmp) => this.provisionLegacyFirmwareToTenant(tmp, firmware)));
-    }
-  }
-
-  async provisionLegacyFirmwareToTenant(
-    client: Client,
-    firmware: IManagedObject,
-    binaryMO?: IManagedObject,
-    binary?: Blob
-  ): Promise<IManagedObject> {
-    const knownFirmware = await this.checkIfFirmwareIsAvailable(client, firmware);
-    if (!knownFirmware) {
-      const newFirmwareMO = this.createCopyOfManagedObject(firmware);
-      newFirmwareMO[this.provisioningIdent].firmwareMOId = firmware.id;
-      if (binaryMO && binary) {
-        const newBinaryMO = await client.inventoryBinary.create(binary, this.createCopyOfManagedObject(binaryMO));
-        newFirmwareMO.url = newBinaryMO.data.self;
-      }
-      const res = await client.inventory.create(newFirmwareMO);
-      return res.data;
-    }
-    return null;
-  }
-
   async checkIfFirmwareIsAvailable(client: Client, firmware: IManagedObject): Promise<IManagedObject> {
     const filter = {
-      query: `$filter=((type eq 'c8y_Firmware') and (name eq '${firmware.name}') and (version eq '${firmware.version}') and has(${this.provisioningIdent}) and (${this.provisioningIdent}.firmwareMOId eq '${firmware.id}'))`
+      query: `$filter=((type eq 'c8y_Firmware') and (name eq '${firmware.name}') and has(${this.provisioningIdent}) and (${this.provisioningIdent}.firmwareMOId eq '${firmware.id}'))`
     };
     const { data: firmwares } = await client.inventory.list(filter);
     return firmwares.length > 0 ? firmwares[0] : null;
-  }
-
-  async deprovisionLegacyFirmwareFromTenants(clients: Client[], firmware: IManagedObject): Promise<void[]> {
-    return await Promise.all(clients.map((tmp) => this.deprovisionLegacyFirmwareFromTenant(tmp, firmware)));
-  }
-
-  async deprovisionLegacyFirmwareFromTenant(client: Client, firmware: IManagedObject): Promise<void> {
-    const findFirmware = await this.checkIfFirmwareIsAvailable(client, firmware);
-    if (findFirmware) {
-      const url = findFirmware.url as string;
-      if (url && url.includes('/inventory/binaries/')) {
-        const binaryMOId = this.binaryService.getIdFromUrl(url);
-        await client.inventoryBinary.delete(binaryMOId);
-      }
-      await client.inventory.delete(findFirmware.id);
-    }
   }
 
   async provisionSmartRESTTemplates(clients: Client[], templateIds: string[]): Promise<void> {
@@ -180,6 +131,11 @@ export class ProvisioningService {
 
   provisionTenantOptionToTenants(clients: Client[], tenantOption: ITenantOption): Promise<IResult<ITenantOption>[]> {
     const promArray = clients.map((client) => client.options.tenant.update(tenantOption));
+    return Promise.all(promArray);
+  }
+
+  deprovisionTenantOptionToTenants(clients: Client[], tenantOption: ITenantOption): Promise<IResult<ITenantOption>[]> {
+    const promArray = clients.map((client) => client.options.tenant.delete(tenantOption));
     return Promise.all(promArray);
   }
 
@@ -376,6 +332,272 @@ export class ProvisioningService {
     const foundGroup = await this.getSmartGroupMatchingId(client, uuid);
     if (foundGroup) {
       await client.inventory.delete(foundGroup);
+    }
+  }
+
+  /**
+   * ScheduleBulkFirmwareUpgrade schedules a bulk firmware upgrade on the given client
+   * @param client
+   * @param operationDetails
+   * @param groupId
+   * @param firmware
+   * @param firmwareVersion
+   * @returns the output of the bulk operation
+   */
+  async scheduleBulkFirmwareUpgrade(
+    client: Client,
+    operationDetails: IOperation,
+    firmware: IManagedObject,
+    firmwareVersion: IManagedObject
+  ): Promise<IOperationBulk> {
+    // Create a dynamic group based on the firmware type
+    const groupId = await this.createDynamicGroup(client, firmware.c8y_Filter.type);
+
+    // If no group ID is returned, exit the function
+    if (!groupId) {
+      return;
+    }
+
+    // Define the bulk operation details
+    const bulkOperation: IOperationBulk = {
+      groupId: groupId,
+      creationRamp: operationDetails.delay,
+      startDate: operationDetails.date.toISOString(),
+      note: operationDetails.description,
+      operationPrototype: {
+        c8y_Firmware: {
+          name: firmware.name,
+          version: firmwareVersion.c8y_Firmware.version,
+          url: firmwareVersion.c8y_Firmware.url
+        },
+        description: firmware.description,
+        inet_OperationType: 'AUTOMATIC_FIRMWARE_UPGRADE'
+      }
+    };
+
+    // Create the bulk operation and get the output
+    const { data: operationOutput } = await client.operationBulk.create(bulkOperation);
+
+    return operationOutput;
+  }
+
+  /**
+   * CheckIfAutomaticFirmwareUpgradeEnabled checks if automatic firmware upgrade is enabled for the given device query
+   * @param client
+   * @param deviceQuery
+   * @returns boolean
+   */
+  async checkIfAutomaticFirmwareUpgradeEnabled(client: Client, deviceQuery: string): Promise<boolean> {
+    const filter = {
+      query: deviceQuery
+    };
+    const { data: devices } = await client.inventory.list(filter);
+    return devices.length > 0;
+  }
+  /**
+   * GetAutomaticFirmwareUpgradeGroups returns all groups with automatic firmware upgrade enabled
+   * @param client
+   * @returns group IDs
+   */
+  async getAutomaticFirmwareUpgradeGroups(client: Client): Promise<string[]> {
+    const query = {
+      __filter: {
+        type: 'c8y_DeviceGroup',
+        inet_AutomaticFirmwareUpgrade: true
+      }
+    };
+    const filter = {
+      currentPage: 1,
+      pageSize: 2000
+    };
+    const { data: groups } = await client.inventory.listQuery(query, filter);
+    return groups.length > 0 ? groups.map((group) => group.id) : [];
+  }
+
+  /**
+   * CreateDynamicGroup creates a dynamic group on the given client
+   * @param client
+   * @returns the ID of the dynamic group
+   */
+  async createDynamicGroup(client: Client, deviceType: string): Promise<string> {
+    // Retrieve the IDs of all device groups that are enabled for automatic firmware upgrades
+    const groupIds = await this.getAutomaticFirmwareUpgradeGroups(client);
+
+    // Construct the device query string based on the device type and whether there are any group IDs
+    const deviceQuery =
+      groupIds.length > 0
+        ? `$filter=((type eq '${deviceType}') and ((inet_AutomaticFirmwareUpgrade eq true) or (bygroupid(${groupIds.join()}))))`
+        : `$filter=((type eq '${deviceType}') and (inet_AutomaticFirmwareUpgrade eq true))`;
+
+    // Check if automatic firmware upgrade is enabled for the device query
+    const automaticFirmwareUpgradeEnabled = await this.checkIfAutomaticFirmwareUpgradeEnabled(client, deviceQuery);
+
+    // If automatic firmware upgrade is not enabled, return an empty id
+    if (!automaticFirmwareUpgradeEnabled) {
+      return '';
+    }
+
+    // Define the dynamic group object
+    const dynamicGroup = {
+      name: 'Bulk Firmware Upgrade Group',
+      type: 'c8y_DynamicGroup',
+      c8y_IsDynamicGroup: { invisible: {} },
+      c8y_DeviceQueryString: deviceQuery
+    };
+
+    // Create the dynamic group and get the output
+    const { data: dynamicGroupMO } = await client.inventory.create(dynamicGroup);
+
+    // Return the ID of the dynamic group
+    return dynamicGroupMO.id;
+  }
+
+  /**
+   * ProvisionLegacyFirmwareToTenant is used to create firmware and firmware versions for the given client
+   * @param client
+   * @param firmware
+   * @param selectedVersion
+   * @param binary
+   * @param binaryMO
+   * @returns
+   */
+  async provisionLegacyFirmwareToTenant(
+    client: Client,
+    firmware: IManagedObject,
+    selectedVersion: IManagedObject,
+    operationDetails: IOperation
+  ): Promise<IManagedObject> {
+    let isNewFirmware = false;
+    // Check if firmware is already available if not available create it
+    const knownFirmware = await this.checkIfFirmwareIsAvailable(client, firmware).then(async (res) => {
+      if (!res) {
+        // Create a new firmware managed object if the firmware is not available.
+        const newFirmwareMO = this.createCopyOfManagedObject(firmware);
+        newFirmwareMO[this.provisioningIdent].firmwareMOId = firmware.id;
+        const res = await client.inventory.create(newFirmwareMO);
+        isNewFirmware = true;
+        return res.data;
+      } else {
+        // Update the firmware managed object if the firmware is available.
+        const updateFirmwareMO = this.createCopyOfManagedObject(firmware);
+        updateFirmwareMO[this.provisioningIdent].firmwareMOId = firmware.id;
+        updateFirmwareMO.id = res.id;
+        const updateResponse = await client.inventory.update(updateFirmwareMO);
+        return updateResponse.data;
+      }
+    });
+
+    let knownFirmwareVersion;
+
+    if (isNewFirmware) {
+      // If the firmware is new, create a new firmware version managed object.
+      const newFirmwareVersionMO = this.createCopyOfManagedObject(selectedVersion);
+      const res = await client.inventory.childAdditionsCreate(newFirmwareVersionMO, knownFirmware.id);
+      knownFirmwareVersion = res.data;
+    } else {
+      // If the firmware is not new, check if the firmware version is available.
+      knownFirmwareVersion = await this.checkIfFirmwareVersionIsAvailable(
+        client,
+        knownFirmware,
+        selectedVersion.c8y_Firmware.version
+      );
+
+      if (!knownFirmwareVersion) {
+        // If the firmware version is not available, create a new firmware version managed object.
+        const newFirmwareVersionMO = this.createCopyOfManagedObject(selectedVersion);
+        const res = await client.inventory.childAdditionsCreate(newFirmwareVersionMO, knownFirmware.id);
+        knownFirmwareVersion = res.data;
+      }
+    }
+
+    // create scheduled automatic bulk operation for automatic firmware enabled devices and groups
+    await this.scheduleBulkFirmwareUpgrade(client, operationDetails, firmware, selectedVersion);
+
+    return knownFirmwareVersion;
+  }
+
+  /**
+   * CheckIfFirmwareVersionIsAvailable checks if the given firmware version is already available on the given client
+   * @param client
+   * @param firmware
+   * @param version
+   * @returns
+   */
+  async checkIfFirmwareVersionIsAvailable(
+    client: Client,
+    firmware: IManagedObject,
+    version: string
+  ): Promise<IManagedObject> {
+    const query = {
+      __filter: {
+        __bygroupid: firmware.id,
+        type: 'c8y_FirmwareBinary',
+        'c8y_Firmware.version': version
+      }
+    };
+    const { data: firmwares } = await client.inventory.listQuery(query);
+    return firmwares.length > 0 ? firmwares[0] : null;
+  }
+  /**
+   * ProvisionLegacyFirmwareToTenants is used to create firmware and firmware versions for the given clients
+   * @param clients
+   * @param firmware
+   * @param selectedVersion
+   * @returns
+   */
+  async provisionLegacyFirmwareToTenants(
+    clients: Client[],
+    firmware: IManagedObject,
+    selectedVersion: IManagedObject,
+    operationDetails: IOperation
+  ): Promise<IManagedObject[]> {
+    return await Promise.all(
+      clients.map((tmp) => this.provisionLegacyFirmwareToTenant(tmp, firmware, selectedVersion, operationDetails))
+    );
+  }
+
+  /**
+   * DeProvisionFirmware is used to remove firmware and firmware versions from the given clients
+   * @param clients
+   * @param firmware
+   * @param selectedVersion
+   * @returns
+   */
+  async deprovisionLegacyFirmwareFromTenants(
+    clients: Client[],
+    firmware: IManagedObject,
+    selectedVersion: IManagedObject
+  ): Promise<void[]> {
+    return await Promise.all(
+      clients.map((tmp) => this.deprovisionLegacyFirmwareFromTenant(tmp, firmware, selectedVersion))
+    );
+  }
+
+  /**
+   * DeProvisionFirmware is used to remove firmware and firmware versions from the given client
+   * @param client
+   * @param firmware
+   * @param selectedVersion
+   */
+  async deprovisionLegacyFirmwareFromTenant(
+    client: Client,
+    firmware: IManagedObject,
+    selectedVersion: IManagedObject
+  ): Promise<void> {
+    const findFirmware = await this.checkIfFirmwareIsAvailable(client, firmware);
+    if (findFirmware) {
+      const findFirmwareVersion = await this.checkIfFirmwareVersionIsAvailable(
+        client,
+        findFirmware,
+        selectedVersion.c8y_Firmware.version
+      );
+      if (findFirmwareVersion) {
+        await client.inventory.delete(findFirmwareVersion.id);
+      }
+      const { data } = await client.inventory.detail(findFirmware.id);
+      if (data.childAdditions.references.length === 0) {
+        await client.inventory.delete(findFirmware.id);
+      }
     }
   }
 }

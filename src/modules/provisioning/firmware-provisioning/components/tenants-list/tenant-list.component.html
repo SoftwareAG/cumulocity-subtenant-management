@@ -1,0 +1,39 @@
+<c8y-data-grid
+  [title]="title"
+  [loadMoreItemsLabel]="loadMoreItemsLabel"
+  [loadingItemsLabel]="loadingItemsLabel"
+  [displayOptions]="displayOptions"
+  [columns]="columns"
+  [rows]="tenants$ | async"
+  [pagination]="pagination"
+  [showSearch]="showSearch"
+  [actionControls]="actionControls"
+  (itemsSelect)="onItemsSelect($event)"
+  [selectable]="selectable"
+  (onReload)="loadTenants()"
+>
+  <c8y-column name="creationTime">
+    <ng-container *c8yCellRendererDef="let context">
+      <span title="{{ context.value | c8yDate }}">
+        {{ context.value | c8yDate }}
+      </span>
+    </ng-container>
+  </c8y-column>
+
+  <c8y-column name="status">
+    <ng-container *c8yCellRendererDef="let context">
+      <span
+        *ngIf="context.item.status === TenantStatus.ACTIVE"
+        title="{{ 'Active`tenant`' | translate }}"
+      >
+        <i c8yIcon="check-circle" class="text-success"></i>
+      </span>
+      <span
+        *ngIf="context.item.status === TenantStatus.SUSPENDED"
+        title="{{ 'Suspended`tenant`' | translate }}"
+      >
+        <i c8yIcon="ban" class="text-danger"></i>
+      </span>
+    </ng-container>
+  </c8y-column>
+</c8y-data-grid>

@@ -1,0 +1,45 @@
+<form #filterForm="ngForm">
+  <div class="m-b-8 p-t-8">
+    <label>{{ "Filter by creation time" | translate }}</label>
+    <c8y-form-group class="datepicker d-block m-b-16" style="max-height: 32px">
+      <input
+        name="dateFrom"
+        [(ngModel)]="model.dateFrom"
+        class="form-control fit-w text-left"
+        placeholder="{{ 'Created from`date`' | translate }}"
+        bsDatepicker
+        [bsConfig]="{ customTodayClass: 'today', returnFocusToInput: true }"
+        [maxDate]="model.dateTo"
+      />
+    </c8y-form-group>
+    <c8y-form-group class="datepicker m-l-0 d-block" style="max-height: 32px">
+      <input
+        name="dateTo"
+        [(ngModel)]="model.dateTo"
+        class="form-control fit-w text-left"
+        placeholder="{{ 'Created to`date`' | translate }}"
+        bsDatepicker
+        [bsConfig]="{ customTodayClass: 'today', returnFocusToInput: true }"
+        [minDate]="model.dateFrom"
+      />
+    </c8y-form-group>
+  </div>
+</form>
+
+<div class="data-grid__dropdown__footer d-flex separator-top">
+  <button
+    class="btn btn-default btn-sm m-r-8 flex-grow"
+    (click)="resetFilter()"
+    title="{{ 'Reset' | translate }}"
+  >
+    {{ "Reset" | translate }}
+  </button>
+  <button
+    class="btn btn-primary btn-sm flex-grow"
+    [disabled]="filterForm.invalid"
+    (click)="applyFilter()"
+    title="{{ 'Apply' | translate }}"
+  >
+    {{ "Apply" | translate }}
+  </button>
+</div>

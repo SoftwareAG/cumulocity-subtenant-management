@@ -17,10 +17,10 @@ import { flatMap, get, omit, uniq } from 'lodash-es';
 import { CustomApiService } from './custom-api.service';
 import { SubtenantDetailsService } from './subtenant-details.service';
 import { ApplicationSubscriptionService } from './application-subscription.service';
-import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
-import { BearerAuth } from '@models/BearerAuth';
 import { interval, Subscription } from 'rxjs';
+import { BearerAuth } from '@models/BearerAuth';
 import { CustomBasicAuth } from '@models/CustomBasicAuth';
+import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
 
 export const HOOK_MICROSERVICE_ROLE = new InjectionToken('MicroserviceRole');
 
@@ -31,26 +31,27 @@ export class FakeMicroserviceService implements OnDestroy {
   private requiredRoles: string[] = [];
 
   private credentialsCache: Promise<ICredentials[]>;
-  private cachedModal: Promise<unknown>;
   private clientsPromiseCache = new Map<string, Promise<Client>>();
   private clientsAuthCache = new Map<string, BasicAuth | BearerAuth>();
   private clientsCredentialsCache = new Map<string, ICredentials>();
-
+  private cachedModal: Promise<unknown>;
   private oauthTokenExpirySub: Subscription;
 
   constructor(
-    @Optional() @Inject(HOOK_MICROSERVICE_ROLE) factories: (string | string[])[],
+    @Optional()
+    @Inject(HOOK_MICROSERVICE_ROLE)
+    factories: (string | string[])[],
     private fetchClient: FetchClient,
     private appService: ApplicationService,
     private modalService: ModalService,
     private customApiService: CustomApiService,
     private subtenantDetails: SubtenantDetailsService,
     private applicationSubscription: ApplicationSubscriptionService,
-    private tenantSelectionService: TenantSelectionService,
     private appState: AppStateService,
     private alertService: AlertService,
     private options: OptionsService,
-    private loginService: LoginService
+    private loginService: LoginService,
+    private tenantSelectionService: TenantSelectionService
   ) {
     if (factories) {
       const roles = flatMap(factories);
@@ -153,6 +154,12 @@ export class FakeMicroserviceService implements OnDestroy {
     throw new Error('Too many retries');
   }
 
+  /**
+   * CreateClient creates a client for the given tenant credentials.
+   * @param credentials
+   * @param domain
+   * @returns
+   */
   private async createClient(credentials: ICredentials, domain?: string): Promise<Client> {
     this.clientsCredentialsCache.set(credentials.tenant, credentials);
     let auth: BasicAuth | BearerAuth;
@@ -171,6 +178,9 @@ export class FakeMicroserviceService implements OnDestroy {
     return client;
   }
 
+  /**
+   * GetAccessToken retrieves an access token for the given credentials.
+   */
   private async getAccessToken(credentials: ICredentials, domain?: string): Promise<string> {
     const params = new URLSearchParams({
       grant_type: 'PASSWORD',
@@ -204,9 +214,9 @@ export class FakeMicroserviceService implements OnDestroy {
     return json.access_token;
   }
 
-  public async prepareCachedDummyMicroserviceForAllSubtenants(baseUrl?: string): Promise<ICredentials[]> {
+  public async prepareCachedDummyMicroserviceForAllSubtenants(): Promise<ICredentials[]> {
     if (!this.credentialsCache) {
-      this.credentialsCache = this.prepareDummyMicroserviceForAllSubtenants(baseUrl);
+      this.credentialsCache = this.prepareDummyMicroserviceForAllSubtenants();
     }
     try {
       return await this.credentialsCache;
@@ -216,26 +226,36 @@ export class FakeMicroserviceService implements OnDestroy {
     }
   }
 
-  public async prepareDummyMicroserviceForAllSubtenants(baseUrl?: string): Promise<ICredentials[]> {
+  /**
+   * PrepareDummyMicroserviceForAllSubtenants prepares a dummy microservice for all subtenants.
+   * @param selectedTenants
+   * @param baseUrl
+   * @returns
+   */
+  public async prepareDummyMicroserviceForAllSubtenants(): Promise<ICredentials[]> {
     const tenantPromise = this.subtenantDetails.getTenants();
     if (this.showWarnings()) {
       await this.checkDataUsageConfirmed();
     }
     const app = await this.createDummyMicroserviceIfNotExisting();
+
     const tenants = await tenantPromise;
     let filteredTenants = tenants;
     if (this.showWarnings()) {
       filteredTenants = await this.subsetOfTenantsSelected(tenants);
     }
-
     await this.applicationSubscription.subscribeAppToAllTenants(app, filteredTenants);
     const bootstrapCredentials = await this.getBootstrapUser(app);
-    const subscriptions = await this.getMicroserviceSubscriptions(bootstrapCredentials, baseUrl);
+    const subscriptions = await this.getMicroserviceSubscriptions(bootstrapCredentials);
     const filteredTenantIds = filteredTenants.map((tmp) => tmp.id);
     const filteredSubscriptions = subscriptions.filter((tmp) => filteredTenantIds.includes(tmp.tenant));
     return filteredSubscriptions;
   }
 
+  /**
+   * CleanUp is used to unsubscribe the dummy microservice from all subtenants and delete it.
+   * @returns
+   */
   public async cleanup(): Promise<void> {
     const app = await this.findDummyMicroservice();
     if (!app) {
@@ -247,23 +267,40 @@ export class FakeMicroserviceService implements OnDestroy {
     this.credentialsCache = null;
   }
 
+  /**
+   * GetMsKey is used to get the microservice key for subtenant-mgmt microservice.
+   * @returns string
+   */
   public async getMsKey(): Promise<string> {
     const currentTenant = this.appState.currentTenant.value;
     const hashedTenantId = await this.sha256(currentTenant.name);
     return `subtenant-mgmt-${hashedTenantId.substring(0, 8)}`;
   }
 
+  /**
+   * GetMsName is used to get the microservice name for subtenant-mgmt microservice.
+   * @returns string
+   */
   public async getMsName(): Promise<string> {
     const currentTenant = this.appState.currentTenant.value;
     const hashedTenantId = await this.sha256(currentTenant.name);
     return `subtenant-mgmt-${hashedTenantId.substring(0, 8)}`;
   }
 
+  /**
+   * GetMsDescription is used to get the microservice description for subtenant-mgmt microservice.
+   * @returns string
+   */
   private getMsDescription(): string {
     const currentTenant = this.appState.currentTenant.value;
     return `Microservice that allows tenant ${currentTenant.name} to get access to this tenant.`;
   }
 
+  /**
+   * sha256 is used to hash a string with sha256.
+   * @param message
+   * @returns
+   */
   private async sha256(message: string): Promise<string> {
     // encode as UTF-8
     const msgBuffer = new TextEncoder().encode(message);
@@ -279,6 +316,11 @@ export class FakeMicroserviceService implements OnDestroy {
     return hashHex;
   }
 
+  /**
+   * GetBootstrapUser is used to get the bootstrap user for all subtenants.
+   * @param app
+   * @returns
+   */
   private async getBootstrapUser(app: IApplication) {
     const bootstrapCredentialsEndpoint = `/application/applications/${app.id}/bootstrapUser`;
     const res = await this.fetchClient.fetch(bootstrapCredentialsEndpoint);
@@ -286,10 +328,13 @@ export class FakeMicroserviceService implements OnDestroy {
     return { tenant, password, user: name } as ICredentials;
   }
 
-  private async getMicroserviceSubscriptions(
-    bootstrapCredentials: ICredentials,
-    baseUrl?: string
-  ): Promise<ICredentials[]> {
+  /**
+   * GetMicroserviceSubscriptions is used to get the microservice subscriptions for all subtenant's bootstrap user.
+   * @param bootstrapCredentials
+   * @param baseUrl
+   * @returns
+   */
+  private async getMicroserviceSubscriptions(bootstrapCredentials: ICredentials): Promise<ICredentials[]> {
     const loginMode = get(this.loginService, 'loginMode.type', 'BASIC');
     const client: Client = new Client(new BasicAuth(bootstrapCredentials));
     if (loginMode !== 'BASIC') {
@@ -298,13 +343,6 @@ export class FakeMicroserviceService implements OnDestroy {
       );
       throw Error(`OAuth on the management/enterprise tenant is currently not supported.`);
     }
-    // unable to set use BearerAuth together with OAuthCookie, as Cookie is always preferred..
-    // if (loginMode === 'BASIC') {
-    //   client = new Client(new BasicAuth(bootstrapCredentials));
-    // } else {
-    //   const token = await this.getAccessToken(bootstrapCredentials);
-    //   client = new Client(new BearerAuth({ token }));
-    // }
 
     const microserviceSubscriptionsEndpoint = '/application/currentApplication/subscriptions';
     const res = await client.core.fetch(microserviceSubscriptionsEndpoint);
@@ -321,6 +359,10 @@ export class FakeMicroserviceService implements OnDestroy {
     });
   }
 
+  /**
+   * CreateDummyMicroserviceIfNotExisting creates a dummy microservice if it does not exist.
+   * @returns
+   */
   private async createDummyMicroserviceIfNotExisting() {
     let app = await this.findDummyMicroservice();
     if (!app) {
@@ -336,6 +378,10 @@ export class FakeMicroserviceService implements OnDestroy {
     return app;
   }
 
+  /**
+   * findDummyMicroservice finds the dummy microservice in the tenant.
+   * @returns
+   */
   private async findDummyMicroservice() {
     const ms = await this.getDummyMicroserviceObjForCreation();
     const { data: appList } = await this.appService.listByName(ms.name);
@@ -345,6 +391,10 @@ export class FakeMicroserviceService implements OnDestroy {
     return null;
   }
 
+  /**
+   * getDummyMicroserviceObjForCreation creates a dummy microservice object.
+   * @returns
+   */
   private async getDummyMicroserviceObjForCreation(): Promise<Partial<IApplication>> {
     const msKey = await this.getMsKey();
     const msName = await this.getMsName();
@@ -357,11 +407,19 @@ export class FakeMicroserviceService implements OnDestroy {
     };
   }
 
+  /**
+   * createDummyMicroservice creates a dummy microservice.
+   * @returns
+   */
   private async createDummyMicroservice() {
     const ms = await this.getDummyMicroserviceObjForCreation();
     return this.appService.create(ms);
   }
 
+  /**
+   * updateDummyMicroserviceRoles updates the dummy microservice roles.
+   * @param appId
+   */
   private async updateDummyMicroserviceRoles(appId: string | number) {
     const msWithoutType = omit(await this.getDummyMicroserviceObjForCreation(), ['type']);
     return this.appService.update({
@@ -370,6 +428,11 @@ export class FakeMicroserviceService implements OnDestroy {
     });
   }
 
+  /**
+   * deleteApp deletes the given application.
+   * @param app
+   * @returns
+   */
   private deleteApp(app: IApplication) {
     return this.appService.delete(app.id);
   }

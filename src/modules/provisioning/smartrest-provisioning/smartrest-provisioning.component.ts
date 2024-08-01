@@ -8,9 +8,9 @@ import {
   ModalService
 } from '@c8y/ngx-components';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
-import { ProvisioningService } from '@services/provisioning.service';
 import { SmartrestTableDatasourceService } from './smartrest-table-datasource.service';
 import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
+import { ProvisioningService } from '@services/provisioning.service';
 
 @Component({
   providers: [SmartrestTableDatasourceService],

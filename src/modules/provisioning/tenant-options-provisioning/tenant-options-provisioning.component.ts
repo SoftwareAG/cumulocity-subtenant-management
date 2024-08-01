@@ -1,22 +1,23 @@
-import { Component } from '@angular/core';
-import { ITenantOption } from '@c8y/client';
+import { Component, OnInit } from '@angular/core';
+import { ICurrentTenant, ITenantOption, TenantService } from '@c8y/client';
 import { AlertService, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
 import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
-import { ProvisioningService } from '@services/provisioning.service';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { Subject } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { TenantOptionModalComponent } from '../modals/tenant-option-modal/tenant-option-modal.component';
 import { TenantOptionsTableDatasourceService } from './tenant-options-table-datasource.service';
+import { ProvisioningService } from '@services/provisioning.service';
 
 @Component({
   providers: [TenantOptionsTableDatasourceService],
   selector: 'ps-tenant-options-provisioning',
   templateUrl: './tenant-options-provisioning.component.html'
 })
-export class TenantOptionsProvisioningComponent {
+export class TenantOptionsProvisioningComponent implements OnInit {
   columns: Column[];
+  tenant: ICurrentTenant;
 
   constructor(
     private credService: FakeMicroserviceService,
@@ -25,9 +26,15 @@ export class TenantOptionsProvisioningComponent {
     private alertService: AlertService,
     private provisioning: ProvisioningService,
     public datasource: TenantOptionsTableDatasourceService,
-    private tenantSelectionService: TenantSelectionService
+    private tenantSelectionService: TenantSelectionService,
+    private tenantService: TenantService
   ) {
     this.columns = this.getDefaultColumns();
+  }
+  ngOnInit(): void {
+    this.tenantService.current().then((tenant) => {
+      this.tenant = tenant.data;
+    });
   }
 
   getDefaultColumns(): Column[] {
@@ -73,6 +80,8 @@ export class TenantOptionsProvisioningComponent {
       try {
         selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenantIds);
       } catch (e) {
+        this.alertService.warning('Something went wrong during subtenant selection. Please try again.');
+        console.warn(e.message);
         return;
       }
       const filteredCredentials = credentials.filter((cred) => selectedTenantIds.includes(cred.tenant));
@@ -95,8 +104,52 @@ export class TenantOptionsProvisioningComponent {
             );
           }
         );
-      } catch (e) {}
+      } catch (e) {
+        console.warn(e.message);
+      }
     } catch (e) {
+      console.warn(e.message);
+      return;
+    }
+  }
+
+  async deprovisionTenantOption(option?: ITenantOption): Promise<void> {
+    try {
+      const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+      const tenantIds = credentials.map((tmp) => tmp.tenant);
+      let selectedTenantIds: string[] = [];
+      try {
+        selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenantIds);
+      } catch (e) {
+        this.alertService.warning('Something went wrong during subtenant selection. Please try again.');
+        console.warn(e.message);
+        return;
+      }
+      const filteredCredentials = credentials.filter((cred) => selectedTenantIds.includes(cred.tenant));
+
+      try {
+        await this.c8yModalService.confirm(
+          `Deprovisioning Tenant Option`,
+          `Are you sure that you want to deprovision the Tenant Option to all selected ${filteredCredentials.length} subtenants? This will delete the selected tenant option on tenants in case this option exists.`,
+          'warning'
+        );
+        const clients = await this.credService.createClients(filteredCredentials);
+        await this.provisioning.deprovisionTenantOptionToTenants(clients, option).then(
+          () => {
+            this.alertService.success(`Deprovisioned Tenant Option to ${clients.length} subtenants.`);
+          },
+          (error) => {
+            this.alertService.danger(
+              'Failed to deprovision Tenant Option to all selected subtenants.',
+              JSON.stringify(error)
+            );
+          }
+        );
+      } catch (e) {
+        console.warn(e.message);
+      }
+    } catch (e) {
+      console.warn(e.message);
       return;
     }
   }
@@ -125,7 +178,6 @@ export class TenantOptionsProvisioningComponent {
         }
       });
       initialState.tenantOption = obj;
-      console.log(obj);
     }
     this.modalService.show(TenantOptionModalComponent, {
       initialState,

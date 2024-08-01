@@ -1,46 +1,125 @@
 <c8y-title>Firmware Statistics</c8y-title>
 
-<div class="row split-scroll" *ngIf="!isLoading; else loadingIndicator">
-  <div class="col-md-4 scroll-column">
-    <ul class="c8y-nav-stacked inner-scroll">
-      <li class="c8y-stacked-item removable" *ngFor="let chart of charts" (click)="selectChart(chart)" [ngClass]="{'active': currentChart === chart}">
-        <h3>
-          <span class="text-truncate">
-            <i c8yIcon="floppy-o"></i>
-            <span [title]="chart.label">{{ chart.label }}</span>
-          </span>
-        </h3>
-      </li>
-    </ul>
-  </div>
+<div class="row split-scroll">
 
-  <div class="col-md-8 scroll-column">
-    <div class="center-block full-height" *ngIf="!currentChart">
-      <div class="c8y-empty-state text-center">
-        <h1>
-          <i c8yIcon="th"></i>
-        </h1>
-        <h3>{{ "No device/firmware combination selected." | translate }}</h3>
+  <div class="col-md-4 scroll-column">
+    <div class="card content-fullpage d-flex d-col">
+      <div class="card-header separator">
+        <div class="col-md-4">
+          <h4 class="card-title">Subtenant</h4>
+        </div>
+        <div class="col-md-8">
+          <div class="input-group input-group-search" id="example">
+            <input class="form-control" type="search" placeholder="Search…" [(ngModel)]="tenantSearchString"
+              (ngModelChange)="onTenantSearch()" />
+            <span class="input-group-btn">
+              <button class="btn btn-clean" type="button" title="Search"
+                *ngIf="!tenantSearchString || tenantSearchString.length === 0">
+                <i c8yIcon="search"></i>
+              </button>
+              <button class="btn btn-clean" type="button" title="Clear search"
+                *ngIf="tenantSearchString && tenantSearchString.length > 0" (click)="resetTenantSearchString()">
+                <i c8yIcon="times"></i>
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="card-block inner-scroll">
+        <div class="card-group interact-list">
+          <div *ngFor="let tenant of filteredTenants" class="col-sm-6 col-md-4 col-lg-4 col-xs-12 tenant-list">
+            <div class="card pointer" [class.selected]="tenant === selectedTenant" (click)="onTenantSelected(tenant)">
+              <div class="card-header separator card-column-30">
+                <div class="card-icon">
+                  <i c8yIcon="c8y-firmware" class="c8y-icon"></i>
+                </div>
+                <span class="card-title text-truncate" title="{{tenant.id}}">
+                  {{tenant.id}}
+                </span>
+              </div>
+              <div class="card-block card-column-60">
+                <small>
+                  {{tenant.domain}}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="card content-fullpage d-flex d-col" *ngIf="currentChart">
-      <div class="card-header separator">
-        <h4 class="card-title">{{ currentChart.label }}</h4>
-      </div>
-        <div class="card-block flex-grow">
-          <ps-pie-chart [pieChartLabels]="currentChart.labels" [pieChartData]="currentChart.values" (indexClicked)="pieChartClicked($event)"></ps-pie-chart>
+  </div>
 
+  <div class="col-md-4 scroll-column">
+    <div class="card content-fullpage d-flex d-col">
+      <div class="card-header separator">
+        <div class="col-md-4">
+          <h4 class="card-title">Firmware</h4>
         </div>
-      <!-- <div class="card-footer separator text-center">
-      </div> -->
+        <div class="col-md-8">
+          <div class="input-group input-group-search" id="example">
+            <input class="form-control" type="search" placeholder="Search…" [(ngModel)]="firmwareSearchString"
+              (ngModelChange)="onFirmwareSearch()" />
+            <span class="input-group-btn">
+              <button class="btn btn-clean" type="button" title="Search"
+                *ngIf="!firmwareSearchString || firmwareSearchString.length === 0">
+                <i c8yIcon="search"></i>
+              </button>
+              <button class="btn btn-clean" type="button" title="Clear search"
+                *ngIf="firmwareSearchString && firmwareSearchString.length > 0" (click)="resetFirmwareSearchString()">
+                <i c8yIcon="times"></i>
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="card-block inner-scroll">
+        <div class="card-group interact-list">
+          <div *ngFor="let firmware of firmwareList" class="col-sm-6 col-md-4 col-lg-4 col-xs-12 firmeware-list">
+            <div class="card pointer" [class.selected]="firmware === selectedFirmware"
+              (click)="onFirmwareSelected(firmware)">
+              <div class="card-header separator card-column-30">
+                <div class="card-icon">
+                  <i c8yIcon="save1" class="c8y-icon"></i>
+                </div>
+                <span class="card-title text-truncate" title="{{firmware.name}}">
+                  {{firmware.name}}
+                </span>
+              </div>
+              <div class="card-block card-column-60">
+                <small>
+                  {{firmware.description}}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="row">
+      <div class="card content-fullpage d-flex d-col">
+        <div class="card-header separator">
+          <h4 class="card-title">Firmware Statistics</h4>
+        </div>
+        <div *ngIf="!(selectedTenant && selectedFirmware)" class="card-block flex-grow">
+          <div class="card-block">
+            <span>{{ "Please select subtenant/firmware combination." | translate }}</span>
+          </div>
+        </div>
+        <div *ngIf="selectedTenant && selectedFirmware" class="card-block flex-grow">
+
+          <c8y-loading *ngIf="isLoading" layout="application" message></c8y-loading>
+
+          <ps-pie-chart *ngIf="!isLoading && !chartMessage" [pieChartLabels]="currentChart.labels"
+            [pieChartData]="currentChart.values"></ps-pie-chart>
+
+          <span *ngIf="!isLoading && chartMessage">{{ chartMessage }}</span>
+        </div>
+        <!-- <div class="card-footer separator text-center">
+        </div> -->
+      </div>
+
     </div>
   </div>
 </div>
-
-<ng-template #loadingIndicator>
-  <div class="content-fullpage">
-    <div class="fit-h fit-w d-flex j-c-center a-i-center">
-      <c8y-loading></c8y-loading>
-    </div>
-  </div>
-</ng-template>

@@ -18,6 +18,7 @@ import { AddDeviceRegistrationModalComponent } from './modals/add-device-registr
 import { CustomFirmwareUpdateModalComponent } from './modals/custom-firmware-update-modal/custom-firmware-update-modal.component';
 import { FirmwareUpdateHistoryComponent } from './firmware-update-history/firmware-update-history.component';
 import { RouterModule } from '@angular/router';
+import { BulkDeviceRegistrationModalComponent } from './modals/bulk-device-registration-modal/bulk-device-registration-modal.component';
 
 @NgModule({
   imports: [
@@ -65,6 +66,7 @@ import { RouterModule } from '@angular/router';
     UserPasswordChangeModalComponent,
     AddUserModalComponent,
     AddDeviceRegistrationModalComponent,
+    BulkDeviceRegistrationModalComponent,
     CustomFirmwareUpdateModalComponent,
     FirmwareUpdateHistoryComponent
   ],
@@ -79,6 +81,7 @@ import { RouterModule } from '@angular/router';
     UserPasswordChangeModalComponent,
     AddUserModalComponent,
     AddDeviceRegistrationModalComponent,
+    BulkDeviceRegistrationModalComponent,
     CustomFirmwareUpdateModalComponent,
     FirmwareUpdateHistoryComponent
   ],

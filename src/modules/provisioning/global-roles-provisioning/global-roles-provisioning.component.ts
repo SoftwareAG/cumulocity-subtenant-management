@@ -1,34 +1,47 @@
-import { Component } from '@angular/core';
-import { IUserGroup } from '@c8y/client';
+import { Component, OnInit } from '@angular/core';
+import { IApplication, ICurrentTenant, IRoleReference, IUserGroup, TenantService } from '@c8y/client';
 import { AlertService, Column, ColumnDataType, ModalService } from '@c8y/ngx-components';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { GlobalRolesTableDatasourceService } from './global-roles-table-datasource.service';
-import { ProvisioningService } from '@services/provisioning.service';
 import { TenantSelectionService } from '@modules/shared/tenant-selection/tenant-selection.service';
+import { RoleHavingPermissionsModalComponent } from './role-having-permissions-modal/role-having-permissions-modal.component';
+import { BsModalService } from 'ngx-bootstrap/modal';
+import { RoleHavingAppModalComponent } from './role-having-app-modal/role-having-app-modal.component';
+import { ProvisioningService } from '@services/provisioning.service';
 
 @Component({
   providers: [GlobalRolesTableDatasourceService],
   selector: 'ps-global-roles-provisioning',
   templateUrl: './global-roles-provisioning.component.html'
 })
-export class GlobalRolesProvisioningComponent {
+export class GlobalRolesProvisioningComponent implements OnInit {
   columns: Column[];
+  tenant: ICurrentTenant;
+
   constructor(
     public datasource: GlobalRolesTableDatasourceService,
     private credService: FakeMicroserviceService,
     private c8yModalService: ModalService,
     private alertService: AlertService,
     private provisioning: ProvisioningService,
-    private tenantSelectionService: TenantSelectionService
+    private tenantSelectionService: TenantSelectionService,
+    private tenantService: TenantService,
+    private modalService: BsModalService
   ) {
     this.columns = this.getDefaultColumns();
+  }
+
+  ngOnInit(): void {
+    this.tenantService.current().then((tenant) => {
+      this.tenant = tenant.data;
+    });
   }
 
   getDefaultColumns(): Column[] {
     return [
       {
         name: 'name',
-        header: 'Name',
+        header: 'role',
         path: 'name',
         dataType: ColumnDataType.TextShort,
         sortable: false,
@@ -45,7 +58,7 @@ export class GlobalRolesProvisioningComponent {
       },
       {
         name: 'roles',
-        header: 'roles',
+        header: 'permissions',
         path: 'roles',
         dataType: ColumnDataType.TextShort,
         sortable: false,
@@ -112,6 +125,36 @@ export class GlobalRolesProvisioningComponent {
     } catch (e) {
       return;
     }
+  }
+
+  openRoleHavingAppModal(role: IUserGroup, apps: IApplication[]): void {
+    const initialState: Partial<RoleHavingAppModalComponent> = {
+      role: role,
+      apps: apps
+    };
+    this.modalService.show(RoleHavingAppModalComponent, {
+      initialState,
+      ignoreBackdropClick: true
+    });
+  }
+
+  openTenantsHavingPermissionModal(role: IUserGroup, permissions: IRoleReference[]): void {
+    const initialState: Partial<RoleHavingPermissionsModalComponent> = {
+      role: role,
+      permissions: permissions
+    };
+    this.modalService.show(RoleHavingPermissionsModalComponent, {
+      initialState,
+      ignoreBackdropClick: true
+    });
+  }
+
+  createNewGlobalRole() {
+    window.open('https://' + this.tenant.domainName + '/apps/administration/index.html#/roles/global/new', '_blank');
+  }
+
+  navigateToUpdateRole(id: string) {
+    window.open('https://' + this.tenant.domainName + '/apps/administration/index.html#/roles/global/' + id, '_blank');
   }
 
   async deleteGlobalRole(role: IUserGroup): Promise<void> {

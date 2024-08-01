@@ -1,0 +1,99 @@
+<div class="modal-header dialog-header">
+  <i class="c8y-icon c8y-icon-device-connect"></i>
+  <h4 translate>Create Bulk Device Registration Request</h4>
+</div>
+<div class="modal-body dialog-body">
+  <br>
+  <div class="form-group">
+    <label for="tenantSelection">Tenant</label>
+    <div class="c8y-select-wrapper">
+      <select id="tenantSelection" class="form-control" [(ngModel)]="selectedTenant" (change)="onTenantSelect()">
+        <option *ngFor="let item of clients" [value]="item.core.tenant">{{item.core.tenant}}</option>
+      </select>
+      <span></span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <c8y-file-picker (onFilesPicked)="onFile($event)" [maxAllowedFiles]="1"></c8y-file-picker>
+  </div>
+
+  <div class="col-6 p-16 p-b-0 d-flex d-col j-c-between">
+    <div>
+      <p class="m-b-8">
+        <strong translate>Full registration</strong>
+      </p>
+      <small class="text-muted" translate>
+        Creates all device credentials and devices using provided list of property values.
+        Devices can start communicating with the platform immediately.
+      </small>
+    </div>
+    <div class="m-b-16 m-t-16">
+      <a title="{{ 'Download template' | translate }}" class="btn btn-default btn-sm" target="_self"
+        (click)="downloadFull()">
+        <i c8yIcon="download" translate></i>
+        {{ 'Download template' | translate }}
+      </a>
+    </div>
+  </div>
+
+
+  <div class="col-6 p-b-0 d-flex d-col j-c-between" *ngIf="bulkResponse">
+    <div class="row">
+
+      <div class="col-md-6">
+        <c8y-operation-result type="success" text="{{ bulkResponse?.numberOfSuccessful + ' device(s)
+      successfuly registered' | translate }}" [size]="20" [vertical]="false"></c8y-operation-result>
+      </div>
+      <div class="col-md-6">
+        <c8y-operation-result type="warning" text="{{ bulkResponse?.numberOfFailed + ' device(s)
+        failed to register' | translate }}" [size]="20" [vertical]="false"></c8y-operation-result>
+      </div>
+
+    </div>
+    <div class="row">
+
+
+      <!-- The record list wrapper -->
+      <div class="card-group interact-list" *ngIf="bulkResponse?.numberOfFailed > 0">
+        <!-- The sticky header -->
+        <div class="page-sticky-header hidden-xs">
+          <div class="d-flex">
+            <div class="card-header card-column-20">
+              <p>Device ID</p>
+            </div>
+            <div class="card-header card-column-50">
+              <p>Reason</p>
+            </div>
+          </div>
+        </div>
+        <!-- The records list -->
+        <div *ngFor="let log of bulkResponse?.failedCreationList" class="col-sm-6 col-md-4 col-lg-4 col-xs-12">
+          <div class="card pointer">
+            <div class="card-header separator card-column-20">
+              <span class="card-title text-truncate" title="{{log?.deviceId}}">
+                {{log?.deviceId}}
+              </span>
+            </div>
+            <div class="card-block card-column-50">
+              <small>
+                {{log?.failureReason}}
+              </small>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" translate type="button" title="{{ 'Cancel' | translate }}"
+      (click)="onDismiss($event)">
+      {{bulkResponse ? 'Cancel' : 'OK' }}
+    </button>
+    <button *ngIf="!bulkResponse" class="btn btn-primary" [disabled]="!selectedClient || !selectedTenant" translate
+      type="submit" title="{{ 'Create Device Registration' | translate }}" (click)="onSave($event)">
+      Create Bulk Device Registration
+    </button>
+  </div>

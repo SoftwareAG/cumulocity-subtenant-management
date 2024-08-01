@@ -1,0 +1,21 @@
+<div class="modal-header dialog-header">
+  <i c8yIcon="c8y-modules"></i>
+  <h4 translate>{{ role.name }} - {{ 'Permissions' | translate }}</h4>
+</div>
+<div class="modal-inner-scroll">
+  <div class="modal-body dialog-body">
+    <ul class="list-group">
+      <li class="list-group-item flex-row" *ngFor="let permissions of permissions; let i = index">
+        <label>
+          {{ permissions?.role?.name }}
+        </label>
+      </li>
+    </ul>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default" translate type="button" title="{{ 'Close' | translate }}" (click)="onDismiss($event)">
+    Close
+  </button>
+
+</div>

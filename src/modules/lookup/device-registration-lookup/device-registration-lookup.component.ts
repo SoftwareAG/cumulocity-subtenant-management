@@ -9,6 +9,7 @@ import { BsModalService } from 'ngx-bootstrap/modal';
 import { filter, take } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { AddDeviceRegistrationModalComponent } from '../modals/add-device-registration-modal/add-device-registration-modal.component';
+import { BulkDeviceRegistrationModalComponent } from '../modals/bulk-device-registration-modal/bulk-device-registration-modal.component';
 
 @Component({
   providers: [DeviceRegistrationTableDatasourceService],
@@ -102,6 +103,27 @@ export class DeviceRegistrationLookupComponent {
         sortable: false
       }
     ];
+  }
+
+  async openBulkDeviceRegistrationModal() {
+    const response = new Subject<boolean>();
+    response
+      .asObservable()
+      .pipe(
+        take(1),
+        filter((tmp) => !!tmp)
+      )
+      .subscribe(() => {
+        this.datasource.clearCache();
+        this.refresh.emit();
+      });
+    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+    const clients = await this.credService.createClients(credentials);
+
+    this.modalService.show(BulkDeviceRegistrationModalComponent, {
+      initialState: { clients, response },
+      ignoreBackdropClick: true
+    });
   }
 
   acceptRequest(request: TenantSpecificDetails<IDeviceRegistration>): void {
