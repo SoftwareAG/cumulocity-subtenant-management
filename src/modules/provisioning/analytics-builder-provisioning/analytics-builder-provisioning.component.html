@@ -1,0 +1,33 @@
+<c8y-title>Analytics Builder</c8y-title>
+
+<div class="split-scroll">
+
+  <c8y-data-grid [title]="'Analytics Builder - ' + tenant.name | translate" class="scroll-column sort-fix fit-w" [columns]="columns"
+    [rows]="rows" [selectable]="false" [actionControls]="actions" [pagination]="pagination" [showSearch]="false"
+    [bulkActionControls]="bulkActionControls">
+
+    <c8y-column name="name">
+      <ng-container *c8yCellRendererDef="let context">
+        <c8y-app-icon class="icon-16" [app]="context.item" [name]="context.item?.name"
+          [contextPath]="context.item?.contextPath"></c8y-app-icon>
+        <span class="p-l-4" [title]="context.value | humanizeAppName | async">{{ context.value | humanizeAppName | async
+          }}</span>
+      </ng-container>
+    </c8y-column>
+
+
+    <c8y-column name="actions1">
+      <ng-container *c8yCellRendererDef="let context">
+        <div class="btn-group btn-group-sm" role="group">
+          <button class="btn btn-default" title="Deploy to specific subtenants" (click)="createAnalyticsBuilderModel([context.item])">
+            <i c8yIcon="refresh"></i>
+            Deploy
+          </button>
+          <button class="btn btn-danger" title="Unsubscribe from specific subtenants" (click)="removeAnalyticsBuilderModels([context.item])">
+            <i c8yIcon="trash"></i>
+          </button>
+        </div>
+      </ng-container>
+    </c8y-column>
+  </c8y-data-grid>
+</div>

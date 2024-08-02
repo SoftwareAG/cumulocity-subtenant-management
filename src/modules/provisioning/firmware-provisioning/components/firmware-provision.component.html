@@ -1,0 +1,213 @@
+<c8y-title>
+  {{ pageTitle | translate }}
+</c8y-title>
+
+<c8y-breadcrumb>
+  <c8y-breadcrumb-item
+    label="{{ 'Management' | translate }}"
+    icon="c8y-management"
+  ></c8y-breadcrumb-item>
+  <c8y-breadcrumb-item
+    label="{{ 'Firmware provisioning' | translate }}"
+    icon="c8y-firmware"
+  ></c8y-breadcrumb-item>
+</c8y-breadcrumb>
+
+<c8y-action-bar-item [placement]="'left'" itemClass="navbar-form">
+  <label for="fFilter" class="sr-only">{{
+    "Filter firmware…" | translate
+  }}</label>
+  <div class="input-group input-group-search">
+    <input
+      class="form-control"
+      type="search"
+      title="{{ 'Filter firmware…' | translate }}"
+      placeholder="{{ 'Filter firmware…' | translate }}"
+      [ngModel]="textFilter$ | async"
+      (ngModelChange)="textFilter$.next($event)"
+    />
+    <span class="input-group-addon">
+      <i c8yIcon="search" *ngIf="(textFilter$ | async).length === 0"></i>
+      <i
+        class="text-muted"
+        c8yIcon="times"
+        *ngIf="(textFilter$ | async).length > 0"
+        (click)="textFilter$.next('')"
+        px-event="Clear filtering firmware"
+      ></i>
+    </span>
+  </div>
+</c8y-action-bar-item>
+
+<c8y-action-bar-item [placement]="'right'">
+  <button
+    class="btn btn-link"
+    title="{{ 'Reload' | translate }}"
+    (click)="reload$.next()"
+  >
+    <i c8yIcon="refresh" [ngClass]="{ 'icon-spin': reloading }"></i>
+    {{ "Reload" | translate }}
+  </button>
+</c8y-action-bar-item>
+
+<!-- empty state-->
+<div
+  class="c8y-empty-state text-center"
+  *ngIf="
+    (firmwares$ | async)?.data.length === 0 &&
+    (textFilter$ | async)?.length === 0
+  "
+>
+  <h1 class="c8y-icon-duocolor" c8yIcon="c8y-firmware"></h1>
+  <h3 translate>No firmwares to display.</h3>
+</div>
+
+<!-- no results empty state -->
+<div
+  class="c8y-empty-state"
+  *ngIf="
+    (firmwares$ | async)?.data.length === 0 && (textFilter$ | async)?.length > 0
+  "
+>
+  <h1 class="c8y-icon-duocolor" c8yIcon="search"></h1>
+  <h3 translate>No results to display.</h3>
+  <p translate>Refine your search terms or check your spelling.</p>
+</div>
+
+<c8y-list-group
+  class="m-b-24"
+  *ngIf="(firmwares$ | async)?.data.length > 0"
+  [ngClass]="{ 'dd-low': (firmwares$ | async)?.data.length < 10 }"
+>
+  <c8y-li [emptyActions]="true" class="page-sticky-header hidden-xs">
+    <c8y-li-icon>
+      <i class="p-l-24"></i>
+    </c8y-li-icon>
+    <c8y-li-body class="content-flex-60">
+      <div class="col-3">
+        {{ "Firmware" | translate }}
+      </div>
+      <div class="col-4">
+        {{ "Description" | translate }}
+      </div>
+      <div class="col-3">
+        {{ "Device type" | translate }}
+      </div>
+      <div class="col-2">
+        {{ "Versions" | translate }}
+      </div>
+    </c8y-li-body>
+  </c8y-li>
+  <c8y-li
+    *c8yFor="
+      let firmware of firmwares$ | async;
+      let i = index;
+      loadMore: 'auto'
+    "
+  >
+    <c8y-li-icon icon="c8y-firmware"></c8y-li-icon>
+    <c8y-li-body class="content-flex-60">
+      <div class="col-3">
+        <span class="text-truncate" title="{{ firmware.name }}">
+          <c8y-highlight
+            [text]="firmware.name || '-'"
+            elementClass="text-info"
+            [pattern]="textFilter$ | async"
+          ></c8y-highlight>
+        </span>
+      </div>
+      <div class="col-4">
+        <p class="text-truncate" title="{{ firmware.description }}">
+          <span class="text-label-small m-r-4 visible-xs-inline">
+            {{ "Description" | translate }}
+          </span>
+          <span *ngIf="firmware.description; else emptyDescription">
+            <c8y-highlight
+              [text]="firmware.description || '-'"
+              elementClass="text-info"
+              [pattern]="textFilter$ | async"
+            ></c8y-highlight>
+          </span>
+        </p>
+        <ng-template #emptyDescription>
+          <small class="text-muted">
+            <em>{{ "No description" | translate }}</em>
+          </small>
+        </ng-template>
+      </div>
+      <div class="col-3">
+        <div class="text-truncate">
+          <span class="text-label-small m-r-4 visible-xs-inline" translate
+            >Device type</span
+          >
+          <span
+            *ngIf="firmware.c8y_Filter?.type; else emptyText"
+            title="{{ firmware.c8y_Filter?.type }}"
+          >
+            <c8y-highlight
+              [text]="firmware.c8y_Filter?.type || '-'"
+              elementClass="text-info"
+              [pattern]="textFilter$ | async"
+            ></c8y-highlight>
+          </span>
+          <ng-template #emptyText>
+            <small class="text-muted">
+              <em>{{ "Undefined" | translate }}</em>
+            </small>
+          </ng-template>
+        </div>
+      </div>
+      <div class="col-2">
+        <span *ngIf="firmware.childAdditions.references !== null">
+          <span [ngPlural]="firmware.childAdditions.references.length">
+            <ng-template ngPluralCase="=0">
+              <span class="label label-default m-l-auto-sm">
+                <span translate>No versions</span>
+              </span>
+            </ng-template>
+            <ng-template ngPluralCase="=1">
+              <span class="label label-info m-l-auto-sm">
+                <span translate>1 version</span>
+              </span>
+            </ng-template>
+            <ng-template ngPluralCase="other">
+              <span class="label label-info m-l-auto-sm">
+                <span
+                  ngNonBindable
+                  translate
+                  [translateParams]="{
+                    count: firmware.childAdditions.references.length
+                  }"
+                >
+                  {{ count }} versions
+                </span>
+              </span>
+            </ng-template>
+          </span>
+        </span>
+      </div>
+      <div class="col-2">
+        <span></span>
+      </div>
+    </c8y-li-body>
+    <c8y-li-action icon="plus" (click)="provisionFirmware(firmware, true)">
+      {{ "Provision" | translate }}
+    </c8y-li-action>
+
+    <c8y-li-action icon="trash" (click)="provisionFirmware(firmware, false)">
+      {{ "De-Provision" | translate }}
+    </c8y-li-action>
+  </c8y-li>
+</c8y-list-group>
+
+<div [ngClass]="{ drawerOpen: showFirmwareProvisionModal }">
+  <div class="bottom-drawer">
+    <inet-firmware-provision-modal
+      [firmware]="firmwareProvisionModalFirmware"
+      [modalTitle]="firmwareProvisionModalTitle"
+      [provisionFirmwareObject]="firmwareProvisionModalProvisionFirmware"
+      (onCancel)="closeFirmwareProvisionModal()"
+      *ngIf="showFirmwareProvisionModal"
+    ></inet-firmware-provision-modal>
+  </div>
+</div>

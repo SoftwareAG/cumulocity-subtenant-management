@@ -26,18 +26,4 @@ export class FirmwareProvisioningComponent {
     const { data } = await this.inventory.list(filter);
     return data;
   }
-
-  provisionFirmware(firmware: IManagedObject): void {
-    this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(async (creds) => {
-      const clients = await this.credService.createClients(creds);
-      return this.provisioning.provisionLegacyFirmwareToTenants(clients, firmware);
-    });
-  }
-
-  deprovisioningFirmware(firmware: IManagedObject): void {
-    this.credService.prepareCachedDummyMicroserviceForAllSubtenants().then(async (creds) => {
-      const clients = await this.credService.createClients(creds);
-      return this.provisioning.deprovisionLegacyFirmwareFromTenants(clients, firmware);
-    });
-  }
 }

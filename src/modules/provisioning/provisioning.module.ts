@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CoreModule, hookNavigator } from '@c8y/ngx-components';
 import { ProvisioningNavigatorNodeFactory } from './provisioning-navigator-node.factory';
-import { FirmwareProvisioningComponent } from './firmware-provisioning/firmware-provisioning.component';
 import { SmartrestProvisioningComponent } from './smartrest-provisioning/smartrest-provisioning.component';
 import { HOOK_MICROSERVICE_ROLE } from '@services/fake-microservice.service';
 import { TenantOptionsProvisioningComponent } from './tenant-options-provisioning/tenant-options-provisioning.component';
@@ -17,6 +16,15 @@ import { AlarmMappingProvisioningComponent } from './alarm-mapping-provisioning/
 import { RouterModule } from '@angular/router';
 import { ApplicationProvisioningComponent } from './application-provisioning/application-provisioning.component';
 import { TenantsHavingAppModalComponent } from './application-provisioning/tenants-having-app-modal/tenants-having-app-modal.component';
+import { AnalyticsBuilderProvisioningComponent } from './analytics-builder-provisioning/analytics-builder-provisioning.component';
+import { RoleHavingPermissionsModalComponent } from './global-roles-provisioning/role-having-permissions-modal/role-having-permissions-modal.component';
+import { RoleHavingAppModalComponent } from './global-roles-provisioning/role-having-app-modal/role-having-app-modal.component';
+import { EplProvisioningComponent } from './epl-provisioning/epl-provisioning.component';
+import { FirmwareProvisionComponent } from './firmware-provisioning/components/firmware-provision.component';
+import { FirmwareProvisionModalComponent } from './firmware-provisioning/components/modal/firmware-provsion-modal.component';
+import { FirmwareVersionComponent } from './firmware-provisioning/components/versions-list/firmware-versions.component';
+import { TenantListComponent } from './firmware-provisioning/components/tenants-list/tenant-list.component';
+import { OperationSchedulerComponent } from './firmware-provisioning/components/operation-scheduler/operation-scheduler.component';
 
 @NgModule({
   imports: [
@@ -34,12 +42,20 @@ import { TenantsHavingAppModalComponent } from './application-provisioning/tenan
             pathMatch: 'full'
           },
           {
+            path: 'epl',
+            component: EplProvisioningComponent
+          },
+          {
             path: 'applications',
             component: ApplicationProvisioningComponent
           },
           {
+            path: 'analytics-builder',
+            component: AnalyticsBuilderProvisioningComponent
+          },
+          {
             path: 'firmware',
-            component: FirmwareProvisioningComponent
+            component: FirmwareProvisionComponent
           },
           {
             path: 'smartrest',
@@ -62,7 +78,7 @@ import { TenantsHavingAppModalComponent } from './application-provisioning/tenan
             component: SmartGroupsProvisioningComponent
           },
           {
-            path: 'alarm-mapping',
+            path: 'alarm-transformation',
             component: AlarmMappingProvisioningComponent
           }
         ]
@@ -72,7 +88,13 @@ import { TenantsHavingAppModalComponent } from './application-provisioning/tenan
   declarations: [
     ApplicationProvisioningComponent,
     TenantsHavingAppModalComponent,
-    FirmwareProvisioningComponent,
+    RoleHavingPermissionsModalComponent,
+    RoleHavingAppModalComponent,
+    FirmwareProvisionComponent,
+    FirmwareProvisionModalComponent,
+    FirmwareVersionComponent,
+    OperationSchedulerComponent,
+    TenantListComponent,
     SmartrestProvisioningComponent,
     TenantOptionsProvisioningComponent,
     TenantOptionModalComponent,
@@ -80,12 +102,20 @@ import { TenantsHavingAppModalComponent } from './application-provisioning/tenan
     CreateOrEditRetentionRuleModalComponent,
     GlobalRolesProvisioningComponent,
     SmartGroupsProvisioningComponent,
-    AlarmMappingProvisioningComponent
+    AlarmMappingProvisioningComponent,
+    EplProvisioningComponent,
+    AnalyticsBuilderProvisioningComponent
   ],
   entryComponents: [
     ApplicationProvisioningComponent,
     TenantsHavingAppModalComponent,
-    FirmwareProvisioningComponent,
+    RoleHavingPermissionsModalComponent,
+    RoleHavingAppModalComponent,
+    FirmwareProvisionComponent,
+    FirmwareProvisionModalComponent,
+    FirmwareVersionComponent,
+    OperationSchedulerComponent,
+    TenantListComponent,
     SmartrestProvisioningComponent,
     TenantOptionsProvisioningComponent,
     TenantOptionModalComponent,
@@ -93,7 +123,9 @@ import { TenantsHavingAppModalComponent } from './application-provisioning/tenan
     CreateOrEditRetentionRuleModalComponent,
     GlobalRolesProvisioningComponent,
     SmartGroupsProvisioningComponent,
-    AlarmMappingProvisioningComponent
+    AlarmMappingProvisioningComponent,
+    EplProvisioningComponent,
+    AnalyticsBuilderProvisioningComponent
   ],
   providers: [
     {

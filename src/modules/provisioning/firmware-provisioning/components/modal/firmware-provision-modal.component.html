@@ -1,0 +1,120 @@
+<c8y-title>
+  {{ modalTitle | translate }}
+</c8y-title>
+
+<c8y-stepper
+  class="d-col flex-nowrap no-align-items fit-h c8y-stepper--no-btns"
+  [customClasses]="[
+    'col-md-6',
+    'col-md-offset-3',
+    'm-t-24',
+    'm-b-40',
+    'p-0',
+    'flex-no-shrink'
+  ]"
+  linear
+>
+  <cdk-step
+    [stepControl]="formGroupStepOne"
+    [label]="'Select version' | translate"
+  >
+    <div class="p-16 p-t-0 flex-no-shrink separator-bottom col-xs-12">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4">
+          <h4 class="text-center text-normal m-b-16">
+            {{ "Select Firmware Version" | translate }}
+          </h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-12 no-gutter flex-grow">
+      <inet-firmware-versions
+        [firmware]="firmware"
+        (onVersionSelect)="updateSelectedFirmwareVersion($event)"
+      ></inet-firmware-versions>
+    </div>
+    <c8y-stepper-buttons
+      class="d-block card-footer p-24 separator"
+      (onCancel)="cancel()"
+      (onNext)="updateStepper($event)"
+      [disabled]="!selectedFirmwareVersion"
+      [labels]="{ next: 'Next', cancel: 'Cancel' }"
+      [showButtons]="{ next: true, cancel: true }"
+    ></c8y-stepper-buttons>
+  </cdk-step>
+  <cdk-step
+    [stepControl]="formGroupStepTwo"
+    [label]="'Select Tenants' | translate"
+  >
+    <div class="p-16 p-t-0 flex-no-shrink separator-bottom col-xs-12">
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4">
+          <h4 class="text-center text-normal m-b-16">
+            {{ "Select Tenants" | translate }}
+          </h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-12 no-gutter flex-grow">
+      <inet-tenant-list
+        (onTenantsSelect)="updateSelectedTenants($event)"
+      ></inet-tenant-list>
+    </div>
+    <c8y-stepper-buttons
+      class="d-block card-footer p-24 separator"
+      (onCancel)="cancel()"
+      (onCustom)="deProvisionFirmware()"
+      (onNext)="updateStepper($event)"
+      [labels]="{ custom: 'De-Provision', next: 'Next' }"
+      [disabled]="selectedTenants.length === 0"
+      [showButtons]="{
+        custom: !provisionFirmwareObject,
+        cancel: true,
+        back: true,
+        next: provisionFirmwareObject
+      }"
+      [pending]="pendingFirmwareStatus"
+    ></c8y-stepper-buttons>
+  </cdk-step>
+  <cdk-step
+    *ngIf="provisionFirmwareObject"
+    [stepControl]="formGroupStepThree"
+    [label]="'Confirm and schedule firmware upgrade operation' | translate"
+  >
+    <div
+      class="card-block p-b-0 p-t-0 flex-no-shrink separator-bottom col-xs-12"
+    >
+      <div class="d-flex j-c-center p-b-8 p-t-4">
+        <div class="col-xs-12 col-sm-6">
+          <h4 class="text-center text-normal m-b-16">
+            {{ "Confirm and schedule firmware upgrade operation" | translate }}
+          </h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-xs-12 no-gutter flex-grow">
+      <div class="card-inner-scroll fit-h">
+        <inet-operation-scheduler
+          [operationDescription]="operationDescription"
+          [operationFormName]="operationFormName"
+          [operationFormDescription]="operationFormDescription"
+          (onOperationUpdate)="updateOperationDetails($event)"
+        ></inet-operation-scheduler>
+      </div>
+    </div>
+    <c8y-stepper-buttons
+      class="d-block card-footer p-24 separator"
+      (onCancel)="cancel()"
+      (onCustom)="provisionFirmware()"
+      [labels]="{ custom: 'Schedule operation' }"
+      [disabled]="!selectedOperation"
+      [showButtons]="{
+        custom: true,
+        cancel: true,
+        back: true,
+        next: false
+      }"
+      [pending]="pendingFirmwareStatus"
+    ></c8y-stepper-buttons>
+  </cdk-step>
+</c8y-stepper>

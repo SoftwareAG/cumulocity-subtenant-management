@@ -1,0 +1,82 @@
+<div class="card-block p-b-0">
+  <div class="d-flex j-c-center p-t-8 p-b-8">
+    <div class="col-xs-12 col-sm-6">
+      <div class="d-flex a-i-start">
+        <div class="p-l-0 col-xs-12 col-sm-6">
+          <h4>{{ operationTitle | translate }}</h4>
+          <p
+            class="text-muted m-b-8 text-truncate"
+            title="{{ operationDescription | translate }}"
+          >
+            {{ operationDescription | translate }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex j-c-center">
+    <div class="col-xs-12 col-sm-6">
+      <div [formGroup]="operationForm">
+        <c8y-form-group>
+          <label translate>Title</label>
+          <input
+            formControlName="name"
+            class="form-control"
+            [placeholder]="operationFormName | translate"
+            required
+          />
+        </c8y-form-group>
+        <c8y-form-group>
+          <label translate>Description</label>
+          <textarea
+            formControlName="description"
+            class="form-control"
+            [placeholder]="operationFormDescription | translate"
+            rows="3"
+          ></textarea>
+        </c8y-form-group>
+        <label translate>Start Date</label>
+        <div class="datetime-picker">
+          <c8y-form-group class="datepicker">
+            <input
+              formControlName="date"
+              class="form-control"
+              placeholder="Start Date"
+              [bsConfig]="{ customTodayClass: 'today' }"
+              [minDate]="minDate"
+              bsDatepicker
+              required
+              placement="top"
+            />
+            <c8y-messages>
+              <c8y-message
+                [name]="'dateValidation'"
+                [text]="'Select time in the future.' | translate"
+              ></c8y-message>
+            </c8y-messages>
+          </c8y-form-group>
+          <timepicker
+            class="form-group"
+            [showSpinners]="false"
+            [showMeridian]="false"
+            formControlName="time"
+          ></timepicker>
+        </div>
+        <div class="form-group p-t-16">
+          <c8y-form-group [hasError]="delayErrors">
+            <label translate>Delay (seconds)</label>
+            <div class="input-group">
+              <input
+                formControlName="delay"
+                type="number"
+                class="form-control"
+                placeholder="{{ 'e.g.' | translate }} 15"
+                required
+              />
+            </div>
+          </c8y-form-group>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

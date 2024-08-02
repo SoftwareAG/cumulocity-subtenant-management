@@ -1,5 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Client, IDeviceRegistration, IDeviceRegistrationCreate, IResult } from '@c8y/client';
+import {
+  Client,
+  IDeviceRegistration,
+  IDeviceRegistrationBulkResult,
+  IDeviceRegistrationCreate,
+  IResult
+} from '@c8y/client';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 
 @Injectable({
@@ -20,6 +26,13 @@ export class DeviceRegistrationDetailsService {
       }
     }
     return request;
+  }
+
+  public async createBulkRegistrationRequest(
+    client: Client,
+    file: File
+  ): Promise<IResult<IDeviceRegistrationBulkResult>> {
+    return client.deviceRegistrationBulk.create(file);
   }
 
   public acceptRegistrationRequest(client: Client, id: string): Promise<IResult<IDeviceRegistration>> {

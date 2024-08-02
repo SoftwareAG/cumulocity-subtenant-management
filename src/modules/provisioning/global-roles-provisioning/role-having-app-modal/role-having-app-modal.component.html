@@ -1,0 +1,21 @@
+<div class="modal-header dialog-header">
+  <i c8yIcon="c8y-modules"></i>
+  <h4 translate>{{ role?.name }} - {{ 'Applications' | translate }}</h4>
+</div>
+<div class="modal-inner-scroll">
+  <div class="modal-body dialog-body">
+    <ul class="list-group">
+      <li class="list-group-item flex-row" *ngFor="let app of apps; let i = index">
+        <c8y-app-icon class="icon-24" [app]="app" [name]="app.name" [contextPath]="app.contextPath"></c8y-app-icon>
+        <span class="p-l-16 p-8 " [title]="app.name | humanizeAppName | async">{{ app.name | humanizeAppName | async
+          }}</span>
+      </li>
+    </ul>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default" translate type="button" title="{{ 'Close' | translate }}" (click)="onDismiss($event)">
+    Close
+  </button>
+
+</div>

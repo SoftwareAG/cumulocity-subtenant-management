@@ -8,7 +8,7 @@
 
 <div class="split-scroll">
   <c8y-data-grid
-    [title]="'Tenant Options' | translate"
+    [title]="tenant? 'Tenant Options - ' + tenant.name : 'Tenant Options ' | translate "
     class="scroll-column sort-fix fit-w"
     [columns]="columns"
     [pagination]="datasource.pagination"
@@ -20,10 +20,18 @@
     <c8y-column name="actions1">
       <ng-container *c8yCellRendererDef="let context">
         <div class="btn-group btn-group-sm" role="group">
+          
+          
+          
           <button class="btn btn-default" title="(Re-)Provision to specific subtenants" (click)="provisionTenantOption(context.item)">
             <i c8yIcon="refresh"></i>
             (Re-)Provision
           </button>
+          <button class="btn btn-danger" title="Delete from specific subtenants"
+            (click)="deprovisionTenantOption(context.item)">
+            <i c8yIcon="trash"></i>
+          </button>
+
         </div>
       </ng-container>
     </c8y-column>

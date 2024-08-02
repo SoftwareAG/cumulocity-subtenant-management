@@ -54,7 +54,11 @@ export class SubtenantManagementModule implements OnDestroy {
   ];
   private rolesTenantUpdate = ['ROLE_TENANT_MANAGEMENT_UPDATE', 'ROLE_TENANT_MANAGEMENT_ADMIN'];
 
-  constructor(private appState: AppStateService, private alertService: AlertService, private userService: UserService) {
+  constructor(
+    private appState: AppStateService,
+    private alertService: AlertService,
+    private userService: UserService
+  ) {
     this.roleSubscription = this.appState.currentUser
       .pipe(
         filter((user) => !!user),

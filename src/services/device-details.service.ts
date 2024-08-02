@@ -6,86 +6,30 @@ import { TenantSpecificDetails } from '@models/tenant-specific-details';
   providedIn: 'root'
 })
 export class DeviceDetailsService {
-  public async getFirmwareStatistics(client: Client): Promise<Map<string, Map<string, Map<string, number>>>> {
-    const firmwareCounterMap = new Map<string, Map<string, Map<string, number>>>();
+  public async getFirmwareStatistics(client: Client, firmware: IManagedObject): Promise<Map<string, number>> {
+    const firmwareCounterMap = new Map<string, number>();
     const filter = {
-      q: '$filter=(has(c8y_Firmware))',
+      q: `$filter=(c8y_Firmware.name eq '` + firmware.name + `' )`,
       pageSize: 2000
     };
     try {
-      let res = await client.inventory.list(filter);
-      while (res.data.length > 0) {
-        res.data.forEach((mo) => {
-          if (mo && mo.type && mo.c8y_Firmware && mo.c8y_Firmware.name && mo.c8y_Firmware.version) {
-            const name = mo.c8y_Firmware.name;
-            const version = mo.c8y_Firmware.version;
-            const firmwareIdent = `${version}`;
-            const type = mo.type;
-            let currentDeviceType = firmwareCounterMap.get(type);
-            if (!currentDeviceType) {
-              currentDeviceType = new Map<string, Map<string, number>>();
-              const currentFirmwareName = new Map<string, number>();
-              currentFirmwareName.set(firmwareIdent, 1);
-              currentDeviceType.set(name, currentFirmwareName);
-              firmwareCounterMap.set(type, currentDeviceType);
-            } else {
-              let currentFirmwareName = currentDeviceType.get(name);
-              if (!currentFirmwareName) {
-                currentFirmwareName = new Map<string, number>();
-                currentDeviceType.set(name, currentFirmwareName);
-              }
-              const currentCount = currentFirmwareName.get(firmwareIdent);
-              if (!currentCount) {
-                currentFirmwareName.set(firmwareIdent, 1);
-              } else {
-                currentFirmwareName.set(firmwareIdent, currentCount + 1);
-              }
-            }
+      const res = await client.inventory.list(filter);
+      console.log(res);
+      res.data.forEach((mo) => {
+        if (mo && mo.type && mo.c8y_Firmware && mo.c8y_Firmware.name && mo.c8y_Firmware.version) {
+          const version = mo.c8y_Firmware.version;
+          if (firmwareCounterMap.has(version)) {
+            const count = firmwareCounterMap.get(version);
+            firmwareCounterMap.set(version, count + 1);
+          } else {
+            firmwareCounterMap.set(version, 1);
           }
-        });
-        if (res.data.length < filter.pageSize) {
-          break;
         }
-        res = await res.paging.next(filter);
-      }
-    } catch (e) {}
-
-    return firmwareCounterMap;
-  }
-
-  public async getFirmwareStatisticsOfTenants(
-    clients: Client[]
-  ): Promise<Map<string, Map<string, Map<string, number>>>> {
-    const firmwareCounterMap = new Map<string, Map<string, Map<string, number>>>();
-    const promArray = clients.map((client) => this.getFirmwareStatistics(client));
-    await Promise.all(promArray).then((resArr) => {
-      resArr.forEach((tmp) => {
-        tmp.forEach((value, key) => {
-          let currentDeviceType = firmwareCounterMap.get(key);
-          if (!currentDeviceType) {
-            currentDeviceType = new Map<string, Map<string, number>>();
-            firmwareCounterMap.set(key, currentDeviceType);
-          }
-          value.forEach((value2, key2) => {
-            let currentFirmwareName = currentDeviceType.get(key2);
-            if (!currentFirmwareName) {
-              currentFirmwareName = new Map<string, number>();
-              currentDeviceType.set(key2, currentFirmwareName);
-            }
-
-            value2.forEach((value3, key3) => {
-              let currentCount = currentFirmwareName.get(key3);
-              if (currentCount) {
-                currentCount = currentCount + value3;
-              } else {
-                currentCount = value3;
-              }
-              currentFirmwareName.set(key3, currentCount);
-            });
-          });
-        });
       });
-    });
+    } catch (e) {
+      console.error(e);
+    }
+
     return firmwareCounterMap;
   }
 
