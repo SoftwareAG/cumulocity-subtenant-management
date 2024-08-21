@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/SoftwareAG/cumulocity-subtenant-management/compare/v1.0.0...v1.0.1) (2024-08-21)
+
+
+### Bug Fixes
+
+* pie charts in firnware statistics ([1f84244](https://github.com/SoftwareAG/cumulocity-subtenant-management/commit/1f8424455f24f8bdc2394563e771a1df80e30330))
+
 # [1.0.0](https://github.com/SoftwareAG/cumulocity-subtenant-management/compare/v0.7.2...v1.0.0) (2024-08-21)
 
 
