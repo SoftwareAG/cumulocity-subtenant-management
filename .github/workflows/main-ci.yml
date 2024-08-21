@@ -28,8 +28,12 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Set C8Y_VERSION env variable
-        run: echo "C8Y_VERSION=$(node -p -e "require('./package.json').dependencies['@c8y/ngx-components']")" >> $GITHUB_ENV
+      - name: Save Version
+        id: save-version
+        run: echo "version=$(cat package.json | jq '.version' | xargs)-PR-${{ github.event.number }}-${{ github.sha }}-${{ github.run_id }}" >> $GITHUB_OUTPUT
+
+      - name: Set tmp version
+        run: npm pkg set version='${{ steps.save-version.outputs.version }}'
 
       - name: Install Node.js dependencies
         run: npm ci
@@ -46,6 +50,6 @@ jobs:
       - name: Upload Subtenant Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: subtenant-management-${{ env.C8Y_VERSION }}-${{ github.event.number }}-${{ github.run_id }}
+          name: subtenant-management-${{ steps.save-version.outputs.version }}
           path: dist/sag-pkg-subtenant-management/
 
