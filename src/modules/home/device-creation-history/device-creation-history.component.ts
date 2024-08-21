@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ChartDataset, ChartOptions, Point, ChartType } from 'chart.js';
+import { ChartDataset, ChartOptions, Point, ChartType, Plugin } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import * as pluginChartZoom from 'chartjs-plugin-zoom';
+import { default as pluginChartZoom } from 'chartjs-plugin-zoom';
 import { DeviceDetailsService } from '@services/device-details.service';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 
@@ -16,7 +16,6 @@ export class DeviceCreationHistoryComponent implements OnInit {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-
       x:
         {
           type: 'time',
@@ -47,7 +46,7 @@ export class DeviceCreationHistoryComponent implements OnInit {
   };
   public readonly lineChartType = 'line' satisfies ChartType;
   public lineChartLegend = true;
-  public lineChartPlugins = [
+  public lineChartPlugins: Plugin<'line'>[] = [
     pluginChartZoom,
     // {
     //   afterEvent: (chartInstance: BaseChartDirective<'line'>['chart'], chartEvent: any) => {

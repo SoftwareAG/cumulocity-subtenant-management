@@ -1,9 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ITenant, TenantStatus } from '@c8y/client';
 import { SubtenantDetailsService } from '@services/subtenant-details.service';
-import { ChartDataset, ChartOptions, Point, ChartType } from 'chart.js';
+import { ChartDataset, ChartOptions, Point, ChartType, Plugin } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import * as pluginChartZoom from 'chartjs-plugin-zoom';
+import { default as pluginChartZoom } from 'chartjs-plugin-zoom';
 
 @Component({
   selector: 'ps-tenant-creation-history',
@@ -47,9 +47,9 @@ export class TenantCreationHistoryComponent implements OnInit {
       }
     }
   };
-  public lineChartType: ChartType = 'line';
+  public readonly lineChartType = 'line' satisfies ChartType;
   public lineChartLegend = true;
-  public lineChartPlugins = [
+  public lineChartPlugins: Plugin<'line'>[] = [
     pluginChartZoom,
     // {
     //   afterEvent: (chartInstance: BaseChartDirective<'line'>['chart'], chartEvent: any) => {

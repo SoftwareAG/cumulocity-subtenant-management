@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { DeviceDetailsService } from '@services/device-details.service';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
+import { ChartData } from 'chart.js';
 import { flatten } from 'lodash-es';
 
 @Component({
@@ -15,15 +16,15 @@ export class FirmwareStatisticsComponent {
     type: string;
     firmwareName: string;
     labels: string[];
-    values: number[];
+    data: ChartData<"pie", number[], any>;
   }[] = [];
   currentChart: {
     label: string;
     type: string;
     firmwareName: string;
     labels: string[];
-    values: number[];
-  };
+    data: ChartData<"pie", number[], any>;
+  } | null = null;
 
   constructor(
     private credService: FakeMicroserviceService,
@@ -38,12 +39,14 @@ export class FirmwareStatisticsComponent {
     this.fetchForPage().then(
       (result) => {
         this.charts = result.map((tmp) => {
+          const values = tmp.entries.map((entry) => entry.count);
+          const labels = tmp.entries.map((entry) => entry.version);
           return {
             label: tmp.label,
             type: tmp.type,
             firmwareName: tmp.firmwareName,
-            labels: tmp.entries.map((entry) => entry.version),
-            values: tmp.entries.map((entry) => entry.count)
+            labels: labels,
+            data: {datasets: [{data: values}], labels}
           };
         });
         if (this.charts.length) {
@@ -64,7 +67,7 @@ export class FirmwareStatisticsComponent {
     type: string;
     firmwareName: string;
     labels: string[];
-    values: number[];
+    data: ChartData<"pie", number[], any>;
   }): void {
     this.currentChart = chart;
   }
@@ -105,12 +108,16 @@ export class FirmwareStatisticsComponent {
   }
 
   pieChartClicked(index: number): void {
+    if (!this.currentChart) {
+      return;
+    }
     const lookupPath = 'lookup';
     const devicePath = 'device';
     const config = this.router.config;
     const lookupConfig = config.find((tmp) => tmp.path === lookupPath);
     if (lookupConfig && lookupConfig.children && lookupConfig.children.find((tmp) => tmp.path === devicePath)) {
-      const firmwareVersion = this.currentChart.labels[index];
+      const labels = this.currentChart.data.labels || [];
+      const firmwareVersion = labels[index];
       const type = this.currentChart.type;
       const firmwareName = this.currentChart.firmwareName;
 

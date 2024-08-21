@@ -28,7 +28,7 @@
         <h4 class="card-title">{{ currentChart.label }}</h4>
       </div>
         <div class="card-block flex-grow">
-          <ps-pie-chart [pieChartLabels]="currentChart.labels" [pieChartData]="currentChart.values" (indexClicked)="pieChartClicked($event)"></ps-pie-chart>
+          <ps-pie-chart [pieChartLabels]="currentChart.labels" [pieChartData]="currentChart.data" (indexClicked)="pieChartClicked($event)"></ps-pie-chart>
 
         </div>
       <!-- <div class="card-footer separator text-center">

@@ -77,10 +77,10 @@
           "builder": "@c8y/devkit:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "cumulocity-subtenant-management:build:production"
+              "buildTarget": "sag-pkg-subtenant-management:build:production"
             },
             "development": {
-              "buildTarget": "cumulocity-subtenant-management:build:development"
+              "buildTarget": "sag-pkg-subtenant-management:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -111,10 +111,10 @@
           "builder": "@c8y/devkit:deploy",
           "configurations": {
             "production": {
-              "buildTarget": "cumulocity-subtenant-management:build:production"
+              "buildTarget": "sag-pkg-subtenant-management:build:production"
             },
             "development": {
-              "buildTarget": "cumulocity-subtenant-management:build:development"
+              "buildTarget": "sag-pkg-subtenant-management:build:development"
             }
           },
           "defaultConfiguration": "production"

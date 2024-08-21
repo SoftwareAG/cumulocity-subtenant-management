@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ChartOptions, ChartType } from 'chart.js';
-import * as pluginDataLabels from 'chartjs-plugin-datalabels';
+import { ChartData, ChartOptions, ChartType, Plugin } from 'chart.js';
+import { ChartEvent } from 'chart.js/dist/core/core.plugins';
+import 'chartjs-plugin-datalabels';
 
 @Component({
   selector: 'ps-pie-chart',
@@ -8,9 +9,9 @@ import * as pluginDataLabels from 'chartjs-plugin-datalabels';
   styleUrls: ['./pie-chart.component.less']
 })
 export class PieChartComponent {
-  @Input() pieChartData: number[] = [];
+  @Input() pieChartData: ChartData<"pie", number[], any> = {datasets: []};
   @Output() indexClicked = new EventEmitter<number>();
-  public pieChartOptions: ChartOptions = {
+  public pieChartOptions: ChartOptions<'pie'> = {
     responsive: true,
     layout: {
       padding: 15
@@ -73,19 +74,22 @@ export class PieChartComponent {
       if (activeElement && activeElement.length) {
         cursor = 'pointer';
       }
-      const target = (<any>event).target as HTMLElement;
+      const target = event.native?.target as HTMLElement;
       target.style.cursor = cursor;
     }
   };
-  // public pieChartData: Array<number | null | undefined | number[]> | ChartPoint[] = [];
-  public pieChartType: ChartType = 'pie';
+  @Input() pieChartLabels: any[] = [];
+  public readonly pieChartType = 'pie' satisfies ChartType;
   public pieChartLegend = true;
-  public pieChartPlugins = [pluginDataLabels];
+  public pieChartPlugins: Plugin<'pie'>[] = [];
   public chartUnit = '%';
 
-  onChartClick(event: any): void {
+  onChartClick(event: {
+    event?: ChartEvent;
+    active?: object[];
+  }): void {
     if (event && event.active && event.active.length) {
-      this.indexClicked.emit(event.active[0]._index);
+      this.indexClicked.emit((<any>event.active[0]).index);
     }
   }
 }

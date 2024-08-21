@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
-import { ChartDataset, ChartOptions, ChartType, TimeUnit } from 'chart.js';
+import { ChartDataset, ChartOptions, ChartType, Plugin, TimeUnit } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import * as pluginDataLabels from 'chartjs-plugin-datalabels';
+import 'chartjs-plugin-datalabels';
 
 @Component({
   selector: 'ps-bar-chart',
@@ -36,9 +36,9 @@ export class BarChartComponent implements OnChanges {
       }
     }
   };
-  public barChartType: ChartType = 'bar';
+  public readonly barChartType = 'bar' satisfies ChartType;
   public barChartLegend = false;
-  public barChartPlugins = [pluginDataLabels];
+  public barChartPlugins: Plugin<'bar'>[] = [];
 
   ngOnChanges(changes: SimpleChanges): void {
     const xAxes: any = this.barChartOptions.scales?.['xAxes'] || {};
