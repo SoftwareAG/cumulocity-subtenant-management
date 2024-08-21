@@ -3,7 +3,7 @@ import { ITenant, TenantService } from '@c8y/client';
 
 @Injectable()
 export class SubtenantDetailsService {
-  private cachedTenants: Promise<ITenant[]>;
+  private cachedTenants: Promise<ITenant[]> | undefined;
   constructor(private tenantService: TenantService) {}
 
   public async getTenants(): Promise<ITenant[]> {
@@ -15,7 +15,7 @@ export class SubtenantDetailsService {
     let data = await this.tenantService.list(filter);
     while (data.data.length) {
       tenantArr.push(...data.data);
-      if (data.data.length < filter.pageSize) {
+      if (!data.paging || data.data.length < filter.pageSize) {
         break;
       }
       data = await data.paging.next();
@@ -30,7 +30,7 @@ export class SubtenantDetailsService {
     return this.cachedTenants;
   }
 
-  public async getDetailsOfTenant(tenantId: string): Promise<ITenant> {
+  public async getDetailsOfTenant(tenantId: string): Promise<ITenant | undefined> {
     const tenants = await this.getCachedTenants();
     return tenants.find((tmp) => tmp.id === tenantId);
   }

@@ -10,11 +10,11 @@ import { Subject } from 'rxjs';
   templateUrl: './add-device-registration-modal.component.html'
 })
 export class AddDeviceRegistrationModalComponent {
-  clients: Client[];
-  response: Subject<boolean>;
+  clients: Client[] = [];
+  response: Subject<boolean> | undefined;
   registration: Partial<IDeviceRegistrationCreate> = {};
-  selectedTenant: string;
-  selectedClient: Client;
+  selectedTenant: string | undefined;
+  selectedClient: Client | undefined;
 
   autoAccept = false;
 
@@ -32,14 +32,14 @@ export class AddDeviceRegistrationModalComponent {
 
   onDismiss(): void {
     if (this.response) {
-      this.response.next(null);
+      this.response.next(false);
     }
     this.bsModalRef.hide();
   }
 
   onSave(): void {
     this.deviceRegistrationDetailsService
-      .createRegistrationRequest(this.selectedClient, this.registration as IDeviceRegistrationCreate, this.autoAccept)
+      .createRegistrationRequest(this.selectedClient as Client, this.registration as IDeviceRegistrationCreate, this.autoAccept)
       .then(
         () => {
           this.alertService.success('Device Registration Created.');
@@ -51,7 +51,7 @@ export class AddDeviceRegistrationModalComponent {
         (error) => {
           this.alertService.danger('Failed to create Device Registration.', JSON.stringify(error));
           if (this.response) {
-            this.response.next();
+            this.response.error('Failed to create Device Registration.');
           }
           this.bsModalRef.hide();
         }

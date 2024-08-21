@@ -8,7 +8,6 @@ import { HOOK_MICROSERVICE_ROLE } from '@services/fake-microservice.service';
 @NgModule({
   imports: [CommonModule, CoreModule],
   declarations: [TenantAppLogsComponent],
-  entryComponents: [TenantAppLogsComponent],
   providers: [
     hookRoute({
       path: 'app-log/:appId/:instanceName',

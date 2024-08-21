@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IResultList, Client, IOperation } from '@c8y/client';
+import { IResultList, Client, IOperation, IFetchResponse } from '@c8y/client';
 import { ServerSideDataResult, Column, Pagination, DataSourceModifier } from '@c8y/ngx-components';
 import { TenantSpecificDetails } from '@models/tenant-specific-details';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
@@ -7,16 +7,16 @@ import { get } from 'lodash-es';
 
 @Injectable()
 export class FirmwareUpdateHistoryTableDatasourceService {
-  serverSideDataCallback: Promise<ServerSideDataResult>;
-  columns: Column[];
+  serverSideDataCallback: (dataSourceModifier: DataSourceModifier) => Promise<ServerSideDataResult>;
+  columns: Column[] = [];
 
   pagination: Pagination = {
     pageSize: 50,
     currentPage: 1
   };
 
-  private tenantFilter: string = null;
-  private cachedPromise: Promise<TenantSpecificDetails<IOperation>[]>;
+  private tenantFilter: string | null = null;
+  private cachedPromise: Promise<TenantSpecificDetails<IOperation>[]> | null = null;
 
   constructor(private credService: FakeMicroserviceService) {
     this.serverSideDataCallback = this.onDataSourceModifier.bind(this);
@@ -46,7 +46,7 @@ export class FirmwareUpdateHistoryTableDatasourceService {
     if (filteredColumns.length) {
       filteredOperations = operations.filter((user) => {
         return !filteredColumns.some((col) => {
-          const property: string = get(user, col.path);
+          const property: string = get(user, col.path as string);
           if (property && property.includes(col.filterPredicate as string)) {
             return false;
           }
@@ -55,16 +55,18 @@ export class FirmwareUpdateHistoryTableDatasourceService {
       });
     }
 
-    const start = 0 + dataSourceModifier.pagination.pageSize * (dataSourceModifier.pagination.currentPage - 1);
+    const currentPage = dataSourceModifier.pagination.currentPage as number;
+
+    const start = 0 + dataSourceModifier.pagination.pageSize * (currentPage - 1);
     const dataSubset = filteredOperations.slice(start, start + dataSourceModifier.pagination.pageSize);
     const resList: IResultList<TenantSpecificDetails<IOperation>> = {
       data: dataSubset,
-      res: undefined,
+      res: undefined as unknown as IFetchResponse,
       // @ts-ignore
       paging: {
-        currentPage: dataSourceModifier.pagination.currentPage,
+        currentPage: currentPage,
         pageSize: dataSourceModifier.pagination.pageSize,
-        nextPage: dataSourceModifier.pagination.currentPage + 1
+        nextPage: currentPage + 1
       }
     };
 
@@ -100,7 +102,7 @@ export class FirmwareUpdateHistoryTableDatasourceService {
       promise = Promise.all(promArray).then((result) => {
         const array = new Array<TenantSpecificDetails<IOperation>>();
         result.forEach((entry) => array.push(...entry));
-        return array.sort((a, b) => ((b.data.creationTime as string) || '').localeCompare(a.data.creationTime || ''));
+        return array.sort((a, b) => ((b.data['creationTime'] as string) || '').localeCompare(a.data['creationTime'] || ''));
       });
       this.cachedPromise = promise;
     }

@@ -16,11 +16,11 @@ export class DeviceDetailsService {
       let res = await client.inventory.list(filter);
       while (res.data.length > 0) {
         res.data.forEach((mo) => {
-          if (mo && mo.type && mo.c8y_Firmware && mo.c8y_Firmware.name && mo.c8y_Firmware.version) {
-            const name = mo.c8y_Firmware.name;
-            const version = mo.c8y_Firmware.version;
+          if (mo && mo['type'] && mo['c8y_Firmware'] && mo['c8y_Firmware'].name && mo['c8y_Firmware'].version) {
+            const name = mo['c8y_Firmware'].name;
+            const version = mo['c8y_Firmware'].version;
             const firmwareIdent = `${version}`;
-            const type = mo.type;
+            const type = mo['type'];
             let currentDeviceType = firmwareCounterMap.get(type);
             if (!currentDeviceType) {
               currentDeviceType = new Map<string, Map<string, number>>();
@@ -43,7 +43,7 @@ export class DeviceDetailsService {
             }
           }
         });
-        if (res.data.length < filter.pageSize) {
+        if (!res.paging || res.data.length < filter.pageSize) {
           break;
         }
         res = await res.paging.next(filter);
@@ -98,13 +98,12 @@ export class DeviceDetailsService {
     let res = await client.inventory.list(filter);
     while (res.data.length > 0) {
       const devices = res.data.map((tmp) => {
-        const operations = {};
+        const operations: Record<string, any> = {};
         if (
-          tmp.c8y_SupportedOperations &&
-          tmp.c8y_SupportedOperations.length &&
-          Array.isArray(tmp.c8y_SupportedOperations)
+          Array.isArray(tmp['c8y_SupportedOperations']) &&
+          tmp['c8y_SupportedOperations'].length
         ) {
-          const supportedOperations: string[] = tmp.c8y_SupportedOperations;
+          const supportedOperations: string[] = tmp['c8y_SupportedOperations'];
           supportedOperations.forEach((operation) => {
             operations[operation] = {};
           });
@@ -119,7 +118,7 @@ export class DeviceDetailsService {
         } as TenantSpecificDetails<IManagedObject>;
       });
       deviceArr.push(...devices);
-      if (res.data.length < filter.pageSize) {
+      if (!res.paging || res.data.length < filter.pageSize) {
         break;
       }
       res = await res.paging.next(filter);
@@ -155,7 +154,7 @@ export class DeviceDetailsService {
       };
       return client.inventory.list(filter).then(
         (result) => {
-          return { tenant: client.core.tenant, count: result.paging.totalPages };
+          return { tenant: client.core.tenant, count: result.paging?.totalPages as number };
         },
         () => ({ tenant: client.core.tenant, count: 0 })
       );

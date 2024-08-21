@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Client, IResultList, ITenant } from '@c8y/client';
+import { Client, IResultList, ITenant, Service } from '@c8y/client';
 import { AlertService } from '@c8y/ngx-components';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
-import { ChartDataSets, ChartPoint, TimeUnit } from 'chart.js';
-import * as moment from 'moment';
-import { Label } from 'ng2-charts';
+import { ChartDataset, Point, TimeUnit } from 'chart.js';
+import { default as moment } from 'moment';
 
 export enum Timeframes {
   last_day = 'last_day',
@@ -26,31 +25,30 @@ export interface DateTuple {
 })
 export class TenantCreationStatisticsComponent implements OnInit {
   tenant: ITenant;
-  api: string;
+  api: 'inventory' | 'tenant' = 'inventory';
   timeframe: Timeframes = Timeframes.last_day;
   isLoading = false;
-  chartData: ChartDataSets[] = [];
-  labels: Label[] = [];
+  chartData: ChartDataset[] = [];
+  labels: any[] = [];
   timeUnit: TimeUnit = 'hour';
-  minTimeUnit: TimeUnit;
   timeframeArr = [
     { label: 'Last 24h', value: Timeframes.last_day },
     { label: 'Last 7 days', value: Timeframes.last_week },
     { label: 'Last 30 days', value: Timeframes.last_month },
     { label: 'Last 12 Month', value: Timeframes.last_year }
   ];
-  total: number = null;
+  total: number | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private credService: FakeMicroserviceService,
     private alertService: AlertService
   ) {
-    this.tenant = this.route.snapshot.parent.data.contextData;
+    this.tenant = this.route.snapshot.parent?.data['contextData'];
     const urlSegments = this.route.snapshot.url;
     if (urlSegments && urlSegments.length) {
       const lastSegment = urlSegments[urlSegments.length - 1];
-      this.api = lastSegment.path;
+      this.api = lastSegment.path as any;
     }
   }
 
@@ -89,13 +87,13 @@ export class TenantCreationStatisticsComponent implements OnInit {
       const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
       const tenantCredentials = credentials.find((tmp) => tmp.tenant === this.tenant.id);
       if (tenantCredentials) {
-        const client = await this.credService.createClients([tenantCredentials])[0];
+        const client = (await this.credService.createClients([tenantCredentials]))[0];
         this.getTotal(client, this.api);
         const filters = this.getDates(timeframe);
         const promArray = filters.map((tmp) => this.getChartPoint(client, this.api, tmp));
         const datapoints = await Promise.all(promArray);
         this.chartData = [{ data: datapoints.map((tmp) => tmp.y as number), label: this.api }];
-        this.labels = datapoints.map((tmp) => tmp.x as string);
+        this.labels = datapoints.map((tmp) => tmp.x);
       } else {
         this.alertService.warning(`Credentials for tenant: ${this.tenant.id} not found.`);
       }
@@ -168,8 +166,9 @@ export class TenantCreationStatisticsComponent implements OnInit {
     }
   }
 
-  private getChartPoint(client: Client, api: string, dates: DateTuple): Promise<ChartPoint> {
-    const listFunc = client[api].list.bind(client[api]);
+  private getChartPoint(client: Client, api: 'inventory' | 'tenant', dates: DateTuple): Promise<Point> {
+    const service = client[api] as Service<any>;
+    const listFunc = service.list.bind(service);
     const filter: any = {};
     if (api !== 'inventory') {
       filter.dateFrom = dates.startDate;
@@ -178,7 +177,7 @@ export class TenantCreationStatisticsComponent implements OnInit {
       filter.query = `creationTime.date gt '${dates.startDate}' and creationTime.date lt '${dates.endDate}'`;
     }
     return this.fetchCount(listFunc, filter).then((result) => {
-      return { x: new Date(dates.label), y: result };
+      return { x: new Date(dates.label) as any, y: result };
     });
   }
 
@@ -189,10 +188,10 @@ export class TenantCreationStatisticsComponent implements OnInit {
       withTotalPages: true
     });
 
-    return list(filters).then((result) => result.paging.totalPages);
+    return list(filters).then((result) => result.paging?.totalPages as number);
   }
 
-  private getTotal(client: Client, api: string): void {
+  private getTotal(client: Client, api: 'inventory' | 'tenant'): void {
     const listFunc = client[api].list.bind(client[api]);
     this.fetchCount(listFunc).then(
       (result) => {

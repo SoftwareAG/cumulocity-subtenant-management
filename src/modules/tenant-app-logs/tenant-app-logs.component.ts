@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Client, IApplication } from '@c8y/client';
 import { AlertService } from '@c8y/ngx-components';
 import { IMicroserviceLog } from '@models/microservice-log';
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, NEVER, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { MicroserviceLogsService } from './microservice-logs.service';
 
@@ -13,22 +13,22 @@ import { MicroserviceLogsService } from './microservice-logs.service';
 })
 export class TenantAppLogsComponent implements OnDestroy {
   loading = true;
-  appId: string;
-  instanceName: string;
-  tenantId: string;
+  appId: string | undefined;
+  instanceName: string | undefined;
+  tenantId: string | undefined;
 
-  app: IApplication;
-  selectedLog: IMicroserviceLog;
-  client: Client;
+  app: IApplication | undefined;
+  selectedLog: IMicroserviceLog | undefined;
+  client: Client | undefined;
 
   private paramSubs = new Subscription();
 
   constructor(private route: ActivatedRoute, private msLogs: MicroserviceLogsService, private alert: AlertService) {
-    const currentRouteParams$ = this.route.params.pipe(filter((tmp) => tmp.appId && tmp.instanceName));
-    const tenantId$ = this.route.parent.params.pipe(
-      filter((tmp) => tmp.id),
-      map((tmp) => tmp.id)
-    );
+    const currentRouteParams$ = this.route.params.pipe(filter((tmp) => tmp['appId'] && tmp['instanceName']));
+    const tenantId$ = this.route.parent?.params.pipe(
+      filter((tmp) => tmp['id']),
+      map((tmp) => tmp['id'])
+    ) ||NEVER;
     this.paramSubs = combineLatest([currentRouteParams$, tenantId$]).subscribe(
       ([{ appId, instanceName }, tenantId]) => {
         this.appId = appId;
@@ -60,6 +60,6 @@ export class TenantAppLogsComponent implements OnDestroy {
   }
 
   async downloadLogFile(): Promise<void> {
-    await this.msLogs.downloadLogFile(this.tenantId, this.appId, this.selectedLog.instanceName);
+    await this.msLogs.downloadLogFile(this.tenantId as string, this.appId as string, this.selectedLog?.instanceName as string);
   }
 }

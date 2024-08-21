@@ -3,14 +3,14 @@ import { BasicAuth, ICredentials } from '@c8y/client';
 const secrets = new WeakMap();
 
 export class BearerAuth extends BasicAuth {
-  getFetchOptions(options: any): any {
+  override getFetchOptions(options: any): any {
     const secret = secrets.get(this);
     const { token } = secret;
     options.headers = Object.assign({ Authorization: `Bearer ${token}` }, options.headers);
     return options;
   }
 
-  updateCredentials({ tenant, user, password, token, tfa }: ICredentials = {}) {
+  override updateCredentials({ tenant, user, password, token, tfa }: ICredentials = {}) {
     const secret = secrets.get(this) || {};
     if (user && tenant) {
       user = `${tenant}/${user}`;
@@ -26,10 +26,10 @@ export class BearerAuth extends BasicAuth {
     token = token || secret.token;
     tfa = tfa || secret.tfa;
     secrets.set(this, { tfa, token, password });
-    return token;
+    return token as string;
   }
 
-  getCometdHandshake(config: { ext?: any } = {}) {
+  override getCometdHandshake(config: { ext?: any } = {}) {
     const secret = secrets.get(this);
     const { token, tfa } = secret;
     const KEY = 'com.cumulocity.authn';
@@ -38,7 +38,7 @@ export class BearerAuth extends BasicAuth {
     return config;
   }
 
-  logout(): void {
+  override logout(): void {
     delete this.user;
     secrets.set(this, {});
   }

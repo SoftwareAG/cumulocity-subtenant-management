@@ -1,110 +1,75 @@
 {
-  "name": "cumulocity-subtenant-management",
+  "name": "sag-pkg-subtenant-management",
   "version": "0.7.2",
   "description": "Tool for managing subtenants from a c8y management or enterprise tenant",
-  "scripts": {
-    "start": "c8ycli server",
-    "build": "rimraf dist && c8ycli build",
-    "build:ci": "rimraf dist && c8ycli build --ci true ./",
-    "deploy": "c8ycli deploy",
-    "locale-extract": "c8ycli locale-extract",
-    "lint": "tsc --noEmit && eslint . --ext js,ts,json --quiet --fix",
-    "lint:with-warns": "tsc --noEmit && eslint . --ext js,ts,json --fix",
-    "postinstall": "ngcc"
-  },
-  "dependencies": {
-    "@angular/animations": "14.0.6",
-    "@angular/cdk": "14.1.2",
-    "@angular/common": "14.0.6",
-    "@angular/compiler": "14.0.6",
-    "@angular/core": "14.0.6",
-    "@angular/forms": "14.0.6",
-    "@angular/platform-browser": "14.0.6",
-    "@angular/platform-browser-dynamic": "14.0.6",
-    "@angular/router": "14.0.6",
-    "@angular/upgrade": "14.0.6",
-    "@c8y/client": "1018.0.191",
-    "@c8y/ngx-components": "1018.0.191",
-    "@ngx-translate/core": "14.0.0",
-    "chart.js": "^2.9.4",
-    "chartjs-plugin-datalabels": "^0.7.0",
-    "chartjs-plugin-zoom": "^0.7.7",
-    "lodash-es": "^4.17.21",
-    "moment": "^2.29.1",
-    "ng2-charts": "^2.4.2",
-    "ngx-bootstrap": "9.0.0",
-    "rxjs": "~6.6.3",
-    "zone.js": "~0.11.7",
-    "@c8y/ng1-modules": "1018.0.191",
-    "angular": "1.6.9",
-    "@c8y/style": "1018.0.191",
-    "uuid": "^3.4.0"
-  },
-  "devDependencies": {
-    "@angular-devkit/build-angular": "14.0.6",
-    "@angular/compiler-cli": "14.0.6",
-    "@angular/language-service": "14.0.6",
-    "@angular/service-worker": "14.0.6",
-    "@angular/localize": "14.0.6",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/exec": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
-    "@types/jest": "^28.1.6",
-    "@types/lodash-es": "^4.17.4",
-    "@types/uuid": "^8.3.0",
-    "@typescript-eslint/eslint-plugin": "^6.7.0",
-    "@typescript-eslint/parser": "^6.7.0",
-    "eslint": "^8.49.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "jest": "^28.1.3",
-    "jest-preset-angular": "^12.2.5",
-    "prettier": "^3.0.3",
-    "file-loader": "^6.2.0",
-    "semantic-release": "^20.1.0",
-    "typescript": "4.7.4",
-    "@c8y/cli": "1018.0.191"
-  },
-  "c8y": {
-    "application": {
-      "name": "Subtenant Management",
-      "contextPath": "sag-pkg-subtenant-management",
-      "key": "sag-pkg-subtenant-management-application-key",
-      "upgrade": true,
-      "tabsHorizontal": true,
-      "dynamicOptionsUrl": "/apps/public/public-options/options.json",
-      "icon": {
-        "class": "c8y-icon-sub-tenants"
-      },
-      "isPackage": true,
-      "package": "blueprint",
-      "hideWarnings": "duringDevelopment",
-      "contentSecurityPolicy": "base-uri 'none'; default-src 'self' 'unsafe-inline' http: https: ws: wss:; connect-src 'self' *.billwerk.com http: https: ws: wss:;  script-src 'self' open.mapquestapi.com *.twitter.com *.twimg.com *.aptrinsic.com  *.billwerk.com 'unsafe-inline' 'unsafe-eval' data:; style-src * 'unsafe-inline' blob:; img-src * data:; font-src * data:; frame-src *;",
-      "copy": [
-        {
-          "from": "README.md",
-          "to": "README.md"
-        },
-        {
-          "from": "LICENSE",
-          "to": "LICENSE.txt"
-        }
-      ]
-    },
-    "cli": {}
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SoftwareAG/cumulocity-subtenant-management.git"
   },
   "keywords": [],
   "author": "Tristan Bastian",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/SoftwareAG/cumulocity-subtenant-management/issues"
   },
   "homepage": "https://github.com/SoftwareAG/cumulocity-subtenant-management#readme",
-  "browserslist": [
-    "last 2 major versions"
-  ]
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "lint": "tsc --noEmit && eslint . --ext js,ts,json --quiet --fix",
+    "lint:with-warns": "tsc --noEmit && eslint . --ext js,ts,json --fix",
+    "watch": "ng build --watch --configuration development"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^17.3.0",
+    "@angular/cdk": "^17.3.9",
+    "@angular/common": "^17.3.0",
+    "@angular/compiler": "^17.3.0",
+    "@angular/core": "^17.3.0",
+    "@angular/forms": "^17.3.0",
+    "@angular/platform-browser": "^17.3.0",
+    "@angular/platform-browser-dynamic": "^17.3.0",
+    "@angular/router": "^17.3.0",
+    "@angular/upgrade": "^17.3.9",
+    "@c8y/bootstrap": "1020.14.10",
+    "@c8y/client": "1020.14.10",
+    "@c8y/ng1-modules": "1020.14.10",
+    "@c8y/ngx-components": "1020.14.10",
+    "@c8y/style": "1020.14.10",
+    "angular": "1.8.3",
+    "chart.js": "^4.4.4",
+    "chartjs-adapter-moment": "^1.0.1",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "chartjs-plugin-zoom": "^2.0.1",
+    "lodash-es": "^4.17.21",
+    "moment": "^2.30.1",
+    "ng2-charts": "^6.0.1",
+    "ngx-bootstrap": "12.0.0",
+    "rxjs": "^7.4.0",
+    "tslib": "^2.3.0",
+    "uuid": "^10.0.0",
+    "zone.js": "~0.14.3"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^17.3.8",
+    "@angular/cli": "^17.3.8",
+    "@angular/compiler-cli": "^17.3.0",
+    "@c8y/devkit": "1020.14.10",
+    "@c8y/options": "1020.14.10",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@types/lodash-es": "^4.17.12",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/parser": "^8.2.0",
+    "eslint": "^9.9.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
+    "semantic-release": "^24.1.0",
+    "typescript": "~5.4.2"
+  }
 }

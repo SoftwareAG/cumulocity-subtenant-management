@@ -29,14 +29,14 @@ export class DisableGainsightActionFactory implements ActionFactory {
 
   async disableGainsight(): Promise<void> {
     const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-    const tenantIds = credentials.map((tmp) => tmp.tenant);
+    const tenantIds = credentials.map((tmp) => tmp.tenant) as string[];
     let selectedTenantIds: string[] = [];
     try {
       selectedTenantIds = await this.tenantSelectionService.getTenantSelection(tenantIds);
     } catch (e) {
       return;
     }
-    const filteredCredentials = credentials.filter((tmp) => selectedTenantIds.includes(tmp.tenant));
+    const filteredCredentials = credentials.filter((tmp) => selectedTenantIds.includes(tmp.tenant as string));
     const clients = await this.credService.createClients(filteredCredentials);
     const promArray = clients.map((tmp) => this.disableGainsightIfNotAlreadyDone(tmp));
     Promise.all(promArray).then(
@@ -56,7 +56,7 @@ export class DisableGainsightActionFactory implements ActionFactory {
   async disableGainsightIfNotAlreadyDone(client: Client): Promise<boolean> {
     const { data: currentTenant } = await client.tenant.current();
     const customProperties = currentTenant.customProperties || {};
-    if (customProperties.gainsightEnabled === false) {
+    if (customProperties['gainsightEnabled'] === false) {
       // already disabled
       return true;
     }

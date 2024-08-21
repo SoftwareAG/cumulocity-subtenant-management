@@ -5,16 +5,14 @@
   <div class="card-block flex-grow">
     <canvas baseChart  *ngIf="!isLoading; else loadingIndicator"
       [datasets]="lineChartData"
-      [labels]="lineChartLabels"
       [options]="lineChartOptions"
       [plugins]="lineChartPlugins"
       [legend]="lineChartLegend"
-      [chartType]="lineChartType"
-      [colors]="lineChartColors"
+      [type]="lineChartType"
       (dblclick)="resetZoom()">
     </canvas>
   </div>
-  
+
 </div>
 
 <ng-template #loadingIndicator>

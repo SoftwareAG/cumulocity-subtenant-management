@@ -8,7 +8,7 @@ import { HOOK_MICROSERVICE_ROLE } from '@services/fake-microservice.service';
 import { PopoverModule } from 'ngx-bootstrap/popover';
 import { SharedModule } from '@modules/shared/shared.module';
 import { PieChartComponent } from './pie-chart/pie-chart.component';
-import { ChartsModule, ThemeService } from 'ng2-charts';
+import { BaseChartDirective, ThemeService } from 'ng2-charts';
 import { RouterModule } from '@angular/router';
 import { StorageStatisticsComponent } from './storage-statistics/storage-statistics.component';
 
@@ -18,7 +18,7 @@ import { StorageStatisticsComponent } from './storage-statistics/storage-statist
     CoreModule,
     PopoverModule,
     SharedModule,
-    ChartsModule,
+    BaseChartDirective,
     RouterModule.forChild([
       {
         path: 'statistics',
@@ -50,7 +50,6 @@ import { StorageStatisticsComponent } from './storage-statistics/storage-statist
     PieChartComponent,
     StorageStatisticsComponent
   ],
-  entryComponents: [FirmwareStatisticsComponent, InventoryStatisticsComponent, StorageStatisticsComponent],
   providers: [
     ThemeService,
     {

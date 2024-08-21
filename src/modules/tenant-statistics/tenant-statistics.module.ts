@@ -7,7 +7,6 @@ import { SharedModule } from '@modules/shared/shared.module';
 @NgModule({
   imports: [CommonModule, CoreModule, SharedModule],
   declarations: [TenantCreationStatisticsComponent],
-  entryComponents: [TenantCreationStatisticsComponent],
   providers: [
     hookRoute([
       {

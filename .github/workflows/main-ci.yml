@@ -7,7 +7,7 @@ on:
 env:
   NODE_VERSION: '16'
 
-# concurrency: 
+# concurrency:
 #   group: ${{ github.ref }}
 #   cancel-in-progress: true
 
@@ -41,11 +41,11 @@ jobs:
         run: npm test --if-present
 
       - name: 🚧  Build
-        run: npm run build:ci
+        run: npm run build
 
       - name: Upload Subtenant Artifact
         uses: actions/upload-artifact@v3
         with:
           name: subtenant-management-${{ env.C8Y_VERSION }}-${{ github.event.number }}-${{ github.run_id }}
-          path: dist/apps/sag-pkg-subtenant-management/
+          path: dist/sag-pkg-subtenant-management/
 

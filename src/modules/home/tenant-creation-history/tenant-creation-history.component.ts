@@ -1,8 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ITenant, TenantStatus } from '@c8y/client';
 import { SubtenantDetailsService } from '@services/subtenant-details.service';
-import { ChartDataSets, ChartOptions, ChartPoint, ChartType } from 'chart.js';
-import { BaseChartDirective, Color, Label } from 'ng2-charts';
+import { ChartDataset, ChartOptions, Point, ChartType } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
 import * as pluginChartZoom from 'chartjs-plugin-zoom';
 
 @Component({
@@ -10,26 +10,21 @@ import * as pluginChartZoom from 'chartjs-plugin-zoom';
   templateUrl: './tenant-creation-history.component.html'
 })
 export class TenantCreationHistoryComponent implements OnInit {
-  @ViewChild(BaseChartDirective, { static: true }) chart: BaseChartDirective;
-  public lineChartLabels: Label[] = [];
-  public lineChartData: ChartDataSets[] = [];
-  public lineChartOptions: ChartOptions = {
+  @ViewChild(BaseChartDirective, { static: true }) chart: BaseChartDirective<'line'> | undefined;
+  public lineChartData: ChartDataset<'line'>[] = [];
+  public lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      xAxes: [
+      x:
         {
           type: 'time',
           time: {
             minUnit: 'hour',
             unit: 'day',
-            ticks: {
-              autoSkip: true
-            }
           }
-        }
-      ],
-      yAxes: [{}]
+        },
+      y: {}
     },
     plugins: {
       zoom: {
@@ -38,11 +33,11 @@ export class TenantCreationHistoryComponent implements OnInit {
         //   mode: 'x'
         // },
         zoom: {
-          enabled: true,
-          drag: true,
+          drag: {
+            enabled: true,
+            threshold: 2
+          },
           mode: 'x',
-          speed: 0.1,
-          threshold: 2
         }
       },
       datalabels: {
@@ -50,44 +45,33 @@ export class TenantCreationHistoryComponent implements OnInit {
         // align: 'end',
         display: false
       }
-    },
-    tooltips: {
-      mode: 'nearest',
-      intersect: false,
-      callbacks: {}
     }
   };
   public lineChartType: ChartType = 'line';
   public lineChartLegend = true;
   public lineChartPlugins = [
     pluginChartZoom,
-    {
-      afterEvent: (chartInstance, chartEvent) => {
-        const legend = chartInstance.legend;
-        const canvas = chartInstance.chart.canvas;
-        const x = chartEvent.x;
-        const y = chartEvent.y;
-        let cursorStyle = 'default';
-        if (x <= legend.right && x >= legend.left && y <= legend.bottom && y >= legend.top) {
-          for (const box of legend.legendHitBoxes) {
-            if (x <= box.left + box.width && x >= box.left && y <= box.top + box.height && y >= box.top) {
-              cursorStyle = 'pointer';
-              break;
-            }
-          }
-        }
-        canvas.style.cursor = cursorStyle;
-      }
-    }
-  ];
-  public lineChartColors: Color[] = [
     // {
-    //   backgroundColor: 'transparent',
-    //   borderColor: 'rgba(148,159,177,1)',
-    //   pointBackgroundColor: 'rgba(148,159,177,1)',
-    //   pointBorderColor: '#fff',
-    //   pointHoverBackgroundColor: '#fff',
-    //   pointHoverBorderColor: 'rgba(148,159,177,0.8)'
+    //   afterEvent: (chartInstance: BaseChartDirective<'line'>['chart'], chartEvent: any) => {
+    //     console.log(chartInstance);
+    //     const legend = chartInstance?.legend;
+    //     const canvas = chartInstance?.canvas;
+    //     const x = chartEvent.x;
+    //     const y = chartEvent.y;
+    //     let cursorStyle = 'default';
+    //     if (!legend || !canvas) {
+    //       return;
+    //     }
+    //     if (x <= legend.right && x >= legend.left && y <= legend.bottom && y >= legend.top) {
+    //       for (const box of legend.legendHitBoxes) {
+    //         if (x <= box.left + box.width && x >= box.left && y <= box.top + box.height && y >= box.top) {
+    //           cursorStyle = 'pointer';
+    //           break;
+    //         }
+    //       }
+    //     }
+    //     canvas.style.cursor = cursorStyle;
+    //   }
     // }
   ];
   isLoading = true;
@@ -99,7 +83,7 @@ export class TenantCreationHistoryComponent implements OnInit {
       this.lineChartData = [
         {
           label: 'Sum of created Tenants',
-          data: result.map((tmp) => ({ t: tmp.creationTime, y: tmp.value } as ChartPoint)),
+          data: result.map((tmp) => ({ x: tmp.creationTime as any, y: tmp.value })),
           pointBackgroundColor: result.map((tmp) => {
             return tmp.status === TenantStatus.ACTIVE ? 'green' : 'red';
           }),
@@ -142,14 +126,14 @@ export class TenantCreationHistoryComponent implements OnInit {
     } = {};
     creationDates.forEach((tmp) => {
       const date = tmp.creationTime.toDateString();
-      creationDateMap[date] = tmp;
+      creationDateMap[date] = tmp as any;
     });
-    creationDates = Object.keys(creationDateMap)
+    const finalCreationDates = Object.keys(creationDateMap)
       .map((key) => creationDateMap[key])
       .sort((a, b) => a.creationTime.getTime() - b.creationTime.getTime());
 
     this.isLoading = false;
-    return creationDates;
+    return finalCreationDates;
   }
 
   resetZoom(): void {

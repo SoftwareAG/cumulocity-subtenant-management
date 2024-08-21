@@ -37,14 +37,7 @@ jobs:
       #   run: npm run lint
 
       - name: Build
-        run: npm run build:ci
-
-      - name: Zip build
-        run: |
-          cd dist/apps/sag-pkg-subtenant-management
-          zip -r -q ../../build.zip *
-          cd ../../..
-          rm -r dist/apps
+        run: npm run build
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
@@ -53,7 +46,7 @@ jobs:
           if-no-files-found: error
           retention-days: 5
           path: |
-            dist/build.zip
+            dist/sag-pkg-subtenant-management.zip
 
   release:
     name: Release
@@ -102,26 +95,23 @@ jobs:
         with:
           fetch-depth: 0
           ref: v${{ needs.release.outputs.version }}
-  
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '16'
           cache: 'npm'
-  
+
       - name: Install dependencies
         run: npm ci
-  
+
       - name: Build
-        run: npm run build:ci
-  
-      - name: Zip build
+        run: npm run build
+
+      - name: Copy build artifact
         run: |
-          cd dist/apps/sag-pkg-subtenant-management
-          zip -r -q ../../../subtenant-management-${{ needs.release.outputs.version }}.zip *
-          cd ../../..
-          rm -r dist/apps
-  
+          cp dist/sag-pkg-subtenant-management.zip subtenant-management-${{ needs.release.outputs.version }}.zip
+
       - name: Release
         uses: softprops/action-gh-release@v1
         with:

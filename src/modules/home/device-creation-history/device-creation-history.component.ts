@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ChartDataSets, ChartOptions, ChartPoint, ChartType } from 'chart.js';
-import { BaseChartDirective, Color, Label } from 'ng2-charts';
+import { ChartDataset, ChartOptions, Point, ChartType } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
 import * as pluginChartZoom from 'chartjs-plugin-zoom';
 import { DeviceDetailsService } from '@services/device-details.service';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
@@ -10,26 +10,22 @@ import { FakeMicroserviceService } from '@services/fake-microservice.service';
   templateUrl: './device-creation-history.component.html'
 })
 export class DeviceCreationHistoryComponent implements OnInit {
-  @ViewChild(BaseChartDirective, { static: true }) chart: BaseChartDirective;
-  public lineChartLabels: Label[] = [];
-  public lineChartData: ChartDataSets[] = [];
-  public lineChartOptions: ChartOptions = {
+  @ViewChild(BaseChartDirective, { static: true }) chart: BaseChartDirective<'line'> | undefined;
+  public lineChartData: ChartDataset<'line'>[] = [];
+  public lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      xAxes: [
+
+      x:
         {
           type: 'time',
           time: {
             minUnit: 'hour',
             unit: 'day',
-            ticks: {
-              autoSkip: true
-            }
-          }
-        }
-      ],
-      yAxes: [{}]
+          },
+        },
+      y: {}
     },
     plugins: {
       zoom: {
@@ -38,11 +34,8 @@ export class DeviceCreationHistoryComponent implements OnInit {
         //   mode: 'x'
         // },
         zoom: {
-          enabled: true,
-          drag: true,
+          drag: {enabled: true, threshold: 2},
           mode: 'x',
-          speed: 0.1,
-          threshold: 2
         }
       },
       datalabels: {
@@ -50,44 +43,33 @@ export class DeviceCreationHistoryComponent implements OnInit {
         // align: 'end',
         display: false
       }
-    },
-    tooltips: {
-      mode: 'nearest',
-      intersect: false,
-      callbacks: {}
     }
   };
-  public lineChartType: ChartType = 'line';
+  public readonly lineChartType = 'line' satisfies ChartType;
   public lineChartLegend = true;
   public lineChartPlugins = [
     pluginChartZoom,
-    {
-      afterEvent: (chartInstance, chartEvent) => {
-        const legend = chartInstance.legend;
-        const canvas = chartInstance.chart.canvas;
-        const x = chartEvent.x;
-        const y = chartEvent.y;
-        let cursorStyle = 'default';
-        if (x <= legend.right && x >= legend.left && y <= legend.bottom && y >= legend.top) {
-          for (const box of legend.legendHitBoxes) {
-            if (x <= box.left + box.width && x >= box.left && y <= box.top + box.height && y >= box.top) {
-              cursorStyle = 'pointer';
-              break;
-            }
-          }
-        }
-        canvas.style.cursor = cursorStyle;
-      }
-    }
-  ];
-  public lineChartColors: Color[] = [
     // {
-    //   backgroundColor: 'transparent',
-    //   borderColor: 'rgba(148,159,177,1)',
-    //   pointBackgroundColor: 'rgba(148,159,177,1)',
-    //   pointBorderColor: '#fff',
-    //   pointHoverBackgroundColor: '#fff',
-    //   pointHoverBorderColor: 'rgba(148,159,177,0.8)'
+    //   afterEvent: (chartInstance: BaseChartDirective<'line'>['chart'], chartEvent: any) => {
+    //     console.log(chartInstance);
+    //     const legend = chartInstance?.legend;
+    //     const canvas = chartInstance?.canvas;
+    //     const x = chartEvent.x;
+    //     const y = chartEvent.y;
+    //     let cursorStyle = 'default';
+    //     if (!legend || !canvas) {
+    //       return;
+    //     }
+    //     if (x <= legend.right && x >= legend.left && y <= legend.bottom && y >= legend.top) {
+    //       for (const box of legend.legendItems || []) {
+    //         if (x <= box.left + box.width && x >= box.left && y <= box.top + box.height && y >= box.top) {
+    //           cursorStyle = 'pointer';
+    //           break;
+    //         }
+    //       }
+    //     }
+    //     canvas.style.cursor = cursorStyle;
+    //   }
     // }
   ];
   isLoading = true;
@@ -99,7 +81,7 @@ export class DeviceCreationHistoryComponent implements OnInit {
       this.lineChartData = [
         {
           label: 'Sum of created Devices',
-          data: result.map((tmp) => ({ t: tmp.creationTime, y: tmp.value } as ChartPoint)),
+          data: result.map((tmp) => ({ x: tmp.creationTime as any, y: tmp.value,  } satisfies Point)),
           pointBackgroundColor: 'green',
           backgroundColor: 'transparent',
           borderColor: '#1776BF'
@@ -124,7 +106,7 @@ export class DeviceCreationHistoryComponent implements OnInit {
         .sort((a, b) => a.data.creationTime.localeCompare(b.data.creationTime))
         .map((tmp, index) => {
           return {
-            label: tmp.data.name as string,
+            label: tmp.data['name'] as string,
             value: index + 1,
             creationTime: new Date(tmp.data.creationTime)
           };
