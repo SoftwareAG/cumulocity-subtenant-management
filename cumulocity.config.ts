@@ -1,5 +1,5 @@
 import type { ConfigurationOptions } from '@c8y/devkit';
-import { author, description, version } from './package.json';
+import { author, description, version, license } from './package.json';
 import { gettext } from '@c8y/ngx-components/gettext';
 
 const defaultDescription = gettext(
@@ -15,6 +15,7 @@ export default {
     contextPath: "sag-pkg-subtenant-management",
     key: "sag-pkg-subtenant-management-application-key",
     globalTitle: 'Cumulocity',
+    license,
     rightDrawer: true,
     tabsHorizontal: true,
     dynamicOptionsUrl: true,
