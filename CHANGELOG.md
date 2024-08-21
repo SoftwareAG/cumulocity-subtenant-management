@@ -1,3 +1,15 @@
+# [1.0.0](https://github.com/SoftwareAG/cumulocity-subtenant-management/compare/v0.7.2...v1.0.0) (2024-08-21)
+
+
+### Features
+
+* switch to ng cli ([#43](https://github.com/SoftwareAG/cumulocity-subtenant-management/issues/43)) ([e57933c](https://github.com/SoftwareAG/cumulocity-subtenant-management/commit/e57933ce417b35a77643887152b8b6649e5f5380))
+
+
+### BREAKING CHANGES
+
+* Upgraded to Angular 17, switched to ng cli instead of deprecated c8ycli and upgraded chartjs lib
+
 ## [0.7.2](https://github.com/SoftwareAG/cumulocity-subtenant-management/compare/v0.7.1...v0.7.2) (2023-12-18)
 
 

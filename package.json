@@ -1,6 +1,6 @@
 {
   "name": "sag-pkg-subtenant-management",
-  "version": "0.7.2",
+  "version": "1.0.0",
   "description": "Tool for managing subtenants from a c8y management or enterprise tenant",
   "repository": {
     "type": "git",
