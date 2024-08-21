@@ -35,7 +35,7 @@ export class AlarmMapperService {
     alarms
       .filter((tmp) => !tmp.type.startsWith('c8y_Threshold'))
       // add newest values last to the map
-      .sort((a, b) => a.creationTime.localeCompare(b.creationTime))
+      .sort((a, b) => (<any>a).creationTime.localeCompare(b.creationTime))
       .map((tmp) => {
         return {
           alarm: tmp,
@@ -67,10 +67,10 @@ export class AlarmMapperService {
   }
 
   public createMapping(alarms: IAlarmMappingBuffer[]): {
-    [key: string]: string;
+    [key: string]: string | undefined;
   } {
     const mappedAlarms = this.getAlarmMappingTenantOptions(alarms);
-    const mapping: { [key: string]: string } = {};
+    const mapping: { [key: string]: string | undefined } = {};
     mappedAlarms.forEach((tmp) => {
       mapping[tmp.key] = tmp.value;
     });
@@ -87,7 +87,7 @@ export class AlarmMapperService {
     return Promise.all(promiseArray);
   }
 
-  private storeAlarmMapping(client: FetchClient, mapping: { [key: string]: string }) {
+  private async storeAlarmMapping(client: FetchClient, mapping: { [key: string]: string | undefined }) {
     const url = `/tenant/options/${this.mappingCategory}`;
     const options: RequestInit = {
       method: 'PUT',
@@ -96,12 +96,11 @@ export class AlarmMapperService {
       },
       body: JSON.stringify(mapping)
     };
-    return client.fetch(url, options).then((result) => {
+    const result = await client.fetch(url, options);
       if (result.status === 200) {
         return;
       }
-      return Promise.reject(result.status);
-    });
+      throw Error(`${result.status} - ${result.statusText}`);
   }
 
   private async storeAlarmMappingInTenantPolicy(alarmMapping: ITenantOption[]) {

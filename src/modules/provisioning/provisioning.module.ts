@@ -82,19 +82,6 @@ import { TenantsHavingAppModalComponent } from './application-provisioning/tenan
     SmartGroupsProvisioningComponent,
     AlarmMappingProvisioningComponent
   ],
-  entryComponents: [
-    ApplicationProvisioningComponent,
-    TenantsHavingAppModalComponent,
-    FirmwareProvisioningComponent,
-    SmartrestProvisioningComponent,
-    TenantOptionsProvisioningComponent,
-    TenantOptionModalComponent,
-    RetentionRuleProvisioningComponent,
-    CreateOrEditRetentionRuleModalComponent,
-    GlobalRolesProvisioningComponent,
-    SmartGroupsProvisioningComponent,
-    AlarmMappingProvisioningComponent
-  ],
   providers: [
     {
       provide: HOOK_MICROSERVICE_ROLE,

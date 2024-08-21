@@ -68,20 +68,6 @@ import { RouterModule } from '@angular/router';
     CustomFirmwareUpdateModalComponent,
     FirmwareUpdateHistoryComponent
   ],
-  entryComponents: [
-    DeviceLookupComponent,
-    UserLookupComponent,
-    DeviceRegistrationLookupComponent,
-    FirmwareUpdateModalComponent,
-    ConfigurationUpdateModalComponent,
-    StoreQueryModalComponent,
-    LoadQueryModalComponent,
-    UserPasswordChangeModalComponent,
-    AddUserModalComponent,
-    AddDeviceRegistrationModalComponent,
-    CustomFirmwareUpdateModalComponent,
-    FirmwareUpdateHistoryComponent
-  ],
   providers: [
     {
       provide: HOOK_MICROSERVICE_ROLE,

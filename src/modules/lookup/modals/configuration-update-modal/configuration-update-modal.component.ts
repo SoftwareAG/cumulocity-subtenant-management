@@ -9,16 +9,16 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
   templateUrl: './configuration-update-modal.component.html'
 })
 export class ConfigurationUpdateModalComponent implements OnInit {
-  client: Client;
-  deviceDetails: TenantSpecificDetails<Partial<IManagedObject>>;
+  client: Client | undefined;
+  deviceDetails: TenantSpecificDetails<Partial<IManagedObject>> | undefined;
   isLoading = true;
   config = '';
 
   constructor(private bsModalRef: BsModalRef, private alertService: AlertService) {}
 
   ngOnInit() {
-    if (this.deviceDetails && this.deviceDetails.data.c8y_Configuration) {
-      this.config = this.deviceDetails.data.c8y_Configuration.config;
+    if (this.deviceDetails && this.deviceDetails.data['c8y_Configuration']) {
+      this.config = this.deviceDetails.data['c8y_Configuration'].config;
     }
   }
 
@@ -30,7 +30,7 @@ export class ConfigurationUpdateModalComponent implements OnInit {
     if (this.client && this.deviceDetails) {
       this.client.operation
         .create({
-          deviceId: this.deviceDetails.data.id,
+          deviceId: this.deviceDetails.data.id as string,
           description: 'Configuration Update',
           c8y_Configuration: {
             config: this.config

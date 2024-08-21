@@ -30,8 +30,8 @@ declare const __MODE__: string;
 export class FakeMicroserviceService implements OnDestroy {
   private requiredRoles: string[] = [];
 
-  private credentialsCache: Promise<ICredentials[]>;
-  private cachedModal: Promise<unknown>;
+  private credentialsCache: Promise<ICredentials[]> | null = null;
+  private cachedModal: Promise<unknown> | null = null;
   private clientsPromiseCache = new Map<string, Promise<Client>>();
   private clientsAuthCache = new Map<string, BasicAuth | BearerAuth>();
   private clientsCredentialsCache = new Map<string, ICredentials>();
@@ -63,10 +63,13 @@ export class FakeMicroserviceService implements OnDestroy {
         if (auth instanceof BearerAuth) {
           if (auth.millisecondsUtilTokenExpires() < 120000) {
             const creds = this.clientsCredentialsCache.get(key);
+            if (!creds || !creds.tenant) {
+              throw new Error('No credentials found for tenant: ' + key);
+            }
             this.subtenantDetails
               .getDetailsOfTenant(creds.tenant)
               .then((tenant) => {
-                return this.getAccessToken(this.clientsCredentialsCache.get(key), tenant.domain);
+                return this.getAccessToken(creds, tenant?.domain);
               })
               .then(
                 (token) => {
@@ -114,16 +117,16 @@ export class FakeMicroserviceService implements OnDestroy {
       title: 'Select tenant subset'
     });
 
-    return tenants.filter((tmp) => selectedTenantIds.includes(tmp.id));
+    return tenants.filter((tmp) => selectedTenantIds.includes(tmp.id as string));
   }
 
   public async createClients(credentials: ICredentials[], domain?: string): Promise<Client[]> {
     return Promise.all(
       credentials.map((cred) => {
-        let promise = this.clientsPromiseCache.get(cred.tenant);
+        let promise = this.clientsPromiseCache.get(cred.tenant as string);
         if (!promise) {
           promise = this.createClient(cred, domain);
-          this.clientsPromiseCache.set(cred.tenant, promise);
+          this.clientsPromiseCache.set(cred.tenant as string, promise);
         }
         return promise;
       })
@@ -154,7 +157,7 @@ export class FakeMicroserviceService implements OnDestroy {
   }
 
   private async createClient(credentials: ICredentials, domain?: string): Promise<Client> {
-    this.clientsCredentialsCache.set(credentials.tenant, credentials);
+    this.clientsCredentialsCache.set(credentials.tenant as string, credentials);
     let auth: BasicAuth | BearerAuth;
     if (await this.allowsOAuth(credentials)) {
       const accessToken = await this.getAccessToken(credentials, domain);
@@ -162,9 +165,9 @@ export class FakeMicroserviceService implements OnDestroy {
     } else {
       auth = new BasicAuth(credentials);
     }
-    this.clientsAuthCache.set(credentials.tenant, auth);
+    this.clientsAuthCache.set(credentials.tenant as string, auth);
     const client = new Client(auth, domain);
-    client.core.tenant = credentials.tenant;
+    client.core.tenant = credentials.tenant as string;
     const header = { 'X-Cumulocity-Application-Key': await this.getMsKey() };
     client.core.defaultHeaders = Object.assign(header, client.core.defaultHeaders);
     this.customApiService.hookIntoCustomClientFetch(client);
@@ -174,22 +177,24 @@ export class FakeMicroserviceService implements OnDestroy {
   private async getAccessToken(credentials: ICredentials, domain?: string): Promise<string> {
     const params = new URLSearchParams({
       grant_type: 'PASSWORD',
-      username: credentials.user,
-      password: credentials.password,
-      tfa_code: credentials.tfa
+      username: credentials.user as string,
+      password: credentials.password as string,
+      tfa_code: credentials.tfa as string
     });
     const fetchClient = new FetchClient(new CustomBasicAuth(credentials), domain);
-    let response: IFetchResponse;
+    const fn = () => fetchClient.fetch(`/tenant/oauth/token?tenant_id=${credentials.tenant}`, {
+      method: 'POST',
+      body: params.toString(),
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      }
+    });
+    let response = await fn();
     for (let i = 0; i < 10; i++) {
-      response = await fetchClient.fetch(`/tenant/oauth/token?tenant_id=${credentials.tenant}`, {
-        method: 'POST',
-        body: params.toString(),
-        headers: {
-          'content-type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        }
-      });
       // in case of to many request: try again..
       if (response.status === 429) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        response = await fn();
         continue;
       }
 
@@ -249,19 +254,19 @@ export class FakeMicroserviceService implements OnDestroy {
 
   public async getMsKey(): Promise<string> {
     const currentTenant = this.appState.currentTenant.value;
-    const hashedTenantId = await this.sha256(currentTenant.name);
+    const hashedTenantId = await this.sha256(currentTenant?.name as string);
     return `subtenant-mgmt-${hashedTenantId.substring(0, 8)}`;
   }
 
   public async getMsName(): Promise<string> {
     const currentTenant = this.appState.currentTenant.value;
-    const hashedTenantId = await this.sha256(currentTenant.name);
+    const hashedTenantId = await this.sha256(currentTenant?.name as string);
     return `subtenant-mgmt-${hashedTenantId.substring(0, 8)}`;
   }
 
   private getMsDescription(): string {
     const currentTenant = this.appState.currentTenant.value;
-    return `Microservice that allows tenant ${currentTenant.name} to get access to this tenant.`;
+    return `Microservice that allows tenant ${currentTenant?.name} to get access to this tenant.`;
   }
 
   private async sha256(message: string): Promise<string> {
@@ -327,9 +332,9 @@ export class FakeMicroserviceService implements OnDestroy {
       const { data: createdApp } = await this.createDummyMicroservice();
       app = createdApp;
     } else {
-      const someRoleMissing = this.requiredRoles.some((role) => !app.requiredRoles.includes(role));
+      const someRoleMissing = this.requiredRoles.some((role) => !app?.requiredRoles?.includes(role));
       if (someRoleMissing) {
-        const { data: updatedApp } = await this.updateDummyMicroserviceRoles(app.id);
+        const { data: updatedApp } = await this.updateDummyMicroserviceRoles((<any>app).id);
         app = updatedApp;
       }
     }
@@ -338,7 +343,7 @@ export class FakeMicroserviceService implements OnDestroy {
 
   private async findDummyMicroservice() {
     const ms = await this.getDummyMicroserviceObjForCreation();
-    const { data: appList } = await this.appService.listByName(ms.name);
+    const { data: appList } = await this.appService.listByName((<any>ms).name);
     if (appList && appList.length) {
       return appList[0];
     }
@@ -371,14 +376,17 @@ export class FakeMicroserviceService implements OnDestroy {
   }
 
   private deleteApp(app: IApplication) {
-    return this.appService.delete(app.id);
+    return this.appService.delete((<any>app).id);
   }
 
   public async getClientForTenant(tenantId: string): Promise<Client> {
     const creds = await this.prepareCachedDummyMicroserviceForAllSubtenants();
     const tenantCred = creds.find((tmp) => tmp.tenant === tenantId);
+    if (!tenantCred) {
+      throw Error(`No credentials available for tenant: ${tenantId}`);
+    }
     const tenant = await this.subtenantDetails.getDetailsOfTenant(tenantId);
-    const [client] = await this.createClients([tenantCred], tenant.domain);
+    const [client] = await this.createClients([tenantCred], tenant?.domain);
     if (!client) {
       throw Error(`No Client available for tenant: ${tenantId}`);
     }
@@ -386,10 +394,10 @@ export class FakeMicroserviceService implements OnDestroy {
   }
 
   private showWarnings(): boolean {
-    if (this.options.hideWarnings === 'always') {
+    if (this.options['hideWarnings'] === 'always') {
       return false;
     }
-    if (this.options.hideWarnings === 'duringDevelopment' && __MODE__ !== 'production') {
+    if (this.options['hideWarnings'] === 'duringDevelopment' && __MODE__ !== 'production') {
       return false;
     }
     return true;

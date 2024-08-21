@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { IResultList, ITenant, TenantStatus, Client } from '@c8y/client';
+import { IResultList, ITenant, TenantStatus, Client, Service, IFetchResponse } from '@c8y/client';
 import { ServerSideDataResult, Column, Pagination, DataSourceModifier } from '@c8y/ngx-components';
 import { FakeMicroserviceService } from '@services/fake-microservice.service';
 import { SubtenantDetailsService } from '@services/subtenant-details.service';
 
 @Injectable()
 export class StorageStatisticsTableDatasourceService {
-  serverSideDataCallback: Promise<ServerSideDataResult>;
-  columns: Column[];
+  serverSideDataCallback: (dataSourceModifier: DataSourceModifier) => Promise<ServerSideDataResult>;
+  columns: Column[] = [];
 
   pagination: Pagination = {
     pageSize: 50,
@@ -33,7 +33,9 @@ export class StorageStatisticsTableDatasourceService {
     const allTenants = await this.tenantService.getCachedTenants();
     const filteredTenants = allTenants.filter((tmp) => selectedTenantIds.includes(tmp.id));
 
-    const start = 0 + dataSourceModifier.pagination.pageSize * (dataSourceModifier.pagination.currentPage - 1);
+    const currentPage = dataSourceModifier.pagination.currentPage as number;
+
+    const start = 0 + dataSourceModifier.pagination.pageSize * (currentPage - 1);
     const dataSubset = filteredTenants.slice(start, start + dataSourceModifier.pagination.pageSize);
 
     const visibleColumns = dataSourceModifier.columns
@@ -44,19 +46,19 @@ export class StorageStatisticsTableDatasourceService {
         this.fetchStorageStatistics(
           visibleColumns,
           tenant,
-          clients.find((tmp) => tmp.core.tenant === tenant.id)
+          clients.find((tmp) => tmp.core.tenant === tenant.id) as Client
         )
       )
     );
 
     const resList: IResultList<ITenant> = {
       data: statistics,
-      res: undefined,
+      res: undefined as unknown as IFetchResponse,
       // @ts-ignore
       paging: {
-        currentPage: dataSourceModifier.pagination.currentPage,
+        currentPage: currentPage,
         pageSize: dataSourceModifier.pagination.pageSize,
-        nextPage: dataSourceModifier.pagination.currentPage + 1
+        nextPage: currentPage + 1
       }
     };
 
@@ -69,8 +71,8 @@ export class StorageStatisticsTableDatasourceService {
     return result;
   }
 
-  private async fetchStorageStatistics(activeColumns: string[], tenant: ITenant, client?: Client) {
-    const partialTenant: Partial<ITenant> = {
+  private async fetchStorageStatistics(activeColumns: string[], tenant: ITenant, client: Client) {
+    const partialTenant: Partial<ITenant & {[key: string]: any}> = {
       id: tenant.id,
       domain: tenant.domain
     };
@@ -87,8 +89,9 @@ export class StorageStatisticsTableDatasourceService {
                 partialTenant[tmp] = result;
               });
             }
-            const api = tmp.replace('Count', '');
-            return this.fetchCount(client[api].list.bind(client[api])).then((result) => {
+            const api = tmp.replace('Count', '') as keyof Client;
+            const service = client[api] as Service<any>;
+            return this.fetchCount(service.list.bind(service)).then((result) => {
               partialTenant[tmp] = result;
             });
           });
@@ -114,7 +117,7 @@ export class StorageStatisticsTableDatasourceService {
     };
     const res = await client.inventory.list(filter);
     // while (res.data.length) {
-    const sum = res.data.map((tmp) => tmp.length || 0).reduceRight((prev, curr) => prev + curr, 0);
+    const sum = res.data.map((tmp) => tmp['length'] || 0).reduceRight((prev, curr) => prev + curr, 0);
     byteSum += sum;
     //   if (res.data.length < res.paging.pageSize) {
     //     break;
@@ -131,6 +134,6 @@ export class StorageStatisticsTableDatasourceService {
       withTotalPages: true
     });
 
-    return list(filters).then((result) => result.paging.totalPages);
+    return list(filters).then((result) => result.paging?.totalPages as number);
   }
 }

@@ -56,7 +56,7 @@ export class SmartGroupsProvisioningComponent {
   async provisionSmartGroup(group: IManagedObject): Promise<void> {
     try {
       const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-      const tenantIds = credentials.map((tmp) => tmp.tenant);
+      const tenantIds = credentials.map((tmp) => tmp.tenant) as string[];
       let selectedTenantIds: string[] = [];
 
       try {
@@ -64,11 +64,11 @@ export class SmartGroupsProvisioningComponent {
       } catch (e) {
         return;
       }
-      const filteredCredentials = credentials.filter((cred) => selectedTenantIds.includes(cred.tenant));
+      const filteredCredentials = credentials.filter((cred) => selectedTenantIds.includes(cred.tenant as string));
       try {
         await this.c8yModalService.confirm(
           `Provisioning Smart Group`,
-          `Are you sure that you want to provision the Global Role (${group.name}) to all selected ${filteredCredentials.length} subtenants? This will create a new Smart Group on tenants where it did not exist previously. If the same Smart Group was already provisioned previously, it's properties will be overwritten.`,
+          `Are you sure that you want to provision the Global Role (${group['name']}) to all selected ${filteredCredentials.length} subtenants? This will create a new Smart Group on tenants where it did not exist previously. If the same Smart Group was already provisioned previously, it's properties will be overwritten.`,
           'warning'
         );
         const clients = await this.credService.createClients(filteredCredentials);
@@ -92,7 +92,7 @@ export class SmartGroupsProvisioningComponent {
   async deleteSmartGroup(group: IManagedObject): Promise<void> {
     try {
       const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-      const tenantIds = credentials.map((tmp) => tmp.tenant);
+      const tenantIds = credentials.map((tmp) => tmp.tenant) as string[];
       let selectedTenantIds: string[] = [];
 
       try {
@@ -100,11 +100,11 @@ export class SmartGroupsProvisioningComponent {
       } catch (e) {
         return;
       }
-      const filteredCredentials = credentials.filter((cred) => selectedTenantIds.includes(cred.tenant));
+      const filteredCredentials = credentials.filter((cred) => selectedTenantIds.includes(cred.tenant as string));
       try {
         await this.c8yModalService.confirm(
           `Delete Smart Group`,
-          `Are you sure that you want to delete the Smart Group (${group.name}) from all selected ${filteredCredentials.length} subtenants?`,
+          `Are you sure that you want to delete the Smart Group (${group['name']}) from all selected ${filteredCredentials.length} subtenants?`,
           'danger'
         );
         const clients = await this.credService.createClients(filteredCredentials);

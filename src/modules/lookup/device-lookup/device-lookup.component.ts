@@ -26,15 +26,16 @@ import { DeviceTableDatasourceService } from './device-table-datasource.service'
   templateUrl: './device-lookup.component.html'
 })
 export class DeviceLookupComponent implements OnDestroy {
-  @ViewChild(DataGridComponent, { static: true }) dataGrid: DataGridComponent;
+  @ViewChild(DataGridComponent, { static: true }) dataGrid: DataGridComponent | undefined;
   columns: Column[];
   bulkActionControls: BulkActionControl[] = [
     {
       type: 'Restart',
       icon: 'refresh',
       text: 'Restart',
-      callback: (selectedItemIds): void =>
+      callback: (selectedItemIds): void => {
         this.restartDevices(selectedItemIds as any as { tenant: string; id: string }[])
+      }
     },
     {
       type: 'Firmware Update',
@@ -221,7 +222,7 @@ export class DeviceLookupComponent implements OnDestroy {
 
   restartDevice(deviceItem: TenantSpecificDetails<IManagedObject>): void {
     this.c8yModalService
-      .confirm(`Restart Device: ${deviceItem.data.name}`, 'Are you sure that you want to restart this device?')
+      .confirm(`Restart Device: ${deviceItem.data['name']}`, 'Are you sure that you want to restart this device?')
       .then(
         async () => {
           // modal confirmed
@@ -230,6 +231,7 @@ export class DeviceLookupComponent implements OnDestroy {
           const client = clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
           if (!client) {
             this.alertService.warning('No credentials found.');
+            return;
           }
           client.operation
             .create({
@@ -252,34 +254,34 @@ export class DeviceLookupComponent implements OnDestroy {
       );
   }
 
-  restartDevices(selection: { tenant: string; id: string }[]): void {
-    this.c8yModalService.confirm(`Restart Devices`, 'Are you sure that you want to restart the selected Devices?').then(
-      async () => {
-        // modal confirmed
-        const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
-        const clients = await this.credService.createClients(credentials);
-        const promArray = selection.map((item) => {
-          const client = clients.find((tmpClient) => tmpClient.core.tenant === item.tenant);
-          if (!client) {
-            this.alertService.warning('No credentials found.');
-          }
-          return client.operation.create({
-            deviceId: item.id,
-            description: 'Restart device',
-            c8y_Restart: {}
-          });
-        });
-        Promise.all(promArray).then(
-          () => {
-            this.alertService.success(`${promArray.length} Restart Operations created.`);
-          },
-          () => {
-            this.alertService.danger('Unable to create Restart Operations.');
-          }
-        );
+  async restartDevices(selection: { tenant: string; id: string }[]): Promise<void> {
+    try {
+      await this.c8yModalService.confirm(`Restart Devices`, 'Are you sure that you want to restart the selected Devices?');
+    } catch (e) {
+      return;
+    }
+
+    // modal confirmed
+    const credentials = await this.credService.prepareCachedDummyMicroserviceForAllSubtenants();
+    const clients = await this.credService.createClients(credentials);
+    const promArray = selection.map((item) => {
+      const client = clients.find((tmpClient) => tmpClient.core.tenant === item.tenant);
+      if (!client) {
+        this.alertService.warning('No credentials found.');
+        return Promise.resolve();
+      }
+      return client.operation.create({
+        deviceId: item.id,
+        description: 'Restart device',
+        c8y_Restart: {}
+      });
+    });
+    return Promise.all(promArray).then(
+      () => {
+        this.alertService.success(`${promArray.length} Restart Operations created.`);
       },
       () => {
-        // model canceled
+        this.alertService.danger('Unable to create Restart Operations.');
       }
     );
   }
@@ -304,6 +306,7 @@ export class DeviceLookupComponent implements OnDestroy {
                 const client = clients.find((tmpClient) => tmpClient.core.tenant === item.tenant);
                 if (!client) {
                   this.alertService.warning('No credentials found.');
+                  return Promise.resolve();
                 }
                 return client.operation.create({
                   deviceId: item.id,
@@ -361,6 +364,7 @@ export class DeviceLookupComponent implements OnDestroy {
     const client = clients.find((tmpClient) => tmpClient.core.tenant === deviceItem.tenantId);
     if (!client) {
       this.alertService.warning('No credentials found.');
+      return;
     }
     if (action && action.onClickAction) {
       action.onClickAction(client, deviceItem.data as IManagedObject);

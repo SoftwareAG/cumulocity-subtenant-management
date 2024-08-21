@@ -39,12 +39,13 @@ These capabilities could be in general extended further. For any requirements ra
 
 ## Installation
 
-1. Download the [latest release of the Subtenant Management App](https://github.com/SoftwareAG/cumulocity-subtenant-management/releases/latest)
-2. Open the Administration app of your enterprise or management tenant
-3. Navigate to "Applications" -> "Own applications"
-4. Click the "Add application" button in the upper right corner
-5. Select "Upload web application" in the dialog and upload the zip file you've downloaded in the first step
-6. After a reload of the page, the Subtenant Management App should be available in your app switcher
+1. Open the Administration app of your enterprise or management tenant
+2. Navigate to "Ecosystem" -> "Extensions"
+3. Look for the "Subtenant Management" extension. In case it is not available by default, you can download the [latest release of the Subtenant Management App](https://github.com/SoftwareAG/cumulocity-subtenant-management/releases/latest) and install it into your tenant by clicking "Add extension package"
+4. The "Subtenant Management" extension should now be visible within the list. Click on the entry within the list.
+5. Now click the "Deploy application" button to install the blueprint as an application into your tenant.
+6. Follow the instructions in the dialog.
+7. Once your done, the "Subtenant Management" app should be available in your app switcher.
 
 
 ------------------------------

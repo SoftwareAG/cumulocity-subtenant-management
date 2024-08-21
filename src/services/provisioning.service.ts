@@ -52,8 +52,8 @@ export class ProvisioningService {
     return copy;
   }
 
-  async provisionLegacyFirmwareToTenants(clients: Client[], firmware: IManagedObject): Promise<IManagedObject[]> {
-    const url = (firmware.url as string) || '';
+  async provisionLegacyFirmwareToTenants(clients: Client[], firmware: IManagedObject): Promise<Array<IManagedObject | null>> {
+    const url = (firmware['url'] as string) || '';
     if (url && url.includes('/inventory/binaries/')) {
       const binaryMOId = this.binaryService.getIdFromUrl(url);
       const { data: binaryMO } = await this.inventoryService.detail(binaryMOId);
@@ -72,14 +72,14 @@ export class ProvisioningService {
     firmware: IManagedObject,
     binaryMO?: IManagedObject,
     binary?: Blob
-  ): Promise<IManagedObject> {
+  ): Promise<IManagedObject | null> {
     const knownFirmware = await this.checkIfFirmwareIsAvailable(client, firmware);
     if (!knownFirmware) {
       const newFirmwareMO = this.createCopyOfManagedObject(firmware);
       newFirmwareMO[this.provisioningIdent].firmwareMOId = firmware.id;
       if (binaryMO && binary) {
         const newBinaryMO = await client.inventoryBinary.create(binary, this.createCopyOfManagedObject(binaryMO));
-        newFirmwareMO.url = newBinaryMO.data.self;
+        newFirmwareMO['url'] = newBinaryMO.data.self;
       }
       const res = await client.inventory.create(newFirmwareMO);
       return res.data;
@@ -87,9 +87,9 @@ export class ProvisioningService {
     return null;
   }
 
-  async checkIfFirmwareIsAvailable(client: Client, firmware: IManagedObject): Promise<IManagedObject> {
+  async checkIfFirmwareIsAvailable(client: Client, firmware: IManagedObject): Promise<IManagedObject | null> {
     const filter = {
-      query: `$filter=((type eq 'c8y_Firmware') and (name eq '${firmware.name}') and (version eq '${firmware.version}') and has(${this.provisioningIdent}) and (${this.provisioningIdent}.firmwareMOId eq '${firmware.id}'))`
+      query: `$filter=((type eq 'c8y_Firmware') and (name eq '${firmware['name']}') and (version eq '${firmware['version']}') and has(${this.provisioningIdent}) and (${this.provisioningIdent}.firmwareMOId eq '${firmware.id}'))`
     };
     const { data: firmwares } = await client.inventory.list(filter);
     return firmwares.length > 0 ? firmwares[0] : null;
@@ -102,7 +102,7 @@ export class ProvisioningService {
   async deprovisionLegacyFirmwareFromTenant(client: Client, firmware: IManagedObject): Promise<void> {
     const findFirmware = await this.checkIfFirmwareIsAvailable(client, firmware);
     if (findFirmware) {
-      const url = findFirmware.url as string;
+      const url = findFirmware['url'] as string;
       if (url && url.includes('/inventory/binaries/')) {
         const binaryMOId = this.binaryService.getIdFromUrl(url);
         await client.inventoryBinary.delete(binaryMOId);
@@ -161,12 +161,12 @@ export class ProvisioningService {
           return result.data;
         },
         () => {
-          return null as IExternalIdentity;
+          return null;
         }
       );
     const templateCopy = Object.assign({}, template);
     if (externalIdDetails) {
-      templateCopy.id = externalIdDetails.managedObject.id as string;
+      templateCopy.id = externalIdDetails.managedObject?.id as string;
       await client.inventory.update(templateCopy);
     } else {
       const { data: createdTemplate } = await client.inventory.create(templateCopy);
@@ -184,8 +184,8 @@ export class ProvisioningService {
   }
 
   async removeUserGroupFromTenants(clients: Client[], userGroup: IUserGroup): Promise<void> {
-    if (userGroup && userGroup.customProperties && userGroup.customProperties.uuid) {
-      const uuid: string = userGroup.customProperties.uuid;
+    const uuid: string = userGroup?.customProperties?.['uuid'];
+    if (uuid) {
       const promArray = clients.map((client) => this.removeUserGroupFromTenant(client, uuid));
       await Promise.all(promArray);
     } else {
@@ -201,16 +201,14 @@ export class ProvisioningService {
   }
 
   async provisionUserGroupToTenants(clients: Client[], userGroup: IUserGroup): Promise<void[]> {
-    let uniqueId = '';
+    let uniqueId = userGroup?.customProperties?.['uuid'];
     let userGroupForRollout = userGroup;
-    if (userGroup.customProperties || userGroup.customProperties.uuid) {
-      uniqueId = userGroup.customProperties.uuid;
-    } else {
+    if (!uniqueId) {
       uniqueId = uuidv4();
       if (!userGroup.customProperties) {
         userGroup.customProperties = {};
       }
-      userGroup.customProperties.uuid = uniqueId;
+      userGroup.customProperties['uuid'] = uniqueId;
       const result = await this.userGroupService.update(userGroup);
       userGroupForRollout = result.data;
     }
@@ -224,7 +222,7 @@ export class ProvisioningService {
       this.getAllRoles(client)
     ]);
 
-    const appList = userGroup.applications.filter((tmp) => availableApps.some((entry) => entry.id === tmp.id));
+    const appList = userGroup.applications?.filter((tmp) => availableApps.some((entry) => entry.id === tmp.id)) || [];
 
     let foundUserGroup = await this.getUserGroupMatchingId(client, uuid);
     if (!foundUserGroup) {
@@ -237,8 +235,8 @@ export class ProvisioningService {
       foundUserGroup = res.data;
     } else {
       // update app list
-      const someAppIsMissing = appList.some((tmp) => !foundUserGroup.applications.some((entry) => entry.id === tmp.id));
-      const someAppTooMuch = foundUserGroup.applications.some((tmp) => !appList.some((entry) => entry.id === tmp.id));
+      const someAppIsMissing = appList.some((tmp) => !foundUserGroup?.applications?.some((entry) => entry.id === tmp.id));
+      const someAppTooMuch = foundUserGroup?.applications?.some((tmp) => !appList.some((entry) => entry.id === tmp.id));
       if (someAppIsMissing || someAppTooMuch) {
         foundUserGroup.applications = appList;
         const res = await client.userGroup.update(foundUserGroup);
@@ -246,23 +244,27 @@ export class ProvisioningService {
       }
     }
 
+    const foundUserGroupId = foundUserGroup?.id;
+    if (!foundUserGroupId) {
+      return;
+    }
+
     const promArray = new Array<Promise<any>>();
     // assign roles
-    const missingRoles = userGroup.roles.references.filter(
-      (tmp) => !foundUserGroup.roles.references.some((entry) => entry.role.id === tmp.role.id)
+    const missingRoles = userGroup.roles?.references.filter(
+      (tmp) => !foundUserGroup?.roles?.references.some((entry) => entry.role.id === tmp.role.id)
     );
     promArray.push(
-      ...missingRoles
-        .filter((tmp) => availableRoles.some((entry) => entry.id === tmp.role.id))
-        .map((tmp) => client.userGroup.addRoleToGroup(foundUserGroup.id, tmp.role).catch(() => null))
+      ...(missingRoles?.filter((tmp) => availableRoles.some((entry) => entry.id === tmp.role.id))
+        .map((tmp) => client.userGroup.addRoleToGroup(foundUserGroupId, tmp.role).catch(() => null)) || [])
     );
 
     // removing roles
-    const tooManyRoles = foundUserGroup.roles.references.filter(
-      (tmp) => !userGroup.roles.references.some((entry) => entry.role.id === tmp.role.id)
+    const tooManyRoles = foundUserGroup.roles?.references.filter(
+      (tmp) => !userGroup.roles?.references.some((entry) => entry.role.id === tmp.role.id)
     );
     promArray.push(
-      ...tooManyRoles.map((tmp) => client.userGroup.removeRoleFromGroup(foundUserGroup.id, tmp.role).catch(() => null))
+      ...(tooManyRoles?.map((tmp) => client.userGroup.removeRoleFromGroup(foundUserGroupId, tmp.role).catch(() => null)) || [])
     );
 
     await Promise.all(promArray);
@@ -276,7 +278,7 @@ export class ProvisioningService {
     let res = await client.application.list(filter);
     while (res.data.length) {
       arr.push(...res.data);
-      if (res.data.length < res.paging.pageSize) {
+      if (!res.paging || res.data.length < res.paging.pageSize) {
         break;
       }
       res = await res.paging.next();
@@ -292,7 +294,7 @@ export class ProvisioningService {
     let res = await client.userRole.list(filter);
     while (res.data.length) {
       arr.push(...res.data);
-      if (res.data.length < res.paging.pageSize) {
+      if (!res.paging || res.data.length < res.paging.pageSize) {
         break;
       }
       res = await res.paging.next();
@@ -306,11 +308,11 @@ export class ProvisioningService {
     };
     let res = await client.userGroup.list(filter);
     while (res.data.length) {
-      const foundGroup = res.data.find((tmp) => tmp.customProperties && tmp.customProperties.uuid === uuid);
+      const foundGroup = res.data.find((tmp) => tmp.customProperties && tmp.customProperties['uuid'] === uuid);
       if (foundGroup) {
         return foundGroup;
       }
-      if (res.data.length < res.paging.pageSize) {
+      if (!res.paging || res.data.length < res.paging.pageSize) {
         break;
       }
       res = await res.paging.next();
@@ -332,22 +334,20 @@ export class ProvisioningService {
   }
 
   async provisionSmartGroupToTenants(clients: Client[], group: IManagedObject): Promise<void[]> {
-    let uniqueId = '';
-    if (group.uuid) {
-      uniqueId = group.uuid;
-    } else {
+    let uniqueId = group['uuid'];
+    if (!uniqueId) {
       uniqueId = uuidv4();
-      group.uuid = uniqueId;
+      group['uuid'] = uniqueId;
       await this.inventoryService.update({ id: group.id, uuid: uniqueId });
     }
     const partialGroup: Partial<IManagedObject> = {
-      name: group.name,
+      name: group['name'],
       uuid: uniqueId,
-      type: group.type,
-      c8y_DeviceQueryString: group.c8y_DeviceQueryString,
-      c8y_IsDynamicGroup: group.c8y_IsDynamicGroup,
-      c8y_UIDeviceColumnsMeta: group.c8y_UIDeviceColumnsMeta,
-      c8y_UIDeviceFilterConfig: group.c8y_UIDeviceFilterConfig
+      type: group['type'],
+      c8y_DeviceQueryString: group['c8y_DeviceQueryString'],
+      c8y_IsDynamicGroup: group['c8y_IsDynamicGroup'],
+      c8y_UIDeviceColumnsMeta: group['c8y_UIDeviceColumnsMeta'],
+      c8y_UIDeviceFilterConfig: group['c8y_UIDeviceFilterConfig']
     };
     const promArray = clients.map((client) => this.provisionSmartGroupToTenant(client, partialGroup, uniqueId));
     return Promise.all(promArray);
@@ -363,8 +363,8 @@ export class ProvisioningService {
   }
 
   async removeSmartGroupFromTenants(clients: Client[], group: IManagedObject): Promise<void> {
-    if (group.uuid) {
-      const uuid: string = group.uuid;
+    const uuid: string = group['uuid'];
+    if (uuid) {
       const promArray = clients.map((client) => this.removeSmartGroupFromTenant(client, uuid));
       await Promise.all(promArray);
     } else {

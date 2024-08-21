@@ -29,7 +29,7 @@ export class AppsOfTenantService {
     });
     while (response.data.length) {
       apps.push(...(response.data as IApplicationManagedObject[]));
-      if (response.data.length < response.paging.pageSize) {
+      if (!response.paging || response.data.length < response.paging.pageSize) {
         break;
       }
       response = await response.paging.next();

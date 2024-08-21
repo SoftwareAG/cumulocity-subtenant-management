@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Tab, TabFactory } from '@c8y/ngx-components';
 import { IApplicationManagedObject } from '@models/application-mo';
-import { merge, Observable } from 'rxjs';
+import { merge, NEVER, Observable } from 'rxjs';
 import { filter, map, take, timeout } from 'rxjs/operators';
 import { AppsOfTenantService } from './apps-of-tenant.service';
 
@@ -12,17 +12,17 @@ export class AppsOfTenantTabFactory implements TabFactory {
 
   async get(activatedRoute?: ActivatedRoute): Promise<Tab[]> {
     const observables = new Array<Observable<string>>();
-    const contextData$ = activatedRoute.data.pipe(
-      filter((tmp) => tmp.contextData),
+    const contextData$ = activatedRoute?.data.pipe(
+      filter((tmp) => tmp['contextData']),
       take(1),
-      map((tmp) => tmp.contextData.id as string)
-    );
+      map((tmp) => tmp['contextData'].id as string)
+    ) || NEVER;
     observables.push(contextData$);
-    if (activatedRoute.parent) {
+    if (activatedRoute?.parent) {
       const parent$ = activatedRoute.parent.params.pipe(
-        filter((tmp) => tmp.id),
+        filter((tmp) => tmp['id']),
         take(1),
-        map((tmp) => tmp.id)
+        map((tmp) => tmp['id'])
       );
       observables.push(parent$);
     }

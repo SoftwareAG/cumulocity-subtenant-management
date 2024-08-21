@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ChartOptions, ChartType } from 'chart.js';
-import { Color, Label } from 'ng2-charts';
 import * as pluginDataLabels from 'chartjs-plugin-datalabels';
 
 @Component({
@@ -9,21 +8,14 @@ import * as pluginDataLabels from 'chartjs-plugin-datalabels';
   styleUrls: ['./pie-chart.component.less']
 })
 export class PieChartComponent {
-  @Input() pieChartData: number[];
+  @Input() pieChartData: number[] = [];
   @Output() indexClicked = new EventEmitter<number>();
   public pieChartOptions: ChartOptions = {
     responsive: true,
-    // legend: {
-    //     position: 'top',
-    //     align: 'end'
-    // },
     layout: {
       padding: 15
     },
     maintainAspectRatio: false,
-    legend: {
-      position: 'bottom'
-    },
     plugins: {
       datalabels: {
         backgroundColor: 'black',
@@ -81,21 +73,15 @@ export class PieChartComponent {
       if (activeElement && activeElement.length) {
         cursor = 'pointer';
       }
-      const target = event.target as HTMLElement;
+      const target = (<any>event).target as HTMLElement;
       target.style.cursor = cursor;
     }
   };
-  public pieChartColors: Color[] = [];
-  @Input() pieChartLabels: Label[] = [];
   // public pieChartData: Array<number | null | undefined | number[]> | ChartPoint[] = [];
   public pieChartType: ChartType = 'pie';
   public pieChartLegend = true;
   public pieChartPlugins = [pluginDataLabels];
   public chartUnit = '%';
-
-  constructor() {
-    this.pieChartColors = [];
-  }
 
   onChartClick(event: any): void {
     if (event && event.active && event.active.length) {
